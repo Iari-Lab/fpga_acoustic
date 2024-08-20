@@ -1,0 +1,15 @@
+*.apk
+*.bin
+*.dtb
+*.img
+*.tar.gz
+*.zip
+vivado*
+webtalk*
+tmp
+uImage
+.vscode
+.Xil
+python/build
+.__pycache__
+.pytest_cache
