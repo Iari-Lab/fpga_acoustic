@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+  koheron:
+    image: tucanae47/koheron-fpga:latest
+    working_dir: /home/koheron/koheron-sdk
+    # user: "1000:1000"
+    privileged: true
+    ipc: host
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    environment:
+      - LD_PRELOAD=/lib/x86_64-linux-gnu/libudev.so.1
+
+    # stdin_open: true # docker run -i
+    # tty: true        # docker run -t
+    #restart: unless-stopped
+    volumes:
+      - /tools/Xilinx:/tools/Xilinx
+      - ..:/home/koheron/koheron-sdk
+    ports:
+      - 8080:8080

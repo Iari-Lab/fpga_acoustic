@@ -1,0 +1,13 @@
+Metadata-Version: 1.1
+Name: koheron
+Version: 0.23.0
+Summary: Koheron Python Library
+Home-page: https://github.com/Koheron/koheron-sdk
+Author: Koheron
+Author-email: hello@koheron.com
+License: MIT
+Description: Please see our GitHub README
+Keywords: FPGA Linux Instrumentation
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.5

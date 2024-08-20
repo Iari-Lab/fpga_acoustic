@@ -1,0 +1,18 @@
+---
+name: peak_detector
+board: boards/red-pitaya
+
+control_registers:
+  - peak_address_low
+  - peak_address_high
+  - peak_address_reset
+
+status_registers:
+  - peak_address
+  - peak_maximum
+
+cores:
+  - fpga/cores/comparator_v1_0
+
+parameters:
+  wfm_width: 8

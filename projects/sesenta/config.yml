@@ -1,0 +1,39 @@
+---
+name: sesenta
+board: boards/myir
+
+cores:
+  - fpga/cores/axi_ctl_register_v1_0
+  - fpga/cores/axi_sts_register_v1_0
+  - fpga/cores/axis_variable_v1_0
+  - fpga/cores/address_counter_v1_0
+  - fpga/cores/pdm_mic_v1_0
+  - fpga/cores/buffer_v1_0
+memory:
+  - name: control
+    range: 2K
+    offset: '0x60000000'
+  - name: status
+    range: 2K
+    offset: '0x50001000'
+  - name: mic
+    range: 64K
+    offset: '0x40040000'
+
+control_registers:
+  - led
+  - trig0
+  - trig1
+
+status_registers:
+  - mode
+
+parameters:
+  fclk0: 125000000 # FPGA clock speed in Hz
+
+xdc:
+  - boards/myir/config/ports.xdc
+
+drivers:
+  - server/drivers/common.hpp
+  - ./sesenta.hpp
