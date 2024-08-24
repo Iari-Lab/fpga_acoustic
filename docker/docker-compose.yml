@@ -4,8 +4,9 @@ services:
   koheron:
     image: tucanae47/koheron-fpga:latest
     working_dir: /home/koheron/koheron-sdk
+    # user: "${UID}:${GID}"
     # user: "1000:1000"
-    privileged: true
+    # privileged: true
     ipc: host
     ulimits:
       memlock: -1
@@ -19,5 +20,6 @@ services:
     volumes:
       - /tools/Xilinx:/tools/Xilinx
       - ..:/home/koheron/koheron-sdk
+
     ports:
       - 8080:8080

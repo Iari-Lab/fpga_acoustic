@@ -27,8 +27,3 @@ cell xilinx.com:ip:proc_sys_reset:5.0 erst {} {
 source $sdk_path/fpga/lib/ctl_sts.tcl
 add_ctl_sts $eclk erst/peripheral_aresetn
 
-# Connect LEDs
-
-# Add XADC
-# source $sdk_path/fpga/lib/xadc.tcl
-# add_xadc xadc

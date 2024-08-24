@@ -6,7 +6,7 @@
 #include <context.hpp>
 #include <array>
 #include <cmath>
-constexpr uint32_t mic_size = mem::mic_range/sizeof(uint32_t);
+constexpr uint32_t mic_size = mem::mic1_range/sizeof(uint32_t);
 
 class Sesenta
 {
@@ -15,7 +15,7 @@ class Sesenta
     : ctx(ctx_)
     , ctl(ctx.mm.get<mem::control>())
     , sts(ctx.mm.get<mem::status>())
-    , mic_map(ctx.mm.get<mem::mic>())
+    , mic_map(ctx.mm.get<mem::mic1>())
     {
     }
     void set_led_on() {
@@ -55,7 +55,7 @@ class Sesenta
     Context& ctx;
     Memory<mem::control>& ctl;
     Memory<mem::status>& sts;
-    Memory<mem::mic>& mic_map;
+    Memory<mem::mic1>& mic_map;
 
 
 }; // class AdcDacBram
