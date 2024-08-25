@@ -26,32 +26,64 @@ class Sesenta(object):
 
     @command()
     def get_mic(self):
-        return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
+        return self.client.recv_uint32()
 
     @command()
     def get_mic1(self):
-        return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
+        return self.client.recv_uint32()
 
     @command()
     def get_mic2(self):
-        return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
+        return self.client.recv_uint32()
 
     @command()
     def get_mic3(self):
-        return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
+        return self.client.recv_uint32()
 
     @command()
     def get_mic4(self):
-        return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
+        return self.client.recv_uint32()
 
     @command()
     def get_mic5(self):
-        return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
+        return self.client.recv_uint32()
 
     @command()
     def get_mic6(self):
-        return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
+        return self.client.recv_uint32()
 
     @command()
     def get_mic7(self):
-        return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
+        return self.client.recv_uint32()
+
+    # @command()
+    # def get_mic(self):
+    #     return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
+
+    # @command()
+    # def get_mic1(self):
+    #     return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
+
+    # @command()
+    # def get_mic2(self):
+    #     return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
+
+    # @command()
+    # def get_mic3(self):
+    #     return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
+
+    # @command()
+    # def get_mic4(self):
+    #     return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
+
+    # @command()
+    # def get_mic5(self):
+    #     return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
+
+    # @command()
+    # def get_mic6(self):
+    #     return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
+
+    # @command()
+    # def get_mic7(self):
+    #     return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))

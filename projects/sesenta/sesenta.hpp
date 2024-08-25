@@ -6,7 +6,8 @@
 #include <context.hpp>
 #include <array>
 #include <cmath>
-constexpr uint32_t mic_size = mem::mic1_range/sizeof(uint32_t);
+constexpr uint32_t mic_size = 512;
+// constexpr uint32_t mic_size = mem::mic1_range/sizeof(uint32_t);
 
 class Sesenta
 {
@@ -55,39 +56,67 @@ class Sesenta
     uint32_t get_mic_size() {
         return mic_size;
     }
-
-
-    std::array<uint32_t, mic_size> get_mic() {
-        // trigger_mic_rst();
-        return mic_map.read_array<uint32_t, mic_size>();
+    auto get_mic() {
+        return mic_map.read_array_value_at_index<uint32_t, 1>(0);
     }
-    std::array<uint32_t, mic_size> get_mic1() {
-        return mic_map1.read_array<uint32_t, mic_size>();
+    auto get_mic1() {
+        return mic_map1.read_array_value_at_index<uint32_t, 1>(0);
     }
 
-    std::array<uint32_t, mic_size> get_mic2() {
-        return mic_map2.read_array<uint32_t, mic_size>();
+    auto get_mic2() {
+        return mic_map2.read_array_value_at_index<uint32_t, 1>(0);
     }
 
-    std::array<uint32_t, mic_size> get_mic3() {
-        return mic_map3.read_array<uint32_t, mic_size>();
+    auto get_mic3() {
+        return mic_map3.read_array_value_at_index<uint32_t, 1>(0);
     }
 
-    std::array<uint32_t, mic_size> get_mic4() {
-        return mic_map4.read_array<uint32_t, mic_size>();
+    auto get_mic4() {
+        return mic_map4.read_array_value_at_index<uint32_t, 1>(0);
     }
 
-    std::array<uint32_t, mic_size> get_mic5() {
-        return mic_map5.read_array<uint32_t, mic_size>();
+    auto get_mic5() {
+        return mic_map5.read_array_value_at_index<uint32_t, 1>(0);
     }
 
-    std::array<uint32_t, mic_size> get_mic6() {
-        return mic_map6.read_array<uint32_t, mic_size>();
+    auto get_mic6() {
+        return mic_map6.read_array_value_at_index<uint32_t, 1>(0);
     }
 
-    std::array<uint32_t, mic_size> get_mic7() {
-        return mic_map7.read_array<uint32_t, mic_size>();
+    auto get_mic7() {
+        return mic_map7.read_array_value_at_index<uint32_t, 1>(0);
     }
+    // std::array<uint32_t, mic_size> get_mic() {
+    //     // trigger_mic_rst();
+    //     return mic_map.read_array<uint32_t, mic_size>();
+    // }
+    // std::array<uint32_t, mic_size> get_mic1() {
+    //     return mic_map1.read_array<uint32_t, mic_size>();
+    // }
+
+    // std::array<uint32_t, mic_size> get_mic2() {
+    //     return mic_map2.read_array<uint32_t, mic_size>();
+    // }
+
+    // std::array<uint32_t, mic_size> get_mic3() {
+    //     return mic_map3.read_array<uint32_t, mic_size>();
+    // }
+
+    // std::array<uint32_t, mic_size> get_mic4() {
+    //     return mic_map4.read_array<uint32_t, mic_size>();
+    // }
+
+    // std::array<uint32_t, mic_size> get_mic5() {
+    //     return mic_map5.read_array<uint32_t, mic_size>();
+    // }
+
+    // std::array<uint32_t, mic_size> get_mic6() {
+    //     return mic_map6.read_array<uint32_t, mic_size>();
+    // }
+
+    // std::array<uint32_t, mic_size> get_mic7() {
+    //     return mic_map7.read_array<uint32_t, mic_size>();
+    // }
 
  private:
     Context& ctx;
