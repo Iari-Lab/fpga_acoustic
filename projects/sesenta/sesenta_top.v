@@ -79,29 +79,67 @@ module sesenta_top (
         .wen_dbg(wen_dbg)
     );
     reg r_addr;
-    reg [7:0] mclks,addrs,wens,mdatas,mdatas_dbg,r_mics;
-    wire [7:0] w_mclks,w_addrs,w_wens,w_mdatas2,w_mdatas,w_mdatas_dbg, w_rst_mics;
+    // reg [7:0] mclks,r_mics;
+    // reg [7:0][31:0] addrs,mdatas,mdatas_dbg;
+    // reg [7:0][3:0] wens;
+    // wire [7:0] w_mclks, w_rst_mics;
+    // wire [7:0][31:0] w_addrs,w_mdatas2,w_mdatas,w_mdatas_dbg;
+    // wire [7:0][3:0] w_wens;
+
+    reg [7:0] mclks, r_mics;
+    reg [255:0] addrs, mdatas, mdatas_dbg; // Flattened 32x8 to 256 bits
+    reg [31:0] wens;  // Flattened 4x8 to 32 bits
+    wire [7:0] w_mclks, w_rst_mics;
+    wire [255:0] w_addrs, w_mdatas,w_mdatas2, w_mdatas_dbg; // Flattened 32x8 to 256 bits
+    wire [31:0] w_wens;  // Flattened 4x8 to 32 bits
 
     genvar i;
     generate
-        for (i = 0; i < 8; i=i+1) begin : clks_gen
+        for (i = 0; i < 8; i=i+1) begin : safe_gen
             always @(posedge clk) begin
-                r_addr <= trig0[0:0];
                 r_mics[i] <= trig1[0:0];
                 mclks[i] <= m_clk_rising;
-                addrs[i] <= addr_w;
-                wens[i] <= wen;
-                mdatas_dbg[i] <= w_mdatas[i];
-                mdatas[i] <= w_mdatas[i];
+                addrs[i*32 +: 32] <= addr_w;  // Slice 8 bits
+                wens[i*4 +: 4] <= wen;      // Slice 8 bits
+                mdatas_dbg[i*32 +: 32] <= w_mdatas[i*32 +: 32];  // Slice 8 bits
+                mdatas[i*32 +: 32] <= w_mdatas[i*32 +: 32];      // Slice 8 bits
             end
             assign w_rst_mics[i] = r_mics[i];
             assign w_mclks[i] = mclks[i];
-            assign w_addrs[i] = addrs[i];
-            assign w_wens[i] = wens[i];
-            assign w_mdatas_dbg[i] = mdatas_dbg[i];
-            assign w_mdatas2[i] = mdatas[i];
+            assign w_addrs[i*32 +: 32] = addrs[i*32 +: 32]; // Slice 8 bits
+            assign w_wens[i*4 +: 4] = wens[i*4 +: 4];   // Slice 8 bits
+            assign w_mdatas_dbg[i*32 +: 32] = mdatas_dbg[i*32 +: 32]; // Slice 8 bits
+            assign w_mdatas2[i*32 +: 32] = mdatas[i*32 +: 32];        // Slice 8 bits
         end
+    always @(posedge clk)
+    begin
+        r_addr <= trig0[0:0];
+        c0 <= mc0;
+        c1 <= mc0;
+        c2 <= mc0;
+    end
+    assign m1_clk_buffer = c2;
     endgenerate
+    // genvar i;
+    // generate
+    //     for (i = 0; i < 8; i=i+1) begin : clks_gen
+    //         always @(posedge clk) begin
+    //             r_addr <= trig0[0:0];
+    //             r_mics[i] <= trig1[0:0];
+    //             mclks[i] <= m_clk_rising;
+    //             addrs[i] <= addr_w;
+    //             wens[i] <= wen;
+    //             mdatas_dbg[i] <= w_mdatas[i];
+    //             mdatas[i] <= w_mdatas[i];
+    //         end
+    //         assign w_rst_mics[i] = r_mics[i];
+    //         assign w_mclks[i] = mclks[i];
+    //         assign w_addrs[i] = addrs[i];
+    //         assign w_wens[i] = wens[i];
+    //         assign w_mdatas_dbg[i] = mdatas_dbg[i];
+    //         assign w_mdatas2[i] = mdatas[i];
+    //     end
+    // endgenerate
 
     localparam integer INPUT_FREQ = 125000000;
     localparam integer PDM_FREQ = 2400000;
@@ -125,7 +163,7 @@ module sesenta_top (
             ) mic (
                 .clk(clk),
                 .rst(w_rst_mics[i]),
-                .mic_data(w_mdatas[i]),
+                .mic_data(w_mdatas[i*32 +: 32]),
                 .m_clk_rising(w_mclks[i]),
                 .mic_data_valid(mic_data_valid),
                 .M_DATA(M_DATA[i]),
@@ -134,54 +172,47 @@ module sesenta_top (
         end
     endgenerate
 
-    always @(posedge clk)
-    begin
-        c0 <= mc0;
-        c1 <= mc0;
-        c2 <= mc0;
-    end
-    assign m1_clk_buffer = c2;
+
 
     ila_0 ila_bram (
-        .clk(clk), // input wire clk
-        .probe0(m1_clk_buffer),
-        .probe1(w_mdatas_dbg[0]),
-        .probe2(w_mdatas_dbg[1]),
-        .probe3(w_mdatas_dbg[2]),
-        .probe4(w_mdatas_dbg[3]),
-        .probe5(w_mdatas_dbg[4]),
-        .probe6(w_mdatas_dbg[5]),
-        .probe7(w_mdatas_dbg[6]),
-        .probe8(w_mdatas_dbg[7])
+      .clk(clk), // input wire clk
+      .probe0(m1_clk_buffer),
+      .probe1(w_mdatas_dbg[32*0 +: 32]),
+      .probe2(w_mdatas_dbg[32*1 +: 32]),
+      .probe3(w_mdatas_dbg[32*2 +: 32]),
+      .probe4(w_mdatas_dbg[32*3 +: 32]),
+      .probe5(w_mdatas_dbg[32*4 +: 32]),
+      .probe6(w_mdatas_dbg[32*5 +: 32]),
+      .probe7(w_mdatas_dbg[32*6 +: 32]),
+      .probe8(w_mdatas_dbg[32*7 +: 32])
     );
-
-    system system_i (
+      system system_i (
         .trig1(trig1),
         .trig0(trig0),
-        .addrb1(w_addrs[0]),
-        .addrb2(w_addrs[1]),
-        .addrb3(w_addrs[2]),
-        .addrb4(w_addrs[3]),
-        .addrb5(w_addrs[4]),
-        .addrb6(w_addrs[5]),
-        .addrb7(w_addrs[6]),
-        .addrb8(w_addrs[7]),
-        .web1(w_wens[0]),
-        .web2(w_wens[1]),
-        .web3(w_wens[2]),
-        .web4(w_wens[3]),
-        .web5(w_wens[4]),
-        .web6(w_wens[5]),
-        .web7(w_wens[6]),
-        .web8(w_wens[7]),
-        .dinb1(w_mdatas2[0]),
-        .dinb2(w_mdatas2[1]),
-        .dinb3(w_mdatas2[2]),
-        .dinb4(w_mdatas2[3]),
-        .dinb5(w_mdatas2[4]),
-        .dinb6(w_mdatas2[5]),
-        .dinb7(w_mdatas2[6]),
-        .dinb8(w_mdatas2[7]),
+        .addrb1(w_addrs[32*0 +: 32]),
+        .addrb2(w_addrs[32*1 +: 32]),
+        .addrb3(w_addrs[32*2 +: 32]),
+        .addrb4(w_addrs[32*3 +: 32]),
+        .addrb5(w_addrs[32*4 +: 32]),
+        .addrb6(w_addrs[32*5 +: 32]),
+        .addrb7(w_addrs[32*6 +: 32]),
+        .addrb8(w_addrs[32*7 +: 32]),
+        .web1(w_wens[4*0 +: 4]),
+        .web2(w_wens[4*1 +: 4]),
+        .web3(w_wens[4*2 +: 4]),
+        .web4(w_wens[4*3 +: 4]),
+        .web5(w_wens[4*4 +: 4]),
+        .web6(w_wens[4*5 +: 4]),
+        .web7(w_wens[4*6 +: 4]),
+        .web8(w_wens[4*7 +: 4]),
+        .dinb1(w_mdatas2[32*0 +: 32]),
+        .dinb2(w_mdatas2[32*1 +: 32]),
+        .dinb3(w_mdatas2[32*2 +: 32]),
+        .dinb4(w_mdatas2[32*3 +: 32]),
+        .dinb5(w_mdatas2[32*4 +: 32]),
+        .dinb6(w_mdatas2[32*5 +: 32]),
+        .dinb7(w_mdatas2[32*6 +: 32]),
+        .dinb8(w_mdatas2[32*7 +: 32]),
         .DDR_addr(DDR_addr),
         .DDR_ba(DDR_ba),
         .DDR_cas_n(DDR_cas_n),
