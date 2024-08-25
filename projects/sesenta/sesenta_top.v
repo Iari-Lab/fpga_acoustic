@@ -46,27 +46,24 @@ module sesenta_top (
     input [7:0] M_DATA
 );
 
+    localparam integer INPUT_FREQ = 125000000;
+    localparam integer PDM_FREQ = 2400000;
     wire mc0;
     reg c0,c1,c2;
     wire clk;
     wire rst_addr;
     wire [31:0] trig1,trig0;
-    wire [31 : 0] addr_w,addr_wo;
+    wire [31 : 0] addr_w,w_addr_w;
     wire [31 : 0] addr_dbg;
     wire [3 : 0] wen;
     wire [3 : 0] wen_dbg;
-    wire rst;
     wire       m_clk_rising;
-    wire mic_data_valid;
-    reg m1_clk;
+    wire mic_data_valid,w_rst_clk_mic;
+    reg r_rst_clk_mic;
     wire m1_clk_buffer;
-    reg [31:0] addr_reg;
     wire M_LRSEL;
 
-    assign rst_addr = r_addr;
-    assign M0_CLK= c0;
-    assign M2_CLK= c2;
-    assign M1_CLK= c1;
+
 
     address_counter #(
     .COUNT_WIDTH(14)
@@ -79,70 +76,56 @@ module sesenta_top (
         .wen_dbg(wen_dbg)
     );
     reg r_addr;
-    // reg [7:0] mclks,r_mics;
-    // reg [7:0][31:0] addrs,mdatas,mdatas_dbg;
-    // reg [7:0][3:0] wens;
-    // wire [7:0] w_mclks, w_rst_mics;
-    // wire [7:0][31:0] w_addrs,w_mdatas2,w_mdatas,w_mdatas_dbg;
-    // wire [7:0][3:0] w_wens;
 
-    reg [7:0] mclks, r_mics;
+    reg [7:0] mclks, r_mics,r_trig1,r_trig0;
     reg [255:0] addrs, mdatas, mdatas_dbg; // Flattened 32x8 to 256 bits
-    reg [31:0] wens;  // Flattened 4x8 to 32 bits
+    reg [31:0] wens,r_addr_w; // Flattened 4x8 to 32 bits
     wire [7:0] w_mclks, w_rst_mics;
     wire [255:0] w_addrs, w_mdatas,w_mdatas2, w_mdatas_dbg; // Flattened 32x8 to 256 bits
-    wire [31:0] w_wens;  // Flattened 4x8 to 32 bits
+    wire [31:0] w_wens; // Flattened 4x8 to 32 bits
 
     genvar i;
     generate
         for (i = 0; i < 8; i=i+1) begin : safe_gen
             always @(posedge clk) begin
-                r_mics[i] <= trig1[0:0];
+                r_mics[i] <= w_rst_clk_mic;
                 mclks[i] <= m_clk_rising;
-                addrs[i*32 +: 32] <= addr_w;  // Slice 8 bits
-                wens[i*4 +: 4] <= wen;      // Slice 8 bits
-                mdatas_dbg[i*32 +: 32] <= w_mdatas[i*32 +: 32];  // Slice 8 bits
-                mdatas[i*32 +: 32] <= w_mdatas[i*32 +: 32];      // Slice 8 bits
+                addrs[i*32 +: 32] <= w_addr_w; // Slice 32 bits
+                wens[i*4 +: 4] <= wen; // Slice 4 bits
+                mdatas_dbg[i*32 +: 32] <= w_mdatas[i*32 +: 32];
+                mdatas[i*32 +: 32] <= w_mdatas[i*32 +: 32];
             end
             assign w_rst_mics[i] = r_mics[i];
             assign w_mclks[i] = mclks[i];
-            assign w_addrs[i*32 +: 32] = addrs[i*32 +: 32]; // Slice 8 bits
-            assign w_wens[i*4 +: 4] = wens[i*4 +: 4];   // Slice 8 bits
-            assign w_mdatas_dbg[i*32 +: 32] = mdatas_dbg[i*32 +: 32]; // Slice 8 bits
-            assign w_mdatas2[i*32 +: 32] = mdatas[i*32 +: 32];        // Slice 8 bits
+            assign w_addrs[i*32 +: 32] = addrs[i*32 +: 32];
+            assign w_wens[i*4 +: 4] = wens[i*4 +: 4];
+            assign w_mdatas_dbg[i*32 +: 32] = mdatas_dbg[i*32 +: 32];
+            assign w_mdatas2[i*32 +: 32] = mdatas[i*32 +: 32];
         end
+    endgenerate
+
+    assign rst_addr = r_trig0;
+    // assign rst_addr = r_addr;
+    assign w_rst_clk_mic = r_trig1;
+    // assign w_rst_clk_mic = r_rst_clk_mic;
+    assign w_addr_w = r_addr_w;
+    assign M0_CLK= c0;
+    assign M2_CLK= c2;
+    assign M1_CLK= c1;
+    assign m1_clk_buffer = c2;
+    // clk all the inputs
     always @(posedge clk)
     begin
-        r_addr <= trig0[0:0];
+        r_trig0 <= trig0[0:0];
+        r_trig1 <= trig1[0:0];
+        // r_addr <= r_trig0;
+        // r_rst_clk_mic <= r_trig1;
+        r_addr_w <= addr_w;
         c0 <= mc0;
         c1 <= mc0;
         c2 <= mc0;
     end
-    assign m1_clk_buffer = c2;
-    endgenerate
-    // genvar i;
-    // generate
-    //     for (i = 0; i < 8; i=i+1) begin : clks_gen
-    //         always @(posedge clk) begin
-    //             r_addr <= trig0[0:0];
-    //             r_mics[i] <= trig1[0:0];
-    //             mclks[i] <= m_clk_rising;
-    //             addrs[i] <= addr_w;
-    //             wens[i] <= wen;
-    //             mdatas_dbg[i] <= w_mdatas[i];
-    //             mdatas[i] <= w_mdatas[i];
-    //         end
-    //         assign w_rst_mics[i] = r_mics[i];
-    //         assign w_mclks[i] = mclks[i];
-    //         assign w_addrs[i] = addrs[i];
-    //         assign w_wens[i] = wens[i];
-    //         assign w_mdatas_dbg[i] = mdatas_dbg[i];
-    //         assign w_mdatas2[i] = mdatas[i];
-    //     end
-    // endgenerate
 
-    localparam integer INPUT_FREQ = 125000000;
-    localparam integer PDM_FREQ = 2400000;
     // Clock generator instance
     pdm_clk_gen
     #(
@@ -152,7 +135,7 @@ module sesenta_top (
     pdm_clk_gen_i
     (
         .clk(clk),
-        .rst(rst),
+        .rst(w_rst_clk_mic),
         .M_CLK(mc0),
         .m_clk_rising(m_clk_rising)
     );
@@ -175,18 +158,18 @@ module sesenta_top (
 
 
     ila_0 ila_bram (
-      .clk(clk), // input wire clk
-      .probe0(m1_clk_buffer),
-      .probe1(w_mdatas_dbg[32*0 +: 32]),
-      .probe2(w_mdatas_dbg[32*1 +: 32]),
-      .probe3(w_mdatas_dbg[32*2 +: 32]),
-      .probe4(w_mdatas_dbg[32*3 +: 32]),
-      .probe5(w_mdatas_dbg[32*4 +: 32]),
-      .probe6(w_mdatas_dbg[32*5 +: 32]),
-      .probe7(w_mdatas_dbg[32*6 +: 32]),
-      .probe8(w_mdatas_dbg[32*7 +: 32])
+        .clk(clk), // input wire clk
+        .probe0(m1_clk_buffer),
+        .probe1(w_mdatas_dbg[32*0 +: 32]),
+        .probe2(w_mdatas_dbg[32*1 +: 32]),
+        .probe3(w_mdatas_dbg[32*2 +: 32]),
+        .probe4(w_mdatas_dbg[32*3 +: 32]),
+        .probe5(w_mdatas_dbg[32*4 +: 32]),
+        .probe6(w_mdatas_dbg[32*5 +: 32]),
+        .probe7(w_mdatas_dbg[32*6 +: 32]),
+        .probe8(w_mdatas_dbg[32*7 +: 32])
     );
-      system system_i (
+    system system_i (
         .trig1(trig1),
         .trig0(trig0),
         .addrb1(w_addrs[32*0 +: 32]),
