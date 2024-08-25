@@ -19,8 +19,10 @@ set_property PACKAGE_PIN V16 [get_ports M0_CLK]
 set_property IOSTANDARD LVCMOS33 [get_ports M2_CLK]
 set_property PACKAGE_PIN H18 [get_ports M2_CLK]
 
+set_property IOSTANDARD LVCMOS33 [get_ports WS_LED]
+set_property PACKAGE_PIN H20 [get_ports WS_LED]
 
-## Generated
+## array of mics
 set_property IOSTANDARD LVCMOS33 [get_ports {M_DATA[*]}]
 set_property PACKAGE_PIN G19 [get_ports M_DATA[0]]
 set_property PACKAGE_PIN G18 [get_ports M_DATA[1]]

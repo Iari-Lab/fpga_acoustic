@@ -43,16 +43,19 @@ module sesenta_top (
     output M0_CLK,
     output M1_CLK,
     output M2_CLK,
-    input [7:0] M_DATA
+    input [7:0] M_DATA,
+    output WS_LED
+
 );
 
     localparam integer INPUT_FREQ = 125000000;
     localparam integer PDM_FREQ = 2400000;
-    wire mc0;
-    reg c0,c1,c2;
-    wire clk;
+    localparam integer LED_FREQ = 12000000;
+    wire mc0,mc1;
+    reg c0,c1,c2, r_ws_led,r_ws_led_dbg;
+    wire clk, clk_led,w_ws_led,w_ws_led_dbg;
     wire rst_addr;
-    wire [31:0] trig1,trig0;
+    wire [31:0] trig1,trig0,trig2;
     wire [31 : 0] addr_w,w_addr_w;
     wire [31 : 0] addr_dbg;
     wire [3 : 0] wen;
@@ -60,7 +63,7 @@ module sesenta_top (
     wire       m_clk_rising;
     wire mic_data_valid,w_rst_clk_mic;
     reg r_rst_clk_mic;
-    wire m1_clk_buffer;
+    wire m1_clk_buffer,w_reset_led;
     wire M_LRSEL;
 
 
@@ -77,7 +80,7 @@ module sesenta_top (
     );
     reg r_addr;
 
-    reg [7:0] mclks, r_mics,r_trig1,r_trig0;
+    reg [7:0] mclks, r_mics,r_trig1,r_trig0,r_trig2;
     reg [255:0] addrs, mdatas, mdatas_dbg; // Flattened 32x8 to 256 bits
     reg [31:0] wens,r_addr_w; // Flattened 4x8 to 32 bits
     wire [7:0] w_mclks, w_rst_mics;
@@ -105,21 +108,23 @@ module sesenta_top (
     endgenerate
 
     assign rst_addr = r_trig0;
-    // assign rst_addr = r_addr;
+    assign w_reset_led = r_trig2;
     assign w_rst_clk_mic = r_trig1;
-    // assign w_rst_clk_mic = r_rst_clk_mic;
     assign w_addr_w = r_addr_w;
     assign M0_CLK= c0;
     assign M2_CLK= c2;
     assign M1_CLK= c1;
+    assign WS_LED= r_ws_led;
+    assign w_ws_led_dbg = r_ws_led_dbg;
     assign m1_clk_buffer = c2;
     // clk all the inputs
     always @(posedge clk)
     begin
         r_trig0 <= trig0[0:0];
         r_trig1 <= trig1[0:0];
-        // r_addr <= r_trig0;
-        // r_rst_clk_mic <= r_trig1;
+        r_trig2 <= trig2[0:0];
+        r_ws_led <= w_ws_led;
+        r_ws_led_dbg <= w_ws_led;
         r_addr_w <= addr_w;
         c0 <= mc0;
         c1 <= mc0;
@@ -127,17 +132,33 @@ module sesenta_top (
     end
 
     // Clock generator instance
-    pdm_clk_gen
-    #(
+    clk_gen #(
     .INPUT_FREQ(INPUT_FREQ),
     .OUTPUT_FREQ(PDM_FREQ)
-    )
-    pdm_clk_gen_i
+    ) pdm_clk_gen_i
     (
         .clk(clk),
         .rst(w_rst_clk_mic),
         .M_CLK(mc0),
         .m_clk_rising(m_clk_rising)
+    );
+
+    clk_gen #(
+    .INPUT_FREQ(INPUT_FREQ),
+    .OUTPUT_FREQ(LED_FREQ)
+    ) led_clk_gen_i
+    (
+        .clk(clk_led),
+        .rst(w_rst_clk_mic),
+        .M_CLK(mc1)
+    );
+
+    leds #(
+    ) led_i
+    (
+        .clk(clk_led),
+        .ws_data(w_ws_led),
+        .reset(w_reset_led)
     );
 
     generate
@@ -167,11 +188,13 @@ module sesenta_top (
         .probe5(w_mdatas_dbg[32*4 +: 32]),
         .probe6(w_mdatas_dbg[32*5 +: 32]),
         .probe7(w_mdatas_dbg[32*6 +: 32]),
-        .probe8(w_mdatas_dbg[32*7 +: 32])
+        .probe8(w_mdatas_dbg[32*7 +: 32]),
+        .probe9(w_ws_led_dbg)
     );
     system system_i (
         .trig1(trig1),
         .trig0(trig0),
+        .trig2(trig2),
         .addrb1(w_addrs[32*0 +: 32]),
         .addrb2(w_addrs[32*1 +: 32]),
         .addrb3(w_addrs[32*2 +: 32]),
@@ -218,6 +241,7 @@ module sesenta_top (
         .FIXED_IO_ps_porb(FIXED_IO_ps_porb),
         .peripheral_aresetn(rstn),
         .FCLK_CLK0(clk),
+        .FCLK_CLK1(clk_led),
         .FIXED_IO_ps_srstb(FIXED_IO_ps_srstb)
     );
 

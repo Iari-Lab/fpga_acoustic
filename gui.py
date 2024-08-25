@@ -22,9 +22,23 @@ def initialize_plot(driver, sampling_frequency):
     t_us = 1e6 * t
     
     fig, ax = plt.subplots()
-    line1 = Line2D([], [], color='green', label='mic')
-    
+    line1 = Line2D([], [], color='green', label='mic1')
     ax.add_line(line1)
+    line2 = Line2D([], [], color='green', label='mic2')
+    ax.add_line(line2)
+    line3 = Line2D([], [], color='green', label='mic3')
+    ax.add_line(line3)
+    line4 = Line2D([], [], color='green', label='mic4')
+    ax.add_line(line4)
+    line5 = Line2D([], [], color='green', label='mic5')
+    ax.add_line(line5)
+    line6 = Line2D([], [], color='green', label='mic6')
+    ax.add_line(line6)
+    line7 = Line2D([], [], color='green', label='mic7')
+    ax.add_line(line7)
+    line8 = Line2D([], [], color='green', label='mic8')
+    ax.add_line(line8)
+
     ax.set_xlabel('Time (us)')
     ax.set_ylabel('sesenta')
     ax.set_xlim((t_us[0], t_us[-1]))
@@ -33,7 +47,7 @@ def initialize_plot(driver, sampling_frequency):
     
     fig.canvas.draw()
     
-    return fig, line1, t_us
+    return fig, line1,line2,line3,line4,line5,line6,line7,line8, t_us
 
 
 
@@ -45,19 +59,42 @@ def main(trigger_addr_count=False):
     
     driver = initialize_driver(host)
     
-    fig, line1, t_us = initialize_plot(driver, sampling_frequency)
+    # fig, line1, t_us = initialize_plot(driver, sampling_frequency)
+    fig, line1,line2,line3,line4,line5,line6,line7,line8, t_us = initialize_plot(driver, sampling_frequency)
     if not trigger_addr_count:
         driver.trigger_mic_rst() 
         driver.trigger_addr_count_rst()
+        driver.trigger_led_rst()
 
     iteration_count = 0
     try:
         while True:
             iteration_count += 1
             print(iteration_count)
-            li=driver.get_mic()
-            print(li)
+            li = driver.get_mic()
             line1.set_data(t_us, li)
+
+            li1 = driver.get_mic1()
+            line2.set_data(t_us, li1)
+
+            li2 = driver.get_mic2()
+            line3.set_data(t_us, li2)
+
+            li3 = driver.get_mic3()
+            line4.set_data(t_us, li3)
+
+            li4 = driver.get_mic4()
+            line5.set_data(t_us, li4)
+
+            li5 = driver.get_mic5()
+            line6.set_data(t_us, li5)
+
+            li6 = driver.get_mic6()
+            line7.set_data(t_us, li6)
+
+            li7 = driver.get_mic7()
+            line8.set_data(t_us, li7)
+
             fig.canvas.draw()
             plt.pause(0.001)
             

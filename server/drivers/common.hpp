@@ -30,13 +30,13 @@ class Common
         return sts.read<reg::dna, uint64_t>();
     }
 
-    void set_led(uint32_t value) {
-        ctl.write<reg::led>(value);
-    }
+    // void set_led(uint32_t value) {
+    //     ctl.write<reg::led>(value);
+    // }
 
-    uint32_t get_led() {
-        return ctl.read<reg::led>();
-    }
+    // uint32_t get_led() {
+    //     return ctl.read<reg::led>();
+    // }
 
     void init() {
         //ip_on_leds();
@@ -46,45 +46,45 @@ class Common
         return CFG_JSON;
     }
 
-    void ip_on_leds() {
-        struct ifaddrs *addrs;
-        getifaddrs(&addrs);
-        ifaddrs *tmp = addrs;
+    // void ip_on_leds() {
+    //     struct ifaddrs *addrs;
+    //     getifaddrs(&addrs);
+    //     ifaddrs *tmp = addrs;
 
-        // Turn all the leds ON
-        ctl.write<reg::led>(255);
+    //     // Turn all the leds ON
+    //     ctl.write<reg::led>(255);
 
-        char interface[] = "eth0";
+    //     char interface[] = "eth0";
 
-        while (tmp) {
-            // Works only for IPv4 address
-            if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_INET) {
-                #pragma GCC diagnostic push
-                #pragma GCC diagnostic ignored "-Wcast-align"
-                struct sockaddr_in *pAddr = reinterpret_cast<struct sockaddr_in *>(tmp->ifa_addr);
-                #pragma GCC diagnostic pop
-                int val = strcmp(tmp->ifa_name,interface);
+    //     while (tmp) {
+    //         // Works only for IPv4 address
+    //         if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_INET) {
+    //             #pragma GCC diagnostic push
+    //             #pragma GCC diagnostic ignored "-Wcast-align"
+    //             struct sockaddr_in *pAddr = reinterpret_cast<struct sockaddr_in *>(tmp->ifa_addr);
+    //             #pragma GCC diagnostic pop
+    //             int val = strcmp(tmp->ifa_name,interface);
 
-                if (val != 0) {
-                    tmp = tmp->ifa_next;
-                    continue;
-                }
+    //             if (val != 0) {
+    //                 tmp = tmp->ifa_next;
+    //                 continue;
+    //             }
 
-                printf("Interface %s found: %s\n",
-                       tmp->ifa_name, inet_ntoa(pAddr->sin_addr));
-                uint32_t ip = htonl(pAddr->sin_addr.s_addr);
+    //             printf("Interface %s found: %s\n",
+    //                    tmp->ifa_name, inet_ntoa(pAddr->sin_addr));
+    //             uint32_t ip = htonl(pAddr->sin_addr.s_addr);
 
-                // Write IP address in FPGA memory
-                // The 8 Least Significant Bits should be connected to the FPGA LEDs
-                ctl.write_mask<reg::led, 0xFF>(ip);
-                break;
-            }
+    //             // Write IP address in FPGA memory
+    //             // The 8 Least Significant Bits should be connected to the FPGA LEDs
+    //             ctl.write_mask<reg::led, 0xFF>(ip);
+    //             break;
+    //         }
 
-            tmp = tmp->ifa_next;
-        }
+    //         tmp = tmp->ifa_next;
+    //     }
 
-        freeifaddrs(addrs);
-    }
+    //     freeifaddrs(addrs);
+    // }
 
   private:
     Context& ctx;

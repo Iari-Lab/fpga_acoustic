@@ -40,15 +40,16 @@ memory:
 
 
 control_registers:
-  - led
   - trig0
   - trig1
+  - trig2
 
 status_registers:
   - mode
 
 parameters:
   fclk0: 125000000 # FPGA clock speed in Hz
+  # fclk1: 125000000 # FPGA clock speed in Hz
 
 xdc:
   - boards/myir/config/ports.xdc
