@@ -14,28 +14,28 @@ memory:
     range: 2K
     offset: '0x50001000'
   - name: mic1
-    range: 16K
+    range: 4K
     offset: '0x40040000'
   - name: mic2
-    range: 16K
+    range: 4K
     offset: '0x40060000'
   - name: mic3
-    range: 16K
+    range: 4K
     offset: '0x40080000'
   - name: mic4
-    range: 16K
+    range: 4K
     offset: '0x40100000'
   - name: mic5
-    range: 16K
+    range: 4K
     offset: '0x40120000'
   - name: mic6
-    range: 16K
+    range: 4K
     offset: '0x40140000'
   - name: mic7
-    range: 16K
+    range: 4K
     offset: '0x40160000'
   - name: mic8
-    range: 16K
+    range: 4K
     offset: '0x40180000'
 
 

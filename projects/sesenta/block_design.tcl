@@ -58,77 +58,87 @@ add_bram mic8
 #     probe2 address_counter_0/address_dbg
 #     probe3 address_counter_0/wen_dbg
 # }
-
-connect_cell blk_mem_gen_mic1 {
-  addrb addrb
-  clkb $eclk
-  dinb dinb1
-  enb [get_constant_pin 1 1]
-  rstb [get_constant_pin 0 1]
-  web web
-}
-connect_cell blk_mem_gen_mic2 {
-  addrb addrb
-  clkb $eclk
-  dinb dinb2
-  enb [get_constant_pin 1 1]
-  rstb [get_constant_pin 0 1]
-  web web
+for {set i 1} {$i < 9} {incr i} {
+  connect_cell blk_mem_gen_mic$i {
+    addrb addrb$i
+    clkb $eclk
+    dinb dinb$i
+    enb [get_constant_pin 1 1]
+    rstb [get_constant_pin 0 1]
+    web web$i
+  }
 }
 
-connect_cell blk_mem_gen_mic3 {
-  addrb addrb
-  clkb $eclk
-  dinb dinb3
-  enb [get_constant_pin 1 1]
-  rstb [get_constant_pin 0 1]
-  web web
-}
+# connect_cell blk_mem_gen_mic1 {
+#   addrb addrb
+#   clkb $eclk
+#   dinb dinb1
+#   enb [get_constant_pin 1 1]
+#   rstb [get_constant_pin 0 1]
+#   web web
+# }
+# connect_cell blk_mem_gen_mic2 {
+#   addrb addrb
+#   clkb $eclk
+#   dinb dinb2
+#   enb [get_constant_pin 1 1]
+#   rstb [get_constant_pin 0 1]
+#   web web
+# }
 
-connect_cell blk_mem_gen_mic4 {
-  addrb addrb
-  clkb $eclk
-  dinb dinb4
-  enb [get_constant_pin 1 1]
-  rstb [get_constant_pin 0 1]
-  web web
-}
+# connect_cell blk_mem_gen_mic3 {
+#   addrb addrb
+#   clkb $eclk
+#   dinb dinb3
+#   enb [get_constant_pin 1 1]
+#   rstb [get_constant_pin 0 1]
+#   web web
+# }
 
-connect_cell blk_mem_gen_mic5 {
-  addrb addrb
-  clkb $eclk
-  dinb dinb5
-  enb [get_constant_pin 1 1]
-  rstb [get_constant_pin 0 1]
-  web web
-}
+# connect_cell blk_mem_gen_mic4 {
+#   addrb addrb
+#   clkb $eclk
+#   dinb dinb4
+#   enb [get_constant_pin 1 1]
+#   rstb [get_constant_pin 0 1]
+#   web web
+# }
 
-connect_cell blk_mem_gen_mic6 {
-  addrb addrb
-  clkb $eclk
-  dinb dinb6
-  enb [get_constant_pin 1 1]
-  rstb [get_constant_pin 0 1]
-  web web
-}
+# connect_cell blk_mem_gen_mic5 {
+#   addrb addrb
+#   clkb $eclk
+#   dinb dinb5
+#   enb [get_constant_pin 1 1]
+#   rstb [get_constant_pin 0 1]
+#   web web
+# }
 
-connect_cell blk_mem_gen_mic7 {
-  addrb addrb
-  clkb $eclk
-  dinb dinb7
-  enb [get_constant_pin 1 1]
-  rstb [get_constant_pin 0 1]
-  web web
-}
+# connect_cell blk_mem_gen_mic6 {
+#   addrb addrb
+#   clkb $eclk
+#   dinb dinb6
+#   enb [get_constant_pin 1 1]
+#   rstb [get_constant_pin 0 1]
+#   web web
+# }
 
-connect_cell blk_mem_gen_mic8 {
-  addrb addrb
-  clkb $eclk
-  dinb dinb8
-  enb [get_constant_pin 1 1]
-  rstb [get_constant_pin 0 1]
-  web web
-}
+# connect_cell blk_mem_gen_mic7 {
+#   addrb addrb
+#   clkb $eclk
+#   dinb dinb7
+#   enb [get_constant_pin 1 1]
+#   rstb [get_constant_pin 0 1]
+#   web web
+# }
+
+# connect_cell blk_mem_gen_mic8 {
+#   addrb addrb
+#   clkb $eclk
+#   dinb dinb8
+#   enb [get_constant_pin 1 1]
+#   rstb [get_constant_pin 0 1]
+#   web web
+# }
 # create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:bram_rtl:1.0 BRAMBUFF_PORTB_0
 # connect_bd_intf_net [get_bd_intf_ports BRAMBUFF_PORTB_0] [get_bd_intf_pins blk_mem_gen_mic/BRAM_PORTB]
 
