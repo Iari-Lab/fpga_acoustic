@@ -23,25 +23,45 @@ constexpr int NUMBER_OF_PENDING_CONNECTIONS = 10;
 // ------------------------------------------
 
 /// Number of samples
-constexpr int KOHERON_SIG_LEN = 16384;
+// constexpr int KOHERON_SIG_LEN = 16384;
+
+// /// Command payload buffer length
+// constexpr int64_t CMD_PAYLOAD_BUFFER_LEN = 16384 * 16;
+
+// /// Read string length
+// constexpr int KOHERON_READ_STR_LEN = 16384;
+
+// /// Send string length
+// constexpr int KOHERON_SEND_STR_LEN = 16384;
+
+// /// Receive data buffer length
+// constexpr int KOHERON_RECV_DATA_BUFF_LEN = 16384 * 16;
+
+// /// Websocket receive buffer size
+// constexpr int WEBSOCK_READ_STR_LEN = KOHERON_RECV_DATA_BUFF_LEN;
+
+// /// Websocket send buffer size (bytes)
+// constexpr int WEBSOCK_SEND_BUF_LEN = 16384 * 16;
+/// Number of samples
+constexpr int KOHERON_SIG_LEN = 1024;
 
 /// Command payload buffer length
-constexpr int64_t CMD_PAYLOAD_BUFFER_LEN = 16384 * 16;
+constexpr int64_t CMD_PAYLOAD_BUFFER_LEN = 1024 ;
 
 /// Read string length
-constexpr int KOHERON_READ_STR_LEN = 16384;
+constexpr int KOHERON_READ_STR_LEN = 1024;
 
 /// Send string length
-constexpr int KOHERON_SEND_STR_LEN = 16384;
+constexpr int KOHERON_SEND_STR_LEN = 1024;
 
 /// Receive data buffer length
-constexpr int KOHERON_RECV_DATA_BUFF_LEN = 16384 * 16;
+constexpr int KOHERON_RECV_DATA_BUFF_LEN = 1024 ;
 
 /// Websocket receive buffer size
 constexpr int WEBSOCK_READ_STR_LEN = KOHERON_RECV_DATA_BUFF_LEN;
 
 /// Websocket send buffer size (bytes)
-constexpr int WEBSOCK_SEND_BUF_LEN = 16384 * 16;
+constexpr int WEBSOCK_SEND_BUF_LEN = 1024 ;
 
 // ------------------------------------------
 // Debugging

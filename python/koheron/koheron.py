@@ -232,7 +232,8 @@ class KoheronClient:
                 self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
                 # Prevent delayed ACK on Ubuntu
-                self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 16384)
+                # self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 16384)
+                self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1024)
                 so_rcvbuf = self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)
 
                 #   Disable Nagle algorithm for real-time response:

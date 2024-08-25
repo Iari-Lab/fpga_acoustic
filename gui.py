@@ -54,7 +54,7 @@ def initialize_plot(driver, sampling_frequency):
 
 def main(trigger_addr_count=False):
     """Main function to run the dynamic plot."""
-    host = os.getenv('HOST', '192.168.0.208')
+    host = os.getenv('MYIR_HOST', '192.168.0.208')
     sampling_frequency = 125e6 # Hz
     
     driver = initialize_driver(host)

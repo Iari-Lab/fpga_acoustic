@@ -11,5 +11,6 @@ uImage
 .vscode
 .Xil
 python/build
+python/koheron/__pycache__
 .__pycache__
 .pytest_cache
