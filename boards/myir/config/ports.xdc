@@ -32,3 +32,30 @@ set_property PACKAGE_PIN F19 [get_ports M_DATA[4]]
 set_property PACKAGE_PIN P15 [get_ports M_DATA[5]]
 set_property PACKAGE_PIN W16 [get_ports M_DATA[6]]
 set_property PACKAGE_PIN Y17 [get_ports M_DATA[7]]
+
+# set_property PACKAGE_PIN G19 [get_ports M_DATA[0]]
+# set_property PACKAGE_PIN G18 [get_ports M_DATA[1]]
+# set_property PACKAGE_PIN Y19 [get_ports M_DATA[2]]
+# set_property PACKAGE_PIN J16 [get_ports M_DATA[3]]
+# set_property PACKAGE_PIN F19 [get_ports M_DATA[4]]
+# set_property PACKAGE_PIN P15 [get_ports M_DATA[5]]
+# set_property PACKAGE_PIN W16 [get_ports M_DATA[6]]
+# set_property PACKAGE_PIN Y17 [get_ports M_DATA[7]]
+
+
+set_property IOSTANDARD LVCMOS33 [get_ports M0_DATA]
+set_property PACKAGE_PIN G19 [get_ports M0_DATA]
+# set_property SLEW SLOW [get_ports M0_DATA]
+# set_property KEEPER true [get_ports M0_DATA]
+
+
+set_property IOSTANDARD LVCMOS33 [get_ports M2_DATA]
+set_property PACKAGE_PIN Y19 [get_ports M2_DATA]
+# set_property SLEW SLOW [get_ports M2_DATA]
+# set_property KEEPER true [get_ports M2_DATA]
+
+
+set_property IOSTANDARD LVCMOS33 [get_ports M4_DATA]
+set_property PACKAGE_PIN J16 [get_ports M4_DATA]
+# set_property SLEW SLOW [get_ports M4_DATA]
+# set_property KEEPER true [get_ports M4_DATA]

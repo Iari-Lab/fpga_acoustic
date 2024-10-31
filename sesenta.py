@@ -29,61 +29,17 @@ class Sesenta(object):
         return self.client.recv_uint32()
 
     @command()
-    def get_mic1(self):
-        return self.client.recv_uint32()
+    def set_nsamples(self, samples):
+        pass
 
     @command()
-    def get_mic2(self):
-        return self.client.recv_uint32()
+    def start(self):
+        pass
 
     @command()
-    def get_mic3(self):
-        return self.client.recv_uint32()
-
-    @command()
-    def get_mic4(self):
-        return self.client.recv_uint32()
-
-    @command()
-    def get_mic5(self):
-        return self.client.recv_uint32()
-
-    @command()
-    def get_mic6(self):
-        return self.client.recv_uint32()
-
-    @command()
-    def get_mic7(self):
-        return self.client.recv_uint32()
+    def get_data(self, mic_id):
+        return self.client.recv_vector(dtype='float64')
 
     # @command()
-    # def get_mic(self):
-    #     return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
-
-    # @command()
-    # def get_mic1(self):
-    #     return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
-
-    # @command()
-    # def get_mic2(self):
-    #     return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
-
-    # @command()
-    # def get_mic3(self):
-    #     return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
-
-    # @command()
-    # def get_mic4(self):
-    #     return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
-
-    # @command()
-    # def get_mic5(self):
-    #     return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
-
-    # @command()
-    # def get_mic6(self):
-    #     return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
-
-    # @command()
-    # def get_mic7(self):
-    #     return np.int32(self.client.recv_array(self.mic_size, dtype='uint32'))
+    # def get_data(self):
+    #     return self.client.recv_array(16, dtype='float64')

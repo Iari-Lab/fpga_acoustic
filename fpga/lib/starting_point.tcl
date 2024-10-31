@@ -11,8 +11,9 @@ set n_interconnects $i
 
 # Create processing_system7
 cell xilinx.com:ip:processing_system7:5.5 $ps_name {
-  PCW_USE_S_AXI_HP0 0
-  PCW_EN_CLK1_PORT 1
+  PCW_USE_S_AXI_HP0 1
+  PCW_EN_CLK1_PORT 0
+  PCW_S_AXI_HP0_DATA_WIDTH 32
 } {}
 
 source $board_preset
@@ -41,6 +42,8 @@ for {set i 0} {$i < $n_interconnects} {incr i} {
   # Add AXI interconnect
   cell xilinx.com:ip:axi_interconnect:2.1 [set interconnect_${i}_name] {
     NUM_MI 1
+    ENABLE_ADVANCED_OPTIONS 1
+    SYNCHRONIZATION_STAGES 4 
   } {
     ARESETN [set rst${i}_name]/interconnect_aresetn
     S00_ARESETN [set rst${i}_name]/peripheral_aresetn
