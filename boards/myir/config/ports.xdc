@@ -19,8 +19,8 @@ set_property PACKAGE_PIN V16 [get_ports M0_CLK]
 set_property IOSTANDARD LVCMOS33 [get_ports M2_CLK]
 set_property PACKAGE_PIN H18 [get_ports M2_CLK]
 
-set_property IOSTANDARD LVCMOS33 [get_ports WS_LED]
-set_property PACKAGE_PIN H20 [get_ports WS_LED]
+set_property IOSTANDARD LVCMOS33 [get_ports LEDS]
+set_property PACKAGE_PIN H20 [get_ports LEDS]
 
 ## array of mics
 set_property IOSTANDARD LVCMOS33 [get_ports {M_DATA[*]}]
@@ -43,19 +43,19 @@ set_property PACKAGE_PIN Y17 [get_ports M_DATA[7]]
 # set_property PACKAGE_PIN Y17 [get_ports M_DATA[7]]
 
 
-set_property IOSTANDARD LVCMOS33 [get_ports M0_DATA]
-set_property PACKAGE_PIN G19 [get_ports M0_DATA]
+# set_property IOSTANDARD LVCMOS33 [get_ports M0_DATA]
+# set_property PACKAGE_PIN G19 [get_ports M0_DATA]
 # set_property SLEW SLOW [get_ports M0_DATA]
 # set_property KEEPER true [get_ports M0_DATA]
 
 
-set_property IOSTANDARD LVCMOS33 [get_ports M2_DATA]
-set_property PACKAGE_PIN Y19 [get_ports M2_DATA]
+# set_property IOSTANDARD LVCMOS33 [get_ports M2_DATA]
+# set_property PACKAGE_PIN Y19 [get_ports M2_DATA]
 # set_property SLEW SLOW [get_ports M2_DATA]
 # set_property KEEPER true [get_ports M2_DATA]
 
 
-set_property IOSTANDARD LVCMOS33 [get_ports M4_DATA]
-set_property PACKAGE_PIN J16 [get_ports M4_DATA]
+# set_property IOSTANDARD LVCMOS33 [get_ports M4_DATA]
+# set_property PACKAGE_PIN J16 [get_ports M4_DATA]
 # set_property SLEW SLOW [get_ports M4_DATA]
 # set_property KEEPER true [get_ports M4_DATA]

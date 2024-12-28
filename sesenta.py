@@ -13,32 +13,25 @@ class Sesenta(object):
         self.mic_size = 1<<10
 
     @command()
-    def trigger_mic_rst(self):
+    def reset_clk_mics(self):
         pass
 
     @command()
-    def trigger_addr_count_rst(self):
+    def reset_clk_leds(self):
         pass
 
     @command()
-    def trigger_led_rst(self):
+    def reset_led(self):
         pass
-
-    @command()
-    def get_mic(self):
-        return self.client.recv_uint32()
 
     @command()
     def set_nsamples(self, samples):
         pass
 
     @command()
-    def start(self):
-        pass
+    def get_mics(self, samples):
+        return self.client.recv_vector(dtype='uint32')
 
-    @command()
-    def get_data(self, mic_id):
-        return self.client.recv_vector(dtype='float64')
 
     # @command()
     # def get_data(self):

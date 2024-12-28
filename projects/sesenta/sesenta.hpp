@@ -20,56 +20,101 @@ class Sesenta
     , sts(ctx.mm.get<mem::status>())
     , ram(ctx.mm.get<mem::ram>())
     {
-        dma_transfer_duration = n_pts / fs_adc;
     }
 
-    void trigger_addr_count_rst() {
-        ctl.set_bit<reg::trig0, 0>();
-        ctl.clear_bit<reg::trig0, 0>();
+     const int32_t i_mic0 = 0;
+     const int32_t i_mic1 = 1;
+     const int32_t i_mic2 = 2;
+     const int32_t i_mic3 = 3;
+     const int32_t i_mic4 = 4;
+     const int32_t i_mic5 = 5;
+     const int32_t i_mic6 = 6;
+     const int32_t i_mic7 = 7;
+
+    uint32_t i_rst_clk_mics = 0;
+    uint32_t i_rst_leds = 1;
+    unsigned int i_dma_gate = 2;
+
+
+    void reset_led() {
+        ctx.print<DEBUG>(" reset led::\n");
+        ctl.set_bit<reg::rst_regs, 2>();
+        ctl.clear_bit<reg::rst_regs, 2>();
+    }
+    void reset_clk_mics() {
+        ctx.print<DEBUG>(" reset clk mics::\n");
+        ctl.set_bit<reg::rst_regs, 0>();
+        ctl.clear_bit<reg::rst_regs,0>();
+    }
+    void reset_clk_leds() {
+        ctx.print<DEBUG>(" reset leds clk::\n");
+        ctl.set_bit<reg::rst_regs, 1>();
+        ctl.clear_bit<reg::rst_regs,1>();
     }
 
-    void trigger_mic_rst() {
-        ctl.set_bit<reg::trig1, 0>();
-        ctl.clear_bit<reg::trig1, 0>();
+    void dma_on() {
+        ctl.set_bit<reg::rst_regs, 3>();
+        ctx.print<DEBUG>(" DMA on::\n");
     }
-    void trigger_led_rst() {
-        ctl.set_bit<reg::trig2, 0>();
-        ctl.clear_bit<reg::trig2, 0>();
-    }
-
-    auto get_mic(uint32_t mic_id) {
-        // uint32_t samples = 2;
-        uint32_t samples = ctl.read_reg(reg::n_samples);
-        ctx.print<DEBUG>("Samples %d\n", samples);
-        data = ram.read_array<uint32_t, data_size>();
-        for (int i = 0; i < (int)samples*8; i++) {
-            ctx.print<DEBUG>("%u ", data[i]);
-        }
-        ctx.print<DEBUG>("\n\n");
-        uint32_t mic1=0;
-        std::vector<double> data_ret = {};
-        for (int i = 0; i < (int)samples; i++) {
-            mic1 = data[mic_id + (i*8)]; 
-            data_ret.push_back(mic1);
-        }
-
-        for (int i = 0; i < (int)samples*8; i++) {
-            ctx.print<DEBUG>("%f ", data_ret[i]);
-        }
-        ctx.print<DEBUG>("\n\n");
-        return data_ret;
+    void dma_off() {
+        ctl.clear_bit<reg::rst_regs, 3>();
+        ctx.print<DEBUG>(" DMA off::\n");
     }
 
     void set_nsamples(uint32_t samples) {
-        ctx.print<DEBUG>("MODE set %d ::\n", samples);
+        ctx.print<DEBUG>(" set SAMPLES %d ::\n", samples);
         ctl.write_reg(reg::n_samples, samples);
     }
 
+    auto get_nsamples() {
+        uint32_t samples = ctl.read_reg(reg::n_samples);
+        ctx.print<DEBUG>(" GET SAMPLES %d ::\n", samples);
+        return samples;
+    }
 
-    // fs = fs_adc / (2.0f ); // Sampling frequency (factor of 2 because of FIR)
-    // dma_transfer_duration = 1.0f;
-    // dma_transfer_duration = prm::n_pts / fs_adc;
-    // std::array<uint32_t, data_size> data;
+    void start_dma_transfer(uint32_t samples) {
+        set_nsamples(samples + read_offset);
+        uint32_t npoints = get_nsamples();
+        dma.setup_transfer(mem::ram_addr, 256 * npoints );
+        dma_on();
+        dma_transfer_duration = npoints / fs_adc;
+        dma.wait_for_transfer(dma_transfer_duration); // so far this works
+    }
+
+    auto get_mics(uint32_t samples) {
+        start_dma_transfer(samples);
+        ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
+        uint32_t mic1=0,mic2=0,mic3=0,mic4=0,mic5=0,mic6=0,mic7=0,mic8=0;
+        std::vector<uint32_t> data_ret = {};
+        uint32_t offset = 0;
+        for (int i = 1; i < (int)samples + 1; i++) {
+            ctx.print<DEBUG>("Sample ITH-----------------> %d\n", i);
+            offset = i * 8;
+            mic1= ram.read_array_value_at_index<uint32_t, 1>(i_mic0 + offset);
+            mic2= ram.read_array_value_at_index<uint32_t, 1>(i_mic1 + offset);
+            mic3= ram.read_array_value_at_index<uint32_t, 1>(i_mic2 + offset);
+            mic4= ram.read_array_value_at_index<uint32_t, 1>(i_mic3 + offset);
+            mic5= ram.read_array_value_at_index<uint32_t, 1>(i_mic4 + offset);
+            mic6= ram.read_array_value_at_index<uint32_t, 1>(i_mic5 + offset);
+            mic7= ram.read_array_value_at_index<uint32_t, 1>(i_mic6 + offset);
+            mic8= ram.read_array_value_at_index<uint32_t, 1>(i_mic7 + offset);    
+
+            data_ret.push_back(mic1);
+            data_ret.push_back(mic2);
+            data_ret.push_back(mic3);
+            data_ret.push_back(mic4);
+            data_ret.push_back(mic5);
+            data_ret.push_back(mic6);
+            data_ret.push_back(mic7);
+            data_ret.push_back(mic8);
+            ctx.print<INFO>("MICS1 %ud %ud %ud %ud \n", mic1, mic2, mic3, mic4);
+            ctx.print<INFO>("MICS2 %ud %ud %ud %ud \n", mic5, mic6, mic7, mic8);
+        }
+        dma_off();
+        return data_ret;
+    }
+
+
 
     uint32_t get_mic_size() {
         return mic_size;
@@ -89,14 +134,10 @@ class Sesenta
     Memory<mem::control>& ctl;
     Memory<mem::status>& sts;
     float dma_transfer_duration;
-    static constexpr float fs_adc = prm::fclk0; // ADC sampling rate (Hz)
+    static constexpr float fs_adc = prm::fclk0; 
     float fs;
     Memory<mem::ram>& ram;
 
-    // fs = fs_adc / (2.0f ); // Sampling frequency (factor of 2 because of FIR)
-    // dma_transfer_duration = 1.0f;
-    // dma_transfer_duration = prm::n_pts / fs_adc;
-    std::array<uint32_t, data_size> data;
 
 
 }; // class AdcDacBram

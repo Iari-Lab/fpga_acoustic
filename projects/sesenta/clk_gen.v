@@ -28,7 +28,7 @@ module clk_gen
   input  clk,
   input  rst,
 
-  output M_CLK,
+  output m_clk,
   output m_clk_rising
 );
 
@@ -61,7 +61,7 @@ always @(posedge clk) begin
   end
 end
 
-assign M_CLK = m_clk_i;
+assign m_clk = m_clk_i;
 assign m_clk_rising = m_clk_rising_i;
 
 endmodule

@@ -28,9 +28,8 @@ module pdm_mic
   input         rst,
   output [31:0] mic_data,
   output        mic_data_valid,
-  input         M_DATA,
-  input         m_clk_rising,
-  output        M_LRSEL
+  input         m_data,
+  input         m_clk_rising
 );
 
 reg [2:0]  m_data_q;
@@ -44,7 +43,7 @@ always @(posedge clk) begin
     m_data_q <= 0;
   end 
   else begin
-    m_data_q[0] <= M_DATA;
+    m_data_q[0] <= m_data;
     m_data_q[2:1] <= m_data_q[1:0];
   end
 end
@@ -61,7 +60,6 @@ cic_compiler_0 cic_compiler
   );
 
 // Continuous assignment statements
-assign M_LRSEL = 0;
 assign mic_data = cic_out_data;
 assign mic_data_valid = cic_out_valid;
 

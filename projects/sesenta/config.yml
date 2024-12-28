@@ -6,15 +6,16 @@ cores:
   - fpga/cores/axi_ctl_register_v1_0
   - fpga/cores/axi_sts_register_v1_0
   - fpga/cores/axis_variable_v1_0
-  - fpga/cores/tlast_gen_dyn_v1_0
-  - fpga/cores/buffer_simple_v1_0
+  - fpga/cores/axis_tlast_v1_0
+
+
 memory:
   - name: control
-    range: 2K
-    offset: '0x60000000'
+    range: 4K
+    offset: '0x40000000'
   - name: status
-    range: 2K
-    offset: '0x50001000'
+    range: 4K
+    offset: '0x50000000'
   - name: ram
     offset: '0x1E000000'
     range: 32M
@@ -26,11 +27,8 @@ memory:
     range: 4K
 
 
-
 control_registers:
-  - trig0
-  - trig1
-  - trig2
+  - rst_regs
   - n_samples
 
 status_registers:

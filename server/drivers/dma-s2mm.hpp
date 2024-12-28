@@ -24,29 +24,52 @@ class DmaS2MM
         axi_hp0.set_bit<0x14, 0>();
     }
 
-    void start_transfer(uint32_t dest_addr, uint32_t length) {
+    void setup_transfer(uint32_t dest_addr, uint32_t length) {
         reset();
+        ctx.print<DEBUG>("DmaS2MM::1");
         start();
+        ctx.print<DEBUG>("DmaS2MM::2");
         set_destination_address(dest_addr);
+        ctx.print<DEBUG>("DmaS2MM::3");
         set_length(length);
+        ctx.print<DEBUG>("DmaS2MM::4");
     }
 
-    // Ideally would take a std::chrono::duration as an argument
     void wait_for_transfer(float dma_transfer_duration_seconds) {
-        const auto dma_duration = std::chrono::milliseconds(uint32_t(1000 * dma_transfer_duration_seconds));
-        uint32_t cnt = 0;
+        float t = dma_transfer_duration_seconds;
+        const auto dma_duration = std::chrono::milliseconds(uint32_t(2000 * t));
+        // Total sleep duration
+        auto total_sleep_duration = dma_duration;
+        auto sleep_interval = std::chrono::milliseconds(500); // Sleep interval in milliseconds
 
-        while (! idle()) {
-            std::this_thread::sleep_for(0.55 * dma_duration);
-            cnt++;
-
-            if (cnt > max_sleeps_cnt) {
-                ctx.log<ERROR>("DmaS2MM::wait_for_transfer: Max number of sleeps exceeded. [set duration %f s]\n",
-                               double(dma_transfer_duration_seconds));
-                break;
-            }
+        while (total_sleep_duration.count() > 0) {
+            std::this_thread::sleep_for(sleep_interval);
+            total_sleep_duration -= sleep_interval;
+            ctx.print<DEBUG>("DmaS2MM::start: halted = %d, idle = %d\n", halted()?1:0, idle()?1:0);
+            // if (!idle() ) {
+            //     ctx.print<DEBUG>("BREAK, iddle active: %d ms remaining\n", total_sleep_duration.count());
+            //     break;
+            // }
         }
-    }
+    } 
+
+
+    // // Ideally would take a std::chrono::duration as an argument
+    // void wait_for_transfer(float dma_transfer_duration_seconds) {
+    //     const auto dma_duration = std::chrono::milliseconds(uint32_t(1000 * dma_transfer_duration_seconds));
+    //     uint32_t cnt = 0;
+
+    //     while (! idle()) {
+    //         std::this_thread::sleep_for(0.55 * dma_duration);
+    //         cnt++;
+
+    //         if (cnt > max_sleeps_cnt) {
+    //             ctx.log<ERROR>("DmaS2MM::wait_for_transfer: Max number of sleeps exceeded. [set duration %f s]\n",
+    //                            double(dma_transfer_duration_seconds));
+    //             break;
+    //         }
+    //     }
+    // }
 
   private:
     static constexpr uint32_t s2mm_dmacr  = 0x30;  // S2MM DMA Control register

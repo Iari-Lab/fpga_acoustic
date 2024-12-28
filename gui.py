@@ -61,14 +61,14 @@ def main(trigger_addr_count=False):
     
     # fig, line1, t_us = initialize_plot(driver, sampling_frequency)
     fig, line1,line2,line3,line4,line5,line6,line7,line8, t_us = initialize_plot(driver, sampling_frequency)
-    if not trigger_addr_count:
-        driver.trigger_mic_rst() 
-        driver.trigger_addr_count_rst()
-        driver.trigger_led_rst()
+    driver.reset_clk_leds() 
+    driver.reset_clk_mics()
+    driver.reset_led()
 
     iteration_count = 0
     try:
         while True:
+            mics = driver.get_mics(1)
             iteration_count += 1
             print(iteration_count)
             # li = driver.get_mic() / (1<<27) + 1

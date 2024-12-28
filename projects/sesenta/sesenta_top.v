@@ -44,183 +44,123 @@ module sesenta_top (
     output M1_CLK,
     output M2_CLK,
     input [7:0] M_DATA,
-    output WS_LED
+    output LEDS
 
 );
 
-    localparam integer INPUT_FREQ = 125000000;
-    localparam integer PDM_FREQ = 2400000;
-    localparam integer LED_FREQ = 12000000;
-    wire mc0,mc1;
-    reg c0,c1,c2, r_ws_led,r_ws_led_dbg;
-    wire clk, clk_led,w_ws_led,w_ws_led_dbg;
-    wire rst_addr;
-    wire [31:0] trig1,trig0,trig2;
-    wire [31 : 0] addr_w,w_addr_w;
-    wire [31 : 0] addr_dbg;
-    wire [3 : 0] wen;
-    wire [3 : 0] wen_dbg;
-    wire       m_clk_rising;
-    wire mic_data_valid,w_rst_clk_mic;
-    reg r_rst_clk_mic;
-    wire m1_clk_buffer,w_reset_led;
-    wire M_LRSEL;
+  localparam integer INPUT_FREQ = 125000000;
+  localparam integer PDM_FREQ = 2400000;
+  localparam integer LED_FREQ = 12000000;
+  wire rst_clk_mics, rst_leds, rst_clk_leds;
+  wire [31:0] rst_regs;
+  wire [ 7:0] rst_mics;
+  // Clocks for mics and leds
+  wire clk_mics, clk_leds, clk_led;
+  wire clk_rising_mics;
+  wire [7:0] mics_data_valid;
+  // Flattened 32x8 mic data to 256 bits
+  reg [255:0] reg_mics_data;
+  wire [255:0] mics_data, mics_data_dbg;
+  //Reset signals
+  assign rst_clk_mics = rst_regs[0:0];
+  assign rst_clk_leds = rst_regs[1:1];
+  assign rst_leds = rst_regs[2:2];
+  assign rst_mics = rst_regs[10:3];
+  assign M0_CLK = clk_mics;
+  assign M2_CLK = clk_mics;
+  assign M1_CLK = clk_mics;
 
+  // Clock generator instance
+  clk_gen #(
+      .INPUT_FREQ (INPUT_FREQ),
+      .OUTPUT_FREQ(PDM_FREQ)
+  ) pdm_clk_gen_i (
+      .clk(clk),
+      .rst(rst_clk_mics),
+      .m_clk(clk_mics),
+      .m_clk_rising(clk_rising_mics)
+  );
 
+  clk_gen #(
+      .INPUT_FREQ (INPUT_FREQ),
+      .OUTPUT_FREQ(LED_FREQ)
+  ) led_clk_gen_i (
+      .clk(clk_led),
+      .rst(rst_clk_leds),
+      .m_clk(clk_leds)
+  );
 
-    address_counter #(
-    .COUNT_WIDTH(14)
-    ) addr_gen (
-        .rst(rst_addr),
-        .clk(clk),
-        .address(addr_w),
-        .address_dbg(addr_dbg),
-        .wen(wen),
-        .wen_dbg(wen_dbg)
-    );
-    reg r_addr;
-
-    reg [7:0] mclks, r_mics,r_trig1,r_trig0,r_trig2;
-    reg [255:0] addrs, mdatas, mdatas_dbg; // Flattened 32x8 to 256 bits
-    reg [31:0] wens,r_addr_w; // Flattened 4x8 to 32 bits
-    wire [7:0] w_mclks, w_rst_mics;
-    wire [255:0] w_addrs, w_mdatas,w_mdatas2, w_mdatas_dbg; // Flattened 32x8 to 256 bits
-    wire [31:0] w_wens; // Flattened 4x8 to 32 bits
-
-    genvar i;
-    generate
-        for (i = 0; i < 8; i=i+1) begin : safe_gen
-            always @(posedge clk) begin
-                r_mics[i] <= w_rst_clk_mic;
-                mclks[i] <= m_clk_rising;
-                addrs[i*32 +: 32] <= w_addr_w; // Slice 32 bits
-                wens[i*4 +: 4] <= wen; // Slice 4 bits
-                mdatas_dbg[i*32 +: 32] <= w_mdatas[i*32 +: 32];
-                mdatas[i*32 +: 32] <= w_mdatas[i*32 +: 32];
-            end
-            assign w_rst_mics[i] = r_mics[i];
-            assign w_mclks[i] = mclks[i];
-            assign w_addrs[i*32 +: 32] = addrs[i*32 +: 32];
-            assign w_wens[i*4 +: 4] = wens[i*4 +: 4];
-            assign w_mdatas_dbg[i*32 +: 32] = mdatas_dbg[i*32 +: 32];
-            assign w_mdatas2[i*32 +: 32] = mdatas[i*32 +: 32];
-        end
-    endgenerate
-
-    assign rst_addr = r_trig0;
-    assign w_reset_led = r_trig2;
-    assign w_rst_clk_mic = r_trig1;
-    assign w_addr_w = r_addr_w;
-    assign M0_CLK= c0;
-    assign M2_CLK= c2;
-    assign M1_CLK= c1;
-    assign WS_LED= r_ws_led;
-    assign w_ws_led_dbg = r_ws_led_dbg;
-    assign m1_clk_buffer = c2;
-    // clk all the inputs
-    always @(posedge clk)
-    begin
-        r_trig0 <= trig0[0:0];
-        r_trig1 <= trig1[0:0];
-        r_trig2 <= trig2[0:0];
-        r_ws_led <= w_ws_led;
-        r_ws_led_dbg <= w_ws_led;
-        r_addr_w <= addr_w;
-        c0 <= mc0;
-        c1 <= mc0;
-        c2 <= mc0;
+  leds #() led_i (
+      .clk(clk_leds),
+      .ws_data(LEDS),
+      .reset(rst_leds)
+  );
+  genvar i;
+  generate
+    for (i = 0; i < 8; i = i + 1) begin : safe_gen
+      always @(posedge clk) begin
+        reg_mics_data[i*32+:32] <= mics_data[i*32+:32];
+      end
+      assign mics_data_dbg[i*32+:32] = reg_mics_data[i*32+:32];
     end
-
-    // Clock generator instance
-    clk_gen #(
-    .INPUT_FREQ(INPUT_FREQ),
-    .OUTPUT_FREQ(PDM_FREQ)
-    ) pdm_clk_gen_i
-    (
-        .clk(clk),
-        .rst(w_rst_clk_mic),
-        .M_CLK(mc0),
-        .m_clk_rising(m_clk_rising)
-    );
-
-    clk_gen #(
-    .INPUT_FREQ(INPUT_FREQ),
-    .OUTPUT_FREQ(LED_FREQ)
-    ) led_clk_gen_i
-    (
-        .clk(clk_led),
-        .rst(w_rst_clk_mic),
-        .M_CLK(mc1)
-    );
-
-    leds #(
-    ) led_i
-    (
-        .clk(clk_led),
-        .ws_data(w_ws_led),
-        .reset(w_reset_led)
-    );
-
-    generate
-        for (i = 0; i < 8; i=i+1) begin : pdms_gen
-            pdm_mic #(
-            ) mic (
-                .clk(clk),
-                .rst(w_rst_mics[i]),
-                .mic_data(w_mdatas[i*32 +: 32]),
-                .m_clk_rising(w_mclks[i]),
-                .mic_data_valid(mic_data_valid),
-                .M_DATA(M_DATA[i]),
-                .M_LRSEL(M_LRSEL)
-            );
-        end
-    endgenerate
+  endgenerate
+  generate
+    for (i = 0; i < 8; i = i + 1) begin : pdms_gen
+      pdm_mic #() mic (
+          .clk(clk),
+          .rst(rst_mics[i]),
+          .mic_data(mics_data[i*32+:32]),
+          .m_clk_rising(clk_rising_mics),
+          .mic_data_valid(mics_data_valid[i]),
+          .m_data(M_DATA[i])
+      );
+    end
+  endgenerate
 
 
 
-    ila_0 ila_bram (
-        .clk(clk), // input wire clk
-        .probe0(m1_clk_buffer),
-        .probe1(w_mdatas_dbg[32*0 +: 32]),
-        .probe2(w_mdatas_dbg[32*1 +: 32]),
-        .probe3(w_mdatas_dbg[32*2 +: 32]),
-        .probe4(w_mdatas_dbg[32*3 +: 32]),
-        .probe5(w_mdatas_dbg[32*4 +: 32]),
-        .probe6(w_mdatas_dbg[32*5 +: 32]),
-        .probe7(w_mdatas_dbg[32*6 +: 32]),
-        .probe8(w_mdatas_dbg[32*7 +: 32]),
-        .probe9(w_ws_led_dbg)
-    );
-    system system_i (
-        .trig1(trig1),
-        .trig0(trig0),
-        .trig2(trig2),
-        .mics(w_mdatas2),
-        .DDR_addr(DDR_addr),
-        .DDR_ba(DDR_ba),
-        .DDR_cas_n(DDR_cas_n),
-        .DDR_ck_n(DDR_ck_n),
-        .DDR_ck_p(DDR_ck_p),
-        .DDR_cke(DDR_cke),
-        .DDR_cs_n(DDR_cs_n),
-        .DDR_dm(DDR_dm),
-        .DDR_dq(DDR_dq),
-        .DDR_dqs_n(DDR_dqs_n),
-        .DDR_dqs_p(DDR_dqs_p),
-        .DDR_odt(DDR_odt),
-        .DDR_ras_n(DDR_ras_n),
-        .DDR_reset_n(DDR_reset_n),
-        .DDR_we_n(DDR_we_n),
-        .FIXED_IO_ddr_vrn(FIXED_IO_ddr_vrn),
-        .FIXED_IO_ddr_vrp(FIXED_IO_ddr_vrp),
-        .FIXED_IO_mio(FIXED_IO_mio),
-        .FIXED_IO_ps_clk(FIXED_IO_ps_clk),
-        .FIXED_IO_ps_porb(FIXED_IO_ps_porb),
-        .peripheral_aresetn(rstn),
-        .FCLK_CLK0(clk),
-        .FCLK_CLK1(clk_led),
-        .FIXED_IO_ps_srstb(FIXED_IO_ps_srstb)
-    );
+  ila_0 ila_bram (
+      .clk(clk),  // input wire clk
+      .probe0(clk_mics),
+      .probe1(mics_data_dbg[32*0+:32]),
+      .probe2(mics_data_dbg[32*1+:32]),
+      .probe3(mics_data_dbg[32*2+:32]),
+      .probe4(mics_data_dbg[32*3+:32]),
+      .probe5(mics_data_dbg[32*4+:32]),
+      .probe6(mics_data_dbg[32*5+:32]),
+      .probe7(mics_data_dbg[32*6+:32]),
+      .probe8(mics_data_dbg[32*7+:32]),
+      .probe9(mics_data_valid)
+  );
+  system system_i (
+      .rst_regs(rst_regs),
+      .mics(mics_data_dbg),
+      .mic_data_valid(mics_data_valid),
+      .DDR_addr(DDR_addr),
+      .DDR_ba(DDR_ba),
+      .DDR_cas_n(DDR_cas_n),
+      .DDR_ck_n(DDR_ck_n),
+      .DDR_ck_p(DDR_ck_p),
+      .DDR_cke(DDR_cke),
+      .DDR_cs_n(DDR_cs_n),
+      .DDR_dm(DDR_dm),
+      .DDR_dq(DDR_dq),
+      .DDR_dqs_n(DDR_dqs_n),
+      .DDR_dqs_p(DDR_dqs_p),
+      .DDR_odt(DDR_odt),
+      .DDR_ras_n(DDR_ras_n),
+      .DDR_reset_n(DDR_reset_n),
+      .DDR_we_n(DDR_we_n),
+      .FIXED_IO_ddr_vrn(FIXED_IO_ddr_vrn),
+      .FIXED_IO_ddr_vrp(FIXED_IO_ddr_vrp),
+      .FIXED_IO_mio(FIXED_IO_mio),
+      .FIXED_IO_ps_clk(FIXED_IO_ps_clk),
+      .FIXED_IO_ps_porb(FIXED_IO_ps_porb),
+      .peripheral_aresetn(rstn),
+      .FCLK_CLK0(clk),
+      .FCLK_CLK1(clk_led),
+      .FIXED_IO_ps_srstb(FIXED_IO_ps_srstb)
+  );
 
 
 
