@@ -77,8 +77,8 @@ class Sesenta
         uint32_t npoints = get_nsamples();
         dma.setup_transfer(mem::ram_addr, 256 * npoints );
         dma_on();
-        dma_transfer_duration = npoints / fs_adc;
-        dma.wait_for_transfer(dma_transfer_duration); // so far this works
+        dma_transfer_duration = npoints / 4000000;
+        dma.wait(dma_transfer_duration); // so far this works
     }
 
     auto get_mics(uint32_t samples) {

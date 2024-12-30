@@ -26,36 +26,32 @@ def update_chart(frame, lines, ax, data_queue, samples):
         # Update each line with the full sample data
         for i in range(8):
             lines[i].set_data(range(len(samples[i])), samples[i])
-        # y-axis limits 
-        max_y = max(map(max, samples))
-        min_y = min(map(min, samples))
-        ax.set_ylim(min_y * 1.1, max_y * 1.1)
+            max_y = max(map(max, samples))
+            min_y = min(map(min, samples))
+            ax[i].set_ylim(min_y * 1.1, max_y * 1.1)
 
     return lines[0], lines[1], lines[2], lines[3], lines[4], lines[5], lines[6], lines[7],
 
-def initialize_plot():
-    """Initialize the dynamic plot."""
-    fig, ax = plt.subplots()
-    line1 = Line2D([], [], color='green', label='mic1')
-    ax.add_line(line1)
-    line2 = Line2D([], [], color='black', label='mic2')
-    ax.add_line(line2)
-    line3 = Line2D([], [], color='red', label='mic3')
-    ax.add_line(line3)
-    line4 = Line2D([], [], color='blue', label='mic4')
-    ax.add_line(line4)
-    line5 = Line2D([], [], color='orange', label='mic5')
-    ax.add_line(line5)
-    line6 = Line2D([], [], color='magenta', label='mic6')
-    ax.add_line(line6)
-    line7 = Line2D([], [], color='pink', label='mic7')
-    ax.add_line(line7)
-    line8 = Line2D([], [], color='brown', label='mic8')
-    ax.add_line(line8)
-    ax.set_xlabel('Time (us)')
-    ax.set_ylabel('sesenta')
-    ax.legend()
-    return [line1,line2,line3,line4,line5,line6,line7,line8], ax, fig
+def initialize_plot_matrix(rows=2, cols=4):
+    """Initialize the dynamic plot with subplots for each microphone."""
+    fig, axes = plt.subplots(rows, cols, figsize=(12, 8))  #
+    axes = axes.flatten() 
+
+    lines = []
+    mic_labels = ['mic1', 'mic2', 'mic3', 'mic4', 'mic5', 'mic6', 'mic7', 'mic8']
+    colors = ['green', 'black', 'red', 'blue', 'orange', 'magenta', 'pink', 'brown']
+
+    for ax, label, color in zip(axes, mic_labels, colors):
+        line = Line2D([], [], color=color, label=label)
+        ax.add_line(line)
+        ax.set_xlim(0, 1000)
+        ax.set_xlabel('Time (us)')
+        ax.set_ylabel('A')
+        ax.set_title(label)
+        lines.append(line)
+
+    fig.tight_layout()
+    return lines, axes, fig
 
 
 if __name__ == "__main__":
@@ -65,7 +61,7 @@ if __name__ == "__main__":
 
     # Initialize empty lists for each line's data samples
     samples = [[], [], [], [], [], [], [], []]
-    lines, ax, fig = initialize_plot()
+    lines, ax, fig = initialize_plot_matrix()
 
     ani = FuncAnimation(fig, update_chart, fargs=(lines, ax, data_queue, samples), interval=100)
     plt.show()

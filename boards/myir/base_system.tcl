@@ -1,5 +1,6 @@
 
 # Add PS and AXI Interconnect
+# set board_preset $board_path/board_preset.tcl
 set board_preset $board_path/config/board_preset.tcl
 source $sdk_path/fpga/lib/starting_point.tcl
 

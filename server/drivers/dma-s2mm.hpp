@@ -34,24 +34,17 @@ class DmaS2MM
         set_length(length);
         ctx.print<DEBUG>("DmaS2MM::4");
     }
+    void wait(float transfer_duration_seconds) {
+        float duration = transfer_duration_seconds;
+        const auto target_duration = std::chrono::milliseconds(static_cast<uint32_t>(1000 * duration));
+        auto remaining_time = target_duration;
+        auto check_interval = std::chrono::milliseconds(500); // Interval for sleeping and checking status
 
-    void wait_for_transfer(float dma_transfer_duration_seconds) {
-        float t = dma_transfer_duration_seconds;
-        const auto dma_duration = std::chrono::milliseconds(uint32_t(2000 * t));
-        // Total sleep duration
-        auto total_sleep_duration = dma_duration;
-        auto sleep_interval = std::chrono::milliseconds(500); // Sleep interval in milliseconds
-
-        while (total_sleep_duration.count() > 0) {
-            std::this_thread::sleep_for(sleep_interval);
-            total_sleep_duration -= sleep_interval;
-            ctx.print<DEBUG>("DmaS2MM::start: halted = %d, idle = %d\n", halted()?1:0, idle()?1:0);
-            // if (!idle() ) {
-            //     ctx.print<DEBUG>("BREAK, iddle active: %d ms remaining\n", total_sleep_duration.count());
-            //     break;
-            // }
+        while (remaining_time.count() > 0) {
+            std::this_thread::sleep_for(check_interval);
+            remaining_time -= check_interval;
         }
-    } 
+    }
 
 
     // // Ideally would take a std::chrono::duration as an argument
