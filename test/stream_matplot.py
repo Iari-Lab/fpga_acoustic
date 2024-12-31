@@ -10,7 +10,7 @@ class QueueManager(BaseManager):
 QueueManager.register('get_queue')
 
 
-def update_chart(frame, lines, ax, data_queue, samples):
+def update_chart(frame, lines, ax, data_queue, samples, maxs, mins):
     if not data_queue.empty(): 
         new_data = data_queue.get()
         print("new_data: ", new_data)
@@ -26,9 +26,11 @@ def update_chart(frame, lines, ax, data_queue, samples):
         # Update each line with the full sample data
         for i in range(8):
             lines[i].set_data(range(len(samples[i])), samples[i])
-            max_y = max(map(max, samples))
-            min_y = min(map(min, samples))
-            ax[i].set_ylim(min_y * 1.1, max_y * 1.1)
+            print("samples[i]: ", samples[i])
+            print(max(samples[i]), min(samples[i]))
+            maxs[i] = max(maxs[i],max(samples[i]))
+            mins[i] = min(mins[i],min(samples[i]))
+            ax[i].set_ylim(mins[i] * 1.1, maxs[i] * 1.1)
 
     return lines[0], lines[1], lines[2], lines[3], lines[4], lines[5], lines[6], lines[7],
 
@@ -61,7 +63,9 @@ if __name__ == "__main__":
 
     # Initialize empty lists for each line's data samples
     samples = [[], [], [], [], [], [], [], []]
+    maxs = [-1, -1, -1, -1, -1, -1, -1, -1]
+    mins = [999999, 999999, 999999, 999999, 999999, 999999, 999999, 999999]
     lines, ax, fig = initialize_plot_matrix()
 
-    ani = FuncAnimation(fig, update_chart, fargs=(lines, ax, data_queue, samples), interval=100)
+    ani = FuncAnimation(fig, update_chart, fargs=(lines, ax, data_queue, samples, maxs, mins), interval=100)
     plt.show()

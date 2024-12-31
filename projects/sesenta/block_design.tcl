@@ -97,4 +97,4 @@ delete_bd_objs [get_bd_addr_segs ps_0/Data/SEG_ps_0_HP0_DDR_LOWOCM]
 
 
 set obj [get_filesets sources_1]
-set_property -name "top" -value "sesenta_top" -objects $obj
+set_property -name "top" -value "sesenta" -objects $obj
