@@ -46,10 +46,14 @@ connect_pins axi_mem_intercon_0/M02_ARESETN $rst0_name/peripheral_aresetn
 
 
 
+#  for {set i 0} {$i < 8} {incr i} {
+#     set from [expr 31+$i*32]
+#     set to   [expr $i*32]
+#   }
+
 cell pavel-demin:user:axis_variable:1.0 mics_0 {
    AXIS_TDATA_WIDTH 256
 } {
-   ctrl [get_slice_pin mic_data_valid 0 0]
    aclk $ps_clk0
    aresetn $rst0_name/peripheral_aresetn
    cfg_data mics
@@ -63,6 +67,17 @@ cell sesenta:user:axis_tlast:1.0 tlast_0 {
   aclk $ps_clk0
   resetn $rst0_name/peripheral_aresetn
   s_axis mics_0/M_AXIS
+}
+
+cell xilinx.com:ip:system_ila:1.1 ila_axis {
+    C_SLOT_0_INTF_TYPE {xilinx.com:interface:axis_rtl:1.0}
+    C_DATA_DEPTH 16384
+    C_NUM_OF_PROBES 1
+    C_MON_TYPE INTERFACE
+  } {
+    clk $ps_clk0
+    SLOT_0_AXIS tlast_0/m_axis
+    resetn $rst0_name/peripheral_aresetn
 }
 
   # LOGIC ANALIZER DEBUG

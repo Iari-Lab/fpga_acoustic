@@ -99,7 +99,9 @@ module sesenta (
   generate
     for (i = 0; i < 8; i = i + 1) begin : safe_gen
       always @(posedge clk) begin
-        reg_mics_data[i*32+:32] <= mics_data[i*32+:32];
+        if (mics_data_valid[i]) begin
+          reg_mics_data[i*32+:32] <= mics_data[i*32+:32];
+        end
       end
       assign mics_data_dbg[i*32+:32] = reg_mics_data[i*32+:32];
     end
@@ -118,24 +120,29 @@ module sesenta (
   endgenerate
 
 
+  // ila_0 ila_bram (
+  //     .clk(clk),  // input wire clk
+  //     .probe0(clk_mics),
+  //     .probe1(mics_data_dbg[32*0+:32]),
+  //     .probe2(mics_data_dbg[32*1+:32]),
+  //     .probe3(mics_data_dbg[32*2+:32]),
+  //     .probe4(mics_data_dbg[32*3+:32]),
+  //     .probe5(mics_data_dbg[32*4+:32]),
+  //     .probe6(mics_data_dbg[32*5+:32]),
+  //     .probe7(mics_data_dbg[32*6+:32]),
+  //     .probe8(mics_data_dbg[32*7+:32]),
+  //     .probe9(mics_data_valid)
+  // );
 
   ila_0 ila_bram (
       .clk(clk),  // input wire clk
       .probe0(clk_mics),
-      .probe1(mics_data_dbg[32*0+:32]),
-      .probe2(mics_data_dbg[32*1+:32]),
-      .probe3(mics_data_dbg[32*2+:32]),
-      .probe4(mics_data_dbg[32*3+:32]),
-      .probe5(mics_data_dbg[32*4+:32]),
-      .probe6(mics_data_dbg[32*5+:32]),
-      .probe7(mics_data_dbg[32*6+:32]),
-      .probe8(mics_data_dbg[32*7+:32]),
-      .probe9(mics_data_valid)
+      .probe1(mics_data_dbg[32*0+:32])
   );
+
   system system_i (
       .rst_regs(rst_regs),
       .mics(mics_data_dbg),
-      .mic_data_valid(mics_data_valid),
       .DDR_addr(DDR_addr),
       .DDR_ba(DDR_ba),
       .DDR_cas_n(DDR_cas_n),

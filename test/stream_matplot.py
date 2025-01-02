@@ -13,11 +13,12 @@ QueueManager.register('get_queue')
 def update_chart(frame, lines, ax, data_queue, samples, maxs, mins):
     if not data_queue.empty(): 
         new_data = data_queue.get()
-        print("new_data: ", new_data)
         mics, sample = new_data
+        print(mics,sample)
         if sample==-1:
             for i in range(8):
                 samples[i].clear()
+        
         # Update samples
         for i in range(8):
             samples[i].append(mics[i])
@@ -26,8 +27,6 @@ def update_chart(frame, lines, ax, data_queue, samples, maxs, mins):
         # Update each line with the full sample data
         for i in range(8):
             lines[i].set_data(range(len(samples[i])), samples[i])
-            print("samples[i]: ", samples[i])
-            print(max(samples[i]), min(samples[i]))
             maxs[i] = max(maxs[i],max(samples[i]))
             mins[i] = min(mins[i],min(samples[i]))
             ax[i].set_ylim(mins[i] * 1.1, maxs[i] * 1.1)
@@ -46,7 +45,7 @@ def initialize_plot_matrix(rows=2, cols=4):
     for ax, label, color in zip(axes, mic_labels, colors):
         line = Line2D([], [], color=color, label=label)
         ax.add_line(line)
-        ax.set_xlim(0, 1000)
+        ax.set_xlim(0, 10000)
         ax.set_xlabel('Time (us)')
         ax.set_ylabel('A')
         ax.set_title(label)
@@ -67,5 +66,5 @@ if __name__ == "__main__":
     mins = [999999, 999999, 999999, 999999, 999999, 999999, 999999, 999999]
     lines, ax, fig = initialize_plot_matrix()
 
-    ani = FuncAnimation(fig, update_chart, fargs=(lines, ax, data_queue, samples, maxs, mins), interval=100)
+    ani = FuncAnimation(fig, update_chart, fargs=(lines, ax, data_queue, samples, maxs, mins), interval=10)
     plt.show()

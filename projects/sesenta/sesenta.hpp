@@ -88,7 +88,6 @@ class Sesenta
         std::vector<uint32_t> data_ret = {};
         uint32_t offset = 0;
         for (int i = 1; i < (int)samples + 1; i++) {
-            ctx.print<DEBUG>("Sample ITH-----------------> %d\n", i);
             offset = i * 8;
             mic1= ram.read_array_value_at_index<uint32_t, 1>(i_mic0 + offset);
             mic2= ram.read_array_value_at_index<uint32_t, 1>(i_mic1 + offset);
@@ -107,8 +106,7 @@ class Sesenta
             data_ret.push_back(mic6);
             data_ret.push_back(mic7);
             data_ret.push_back(mic8);
-            ctx.print<INFO>("MICS1 %ud %ud %ud %ud \n", mic1, mic2, mic3, mic4);
-            ctx.print<INFO>("MICS2 %ud %ud %ud %ud \n", mic5, mic6, mic7, mic8);
+            ctx.print<INFO>("MICS1 %d %d %d %d %d %d %d %d\n", mic1, mic2, mic3, mic4,mic5, mic6, mic7, mic8);
         }
         dma_off();
         return data_ret;
@@ -120,15 +118,14 @@ class Sesenta
         return mic_size;
     }
 
- private:
-
+  private:
     // one minute of data
     // static constexpr uint32_t data_size = 2250000 ;
     // static constexpr uint32_t n_pts =data_size;
     // only 20 secs of data
     static constexpr uint32_t data_size = 750000 ;
     static constexpr uint32_t n_pts = data_size;
-    static constexpr uint32_t read_offset = (n_pts - data_size) / 2;
+    static constexpr uint32_t read_offset = 5;
     Context& ctx;
     DmaS2MM& dma;
     Memory<mem::control>& ctl;

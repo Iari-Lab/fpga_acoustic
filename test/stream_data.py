@@ -40,17 +40,36 @@ class Acoustic():
         grouped = mics.reshape(-1, 8)
         print(grouped)
         for i in range(samples):
-            sample = grouped[i]
+            sample = grouped[i].tolist()
             data_point = sample, i
             print(data_point)
             data_queue.put(data_point)
+
+    def data_stream_live(self, samples=1, enable_transfer=False, isv2=False):
+        chunks = 24
+        n = samples // chunks
+        manager = QueueManager(address=('localhost', 50000), authkey=b'abc')
+        manager.connect()
+        data_queue = manager.get_queue()
+        for i in range(n):
+            try:
+                mics = self.driver.get_mics(chunks)
+                grouped = mics.reshape(-1, 8)
+                print(grouped)
+                for j in range(chunks):
+                    sample = grouped[j].tolist()
+                    data_point = sample, j
+                    print(data_point)
+                    data_queue.put(data_point)
+            except KeyboardInterrupt:
+                break  
 
 
     def clear(self):
         manager = QueueManager(address=('localhost', 50000), authkey=b'abc')
         manager.connect()
         data_queue = manager.get_queue()
-        data_point = [], -1
+        data_point = [[]], -1
         data_queue.put(data_point)
 
 
