@@ -62,7 +62,7 @@ cell pavel-demin:user:axis_variable:1.0 mics_0 {
 cell sesenta:user:axis_tlast:1.0 tlast_0 {
   TDATA_WIDTH 256
 } {
-  enable [get_slice_pin [ctl_pin rst_regs] 3 3]
+  enable [get_slice_pin [ctl_pin rst_regs] 3 3 enable_tlast]
   cfg_data [ctl_pin n_samples]
   aclk $ps_clk0
   resetn $rst0_name/peripheral_aresetn
@@ -73,8 +73,10 @@ cell xilinx.com:ip:system_ila:1.1 ila_axis {
     C_SLOT_0_INTF_TYPE {xilinx.com:interface:axis_rtl:1.0}
     C_DATA_DEPTH 16384
     C_NUM_OF_PROBES 1
-    C_MON_TYPE INTERFACE
+    C_MON_TYPE MIX
+    C_NUM_MONITOR_SLOTS 1
   } {
+    probe0 enable_tlast/Dout
     clk $ps_clk0
     SLOT_0_AXIS tlast_0/m_axis
     resetn $rst0_name/peripheral_aresetn
