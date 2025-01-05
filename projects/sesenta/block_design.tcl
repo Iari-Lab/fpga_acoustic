@@ -88,7 +88,7 @@ cell xilinx.com:ip:axi_dma:7.1 axi_dma_0 {
   c_include_mm2s 0
   c_sg_include_stscntrl_strm 0
   c_sg_length_width 23
-  c_s2mm_burst_size 128
+  c_s2mm_burst_size 64
 } {
   S_AXIS_S2MM tlast_0/m_axis
   S_AXI_LITE axi_mem_intercon_0/M02_AXI

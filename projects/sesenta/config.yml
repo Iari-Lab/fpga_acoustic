@@ -17,7 +17,7 @@ memory:
     range: 4K
     offset: '0x50000000'
   - name: ram
-    offset: '0x1E000000'
+    offset: '0x00000000'
     range: 32M
   - name: dma
     offset: '0x40400000'
