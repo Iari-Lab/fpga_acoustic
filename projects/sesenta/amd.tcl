@@ -24,23 +24,23 @@ set_property -dict [
 ] \
 [get_ips cic_compiler_0]
 
-set_property -dict [ list \
-    CONFIG.C_NUM_OF_PROBES {2} \
-    CONFIG.C_PROBE0_WIDTH {1} \
-    CONFIG.C_PROBE1_WIDTH {32} \
-    CONFIG.C_DATA_DEPTH {1024}  \
-    CONFIG.C_EN_STRG_QUAL {1} \
-    CONFIG.C_ADV_TRIGGER {true} \
-    CONFIG.ALL_PROBE_SAME_MU_CNT {2}
-    ] \  [get_ips ila_0]
+# set_property -dict [ list \
+#     CONFIG.C_NUM_OF_PROBES {2} \
+#     CONFIG.C_PROBE0_WIDTH {1} \
+#     CONFIG.C_PROBE1_WIDTH {32} \
+#     CONFIG.C_DATA_DEPTH {1024}  \
+#     CONFIG.C_EN_STRG_QUAL {1} \
+#     CONFIG.C_ADV_TRIGGER {true} \
+#     CONFIG.ALL_PROBE_SAME_MU_CNT {2}
+#     ] \  [get_ips ila_0]
 
-generate_target all [get_ips cic_compiler_0]
-update_ip_catalog
+# generate_target all [get_ips cic_compiler_0]
+# update_ip_catalog
 
 # Get the list of all IPs in the project
 set ip_list [get_ips *]
 set cic_xci ""
-set ila_xci ""
+# set ila_xci ""
 # Loop through the IPs
 foreach ip $ip_list {
     # If the IP name matches "IQ_Multiplier", store the IP definition file (.xci file) in a variable
@@ -49,20 +49,20 @@ foreach ip $ip_list {
         set cic_xci [get_property IP_FILE $ip]
         puts [get_property IP_FILE $ip]
     }
-    if {[get_property NAME $ip] eq "ila_0"} {
-        set ila_xci [get_property IP_FILE $ip]
-        puts [get_property IP_FILE $ip]
-    }
+    # if {[get_property NAME $ip] eq "ila_0"} {
+    #     set ila_xci [get_property IP_FILE $ip]
+    #     puts [get_property IP_FILE $ip]
+    # }
 }
-puts $ila_xci
-report_property [get_ips ila_0]
-set_property GENERATE_SYNTH_CHECKPOINT false [get_files $ila_xci]
-set_property IS_GLOBAL_INCLUDE	true  [get_files $ila_xci]
+# puts $ila_xci
+# report_property [get_ips ila_0]
+# set_property GENERATE_SYNTH_CHECKPOINT false [get_files $ila_xci]
+# set_property IS_GLOBAL_INCLUDE	true  [get_files $ila_xci]
 puts $cic_xci
 report_property [get_ips cic_compiler_0]
 set_property GENERATE_SYNTH_CHECKPOINT false [get_files $cic_xci]
 set_property IS_GLOBAL_INCLUDE	true  [get_files $cic_xci]
 
 generate_target all [get_ips cic_compiler_0]
-generate_target all [get_ips ila_0]
+# generate_target all [get_ips ila_0]
 update_ip_catalog

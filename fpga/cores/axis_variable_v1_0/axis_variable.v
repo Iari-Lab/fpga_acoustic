@@ -48,6 +48,9 @@ module axis_variable #
     begin
       int_tvalid_next = 1'b0;
     end
+    // else begin
+    //   int_tvalid_next = 1'b1;
+    // end
   end
 
   assign m_axis_tdata = int_tdata_reg;

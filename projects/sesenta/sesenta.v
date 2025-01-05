@@ -59,8 +59,9 @@ module sesenta (
   wire clk_rising_mics;
   wire [7:0] mics_data_valid;
   // Flattened 32x8 mic data to 256 bits
-  // reg [255:0] reg_mics_data;
-  reg [255:0] reg_mics_data = {32'h00000008, 32'h00000007, 32'h00000006, 32'h00000005, 32'h00000004, 32'h00000003, 32'h00000002, 32'h00000001};
+  reg [255:0] reg_mics_data;
+  // reg [255:0] reg_mics_data = {32'h00000008, 32'h00000007, 32'h00000006, 32'h00000005, 32'h00000004, 32'h00000003, 32'h00000002, 32'h00000001};
+  // reg [255:0] reg_mics_data = {32'h00000008, 32'h00000007, 32'h00000006, 32'h00000005, 32'h00000004, 32'h00000003, 32'h00000002, 32'h00000001};
   wire [255:0] mics_data, mics_data_dbg;
   //Reset signals
   assign rst_clk_mics = rst_regs[0:0];
@@ -99,14 +100,26 @@ module sesenta (
   genvar i;
   generate
     for (i = 0; i < 8; i = i + 1) begin : safe_gen
-      // always @(posedge clk) begin
-      //   if (mics_data_valid[i]) begin
-      //     reg_mics_data[i*32+:32] <= mics_data[i*32+:32];
-      //   end
-      // end
-      assign mics_data_dbg[i*32+:32] = reg_mics_data[i*32+:32];
+      always @(posedge clk) begin
+        if (mics_data_valid[i]) begin
+          reg_mics_data[i*32+:32] <= mics_data[i*32+:32];
+        end
+      end
+      // assign mics_data_dbg[i*32+:32] = reg_mics_data[i*32+:32];
     end
   endgenerate
+
+  // genvar i;
+  // generate
+  //   for (i = 0; i < 8; i = i + 1) begin : safe_gen
+  //     always @(posedge clk) begin
+  //       reg_mics_data[(7 - i)*32 +: 32] <= reg_mics_data[(7 - i)*32 +: 32] + 1;
+  //     end
+  //     // assign mics_data_dbg[(7 - i)*32 +: 32] = reg_mics_data[(7 - i)*32 +: 32];
+  //   end
+  // endgenerate
+
+  assign mics_data_dbg = reg_mics_data;
   generate
     for (i = 0; i < 8; i = i + 1) begin : pdms_gen
       pdm_mic #() mic (
@@ -135,11 +148,11 @@ module sesenta (
   //     .probe9(mics_data_valid)
   // );
 
-  ila_0 ila_bram (
-      .clk(clk),  // input wire clk
-      .probe0(clk_mics),
-      .probe1(mics_data_dbg[32*0+:32])
-  );
+//  ila_0 ila_bram (
+//      .clk(clk),  // input wire clk
+//      .probe0(clk_mics),
+//      .probe1(mics_data_dbg[32*0+:32])
+//  );
 
   system system_i (
       .rst_regs(rst_regs),

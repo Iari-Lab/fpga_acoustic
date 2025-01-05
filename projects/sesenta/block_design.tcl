@@ -70,15 +70,15 @@ cell sesenta:user:axis_tlast:1.0 tlast_0 {
 }
 
 cell xilinx.com:ip:system_ila:1.1 ila_axis {
-    C_SLOT_0_INTF_TYPE {xilinx.com:interface:axis_rtl:1.0}
-    C_DATA_DEPTH 16384
+    C_SLOT_0_INTF_TYPE {xilinx.com:interface:aximm_rtl:1.0}
+    C_DATA_DEPTH 4096
     C_NUM_OF_PROBES 1
     C_MON_TYPE MIX
     C_NUM_MONITOR_SLOTS 1
   } {
     probe0 enable_tlast/Dout
     clk $ps_clk0
-    SLOT_0_AXIS tlast_0/m_axis
+    SLOT_0_AXI axi_mem_intercon_1/S00_AXI
     resetn $rst0_name/peripheral_aresetn
 }
 

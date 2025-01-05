@@ -22,14 +22,14 @@ class Sesenta
     {
     }
 
-     const int32_t i_mic0 = 0;
-     const int32_t i_mic1 = 1;
-     const int32_t i_mic2 = 2;
-     const int32_t i_mic3 = 3;
-     const int32_t i_mic4 = 4;
-     const int32_t i_mic5 = 5;
-     const int32_t i_mic6 = 6;
-     const int32_t i_mic7 = 7;
+    const int32_t i_mic0 = 0;
+    const int32_t i_mic1 = 2;
+    const int32_t i_mic2 = 4;
+    const int32_t i_mic3 = 6;
+    const int32_t i_mic4 = 8;
+    const int32_t i_mic5 = 10;
+    const int32_t i_mic6 = 12;
+    const int32_t i_mic7 = 14;
 
     uint32_t i_rst_clk_mics = 0;
     uint32_t i_rst_leds = 1;

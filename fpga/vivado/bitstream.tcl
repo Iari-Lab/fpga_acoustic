@@ -7,8 +7,8 @@ open_project $xpr_filename
 if {[get_property PROGRESS [get_runs impl_1]] != "100%"} {
   set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]
   set_property STEPS.ROUTE_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]
-  # launch_runs impl_1 -to_step write_bitstream -jobs $nCPU
-  launch_runs impl_1 -to_step route_design -jobs $nCPU
+  launch_runs impl_1 -to_step write_bitstream -jobs $nCPU
+  # launch_runs impl_1 -to_step route_design -jobs $nCPU
   wait_on_run impl_1
 }
 
