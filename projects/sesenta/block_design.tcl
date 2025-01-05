@@ -69,18 +69,18 @@ cell sesenta:user:axis_tlast:1.0 tlast_0 {
   s_axis mics_0/M_AXIS
 }
 
-cell xilinx.com:ip:system_ila:1.1 ila_axis {
-    C_SLOT_0_INTF_TYPE {xilinx.com:interface:aximm_rtl:1.0}
-    C_DATA_DEPTH 4096
-    C_NUM_OF_PROBES 1
-    C_MON_TYPE MIX
-    C_NUM_MONITOR_SLOTS 1
-  } {
-    probe0 enable_tlast/Dout
-    clk $ps_clk0
-    SLOT_0_AXI axi_mem_intercon_1/S00_AXI
-    resetn $rst0_name/peripheral_aresetn
-}
+# cell xilinx.com:ip:system_ila:1.1 ila_axis {
+#     C_SLOT_0_INTF_TYPE {xilinx.com:interface:aximm_rtl:1.0}
+#     C_DATA_DEPTH 4096
+#     C_NUM_OF_PROBES 1
+#     C_MON_TYPE MIX
+#     C_NUM_MONITOR_SLOTS 1
+#   } {
+#     probe0 enable_tlast/Dout
+#     clk $ps_clk0
+#     SLOT_0_AXI axi_mem_intercon_1/S00_AXI
+#     resetn $rst0_name/peripheral_aresetn
+# }
 
   # LOGIC ANALIZER DEBUG
 cell xilinx.com:ip:axi_dma:7.1 axi_dma_0 {
@@ -88,7 +88,7 @@ cell xilinx.com:ip:axi_dma:7.1 axi_dma_0 {
   c_include_mm2s 0
   c_sg_include_stscntrl_strm 0
   c_sg_length_width 23
-  c_s2mm_burst_size 16
+  c_s2mm_burst_size 128
 } {
   S_AXIS_S2MM tlast_0/m_axis
   S_AXI_LITE axi_mem_intercon_0/M02_AXI

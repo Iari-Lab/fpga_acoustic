@@ -31,29 +31,29 @@ module axis_variable #
     else
     begin
       int_tdata_reg <= cfg_data;
-      int_tvalid_reg <= int_tvalid_next;
+      int_tvalid_reg <= 1'b1;
     end
   end
 
-  always @*
-  begin
-    int_tvalid_next = int_tvalid_reg;
+  // always @*
+  // begin
+  //   int_tvalid_next = int_tvalid_reg;
 
-    if(int_tdata_reg != cfg_data)
-    begin
-      int_tvalid_next = 1'b1;
-    end
+  //   // if(int_tdata_reg != cfg_data)
+  //   // begin
+  //   //   int_tvalid_next = 1'b1;
+  //   // end
 
-    if(m_axis_tready & int_tvalid_reg)
-    begin
-      int_tvalid_next = 1'b0;
-    end
-    // else begin
-    //   int_tvalid_next = 1'b1;
-    // end
-  end
+  //   if(m_axis_tready & int_tvalid_reg)
+  //   begin
+  //     int_tvalid_next = 1'b0;
+  //   end
+  //   else begin
+  //     int_tvalid_next = 1'b1;
+  //   end
+  // end
 
   assign m_axis_tdata = int_tdata_reg;
+  // assign m_axis_tvalid = 1'b1;
   assign m_axis_tvalid = int_tvalid_reg;
-
 endmodule

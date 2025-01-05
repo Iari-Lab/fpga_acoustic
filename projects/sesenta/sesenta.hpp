@@ -21,15 +21,23 @@ class Sesenta
     , ram(ctx.mm.get<mem::ram>())
     {
     }
+    int32_t i_mic0 = 0;
+    int32_t i_mic1 = 1;
+    int32_t i_mic2 = 2;
+    int32_t i_mic3 = 3;
+    int32_t i_mic4 = 4;
+    int32_t i_mic5 = 5;
+    int32_t i_mic6 = 6;
+    int32_t i_mic7 = 7;
 
-    const int32_t i_mic0 = 0;
-    const int32_t i_mic1 = 2;
-    const int32_t i_mic2 = 4;
-    const int32_t i_mic3 = 6;
-    const int32_t i_mic4 = 8;
-    const int32_t i_mic5 = 10;
-    const int32_t i_mic6 = 12;
-    const int32_t i_mic7 = 14;
+    // int32_t i_mic0 = 0;
+    // int32_t i_mic1 = 2;
+    // int32_t i_mic2 = 4;
+    // int32_t i_mic3 = 6;
+    // int32_t i_mic4 = 8;
+    // int32_t i_mic5 = 10;
+    // int32_t i_mic6 = 12;
+    // int32_t i_mic7 = 14;
 
     uint32_t i_rst_clk_mics = 0;
     uint32_t i_rst_leds = 1;
@@ -86,8 +94,8 @@ class Sesenta
         ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
         uint32_t mic1=0,mic2=0,mic3=0,mic4=0,mic5=0,mic6=0,mic7=0,mic8=0;
         std::vector<uint32_t> data_ret = {};
-        uint32_t offset = 0;
-        for (int i = 1; i < (int)samples + 1; i++) {
+        int32_t offset = 0;
+        for (int i = 0; i < (int)samples + 1; i++) {
             offset = i * 8;
             mic1= ram.read_array_value_at_index<uint32_t, 1>(i_mic0 + offset);
             mic2= ram.read_array_value_at_index<uint32_t, 1>(i_mic1 + offset);

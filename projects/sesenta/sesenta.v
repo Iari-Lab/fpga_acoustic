@@ -59,7 +59,27 @@ module sesenta (
   wire clk_rising_mics;
   wire [7:0] mics_data_valid;
   // Flattened 32x8 mic data to 256 bits
-  reg [255:0] reg_mics_data;
+  // reg [255:0] reg_mics_data;
+  // reg [255:0] reg_mics_data;
+
+  // initial begin
+  //   integer j;
+  //   for (j = 0; j < 8; j = j + 1) begin
+  //     reg_mics_data[j*32 +: 32] = j;
+  //   end
+  // end
+  reg [255:0] reg_mics_data = {
+    32'd15,  // Bits [255:224] = 7
+    32'd14,  // Bits [223:192] = 6
+    32'd13,  // Bits [191:160] = 5
+    32'd12,  // Bits [159:128] = 4
+    32'd11,  // Bits [127:96]   = 3
+    32'd10,  // Bits [95:64]    = 2
+    32'd9,  // Bits [63:32]    = 1
+    32'd8   // Bits [31:0]     = 0
+};
+
+  
   // reg [255:0] reg_mics_data = {32'h00000008, 32'h00000007, 32'h00000006, 32'h00000005, 32'h00000004, 32'h00000003, 32'h00000002, 32'h00000001};
   // reg [255:0] reg_mics_data = {32'h00000008, 32'h00000007, 32'h00000006, 32'h00000005, 32'h00000004, 32'h00000003, 32'h00000002, 32'h00000001};
   wire [255:0] mics_data, mics_data_dbg;
@@ -97,17 +117,17 @@ module sesenta (
       .ws_data(LEDS),
       .reset(rst_leds)
   );
-  genvar i;
-  generate
-    for (i = 0; i < 8; i = i + 1) begin : safe_gen
-      always @(posedge clk) begin
-        if (mics_data_valid[i]) begin
-          reg_mics_data[i*32+:32] <= mics_data[i*32+:32];
-        end
-      end
-      // assign mics_data_dbg[i*32+:32] = reg_mics_data[i*32+:32];
-    end
-  endgenerate
+  // genvar i;
+  // generate
+  //   for (i = 0; i < 8; i = i + 1) begin : safe_gen
+  //     always @(posedge clk) begin
+  //       // if (mics_data_valid[i]) begin
+  //         reg_mics_data[i*32+:32] <= i;
+  //       // end
+  //     end
+  //     // assign mics_data_dbg[i*32+:32] = reg_mics_data[i*32+:32];
+  //   end
+  // endgenerate
 
   // genvar i;
   // generate
@@ -120,18 +140,18 @@ module sesenta (
   // endgenerate
 
   assign mics_data_dbg = reg_mics_data;
-  generate
-    for (i = 0; i < 8; i = i + 1) begin : pdms_gen
-      pdm_mic #() mic (
-          .clk(clk),
-          .rst(rst_mics[i]),
-          .mic_data(mics_data[i*32+:32]),
-          .m_clk_rising(clk_rising_mics),
-          .mic_data_valid(mics_data_valid[i]),
-          .m_data(M_DATA[i])
-      );
-    end
-  endgenerate
+  // generate
+  //   for (i = 0; i < 8; i = i + 1) begin : pdms_gen
+  //     pdm_mic #() mic (
+  //         .clk(clk),
+  //         .rst(rst_mics[i]),
+  //         .mic_data(mics_data[i*32+:32]),
+  //         .m_clk_rising(clk_rising_mics),
+  //         .mic_data_valid(mics_data_valid[i]),
+  //         .m_data(M_DATA[i])
+  //     );
+  //   end
+  // endgenerate
 
 
   // ila_0 ila_bram (
