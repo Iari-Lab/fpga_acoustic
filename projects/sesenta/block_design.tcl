@@ -3,6 +3,7 @@ source $board_path/config/ports.tcl
 
 # Add PS and AXI Interconnect
 set board_preset $board_path/config/board_preset.tcl
+# set board_preset $board_path/config/board_preset_orig2.tcl
 source $sdk_path/fpga/lib/starting_point.tcl
 
 connect_pins FCLK_CLK0 $ps_clk0
