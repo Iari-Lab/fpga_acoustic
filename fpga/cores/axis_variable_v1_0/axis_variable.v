@@ -45,6 +45,7 @@ module axis_variable #
   //   // end
 
   always @*
+  begin
     if(m_axis_tready & int_tvalid_reg)
     begin
       int_tvalid_next = 1'b0;
