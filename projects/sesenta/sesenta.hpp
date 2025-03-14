@@ -44,29 +44,35 @@ class Sesenta
     unsigned int i_dma_gate = 2;
 
 
-    void reset_led() {
-        ctx.print<DEBUG>(" reset led::\n");
-        ctl.set_bit<reg::rst_regs, 2>();
-        ctl.clear_bit<reg::rst_regs, 2>();
-    }
-    void reset_clk_mics() {
-        ctx.print<DEBUG>(" reset clk mics::\n");
-        ctl.set_bit<reg::rst_regs, 0>();
-        ctl.clear_bit<reg::rst_regs,0>();
-    }
-    void reset_clk_leds() {
-        ctx.print<DEBUG>(" reset leds clk::\n");
-        ctl.set_bit<reg::rst_regs, 1>();
-        ctl.clear_bit<reg::rst_regs,1>();
-    }
+    // void reset_led() {
+    //     ctx.print<DEBUG>(" reset led::\n");
+    //     ctl.set_bit<reg::rst_regs, 2>();
+    //     ctl.clear_bit<reg::rst_regs, 2>();
+    // }
+    // void reset_clk_mics() {
+    //     ctx.print<DEBUG>(" reset clk mics::\n");
+    //     ctl.set_bit<reg::rst_regs, 0>();
+    //     ctl.clear_bit<reg::rst_regs,0>();
+    // }
+    // void reset_clk_leds() {
+    //     ctx.print<DEBUG>(" reset leds clk::\n");
+    //     ctl.set_bit<reg::rst_regs, 1>();
+    //     ctl.clear_bit<reg::rst_regs,1>();
+    // }
 
+    // void dma_on() {
+    //     ctl.set_bit<reg::rst_regs, 3>();
+    //     ctx.print<DEBUG>(" DMA on::\n");
+    // }
+    // void dma_off() {
+    //     ctl.clear_bit<reg::rst_regs, 3>();
+    //     ctx.print<DEBUG>(" DMA off::\n");
+    // }
     void dma_on() {
-        ctl.set_bit<reg::rst_regs, 3>();
-        ctx.print<DEBUG>(" DMA on::\n");
+        ctl.set_bit<reg::dma_gate, 0>();
     }
     void dma_off() {
-        ctl.clear_bit<reg::rst_regs, 3>();
-        ctx.print<DEBUG>(" DMA off::\n");
+        ctl.clear_bit<reg::dma_gate, 0>();
     }
 
     void set_nsamples(uint32_t samples) {
@@ -80,12 +86,21 @@ class Sesenta
         return samples;
     }
 
+    // void start_dma_transfer(uint32_t samples) {
+    //     set_nsamples(samples + read_offset);
+    //     uint32_t npoints = get_nsamples();
+    //     dma.setup_transfer(mem::ram_addr, 256 * npoints );
+    //     dma_on();
+    //     dma_transfer_duration = npoints / 40000;
+    //     dma.wait(dma_transfer_duration); // so far this works
+    // }
     void start_dma_transfer(uint32_t samples) {
         set_nsamples(samples + read_offset);
         uint32_t npoints = get_nsamples();
         dma.setup_transfer(mem::ram_addr, 256 * npoints );
         dma_on();
-        dma_transfer_duration = npoints / 4000000;
+        double pdm_f = 4000.0;
+        dma_transfer_duration = float(npoints / pdm_f);
         dma.wait(dma_transfer_duration); // so far this works
     }
 
@@ -96,7 +111,8 @@ class Sesenta
         std::vector<uint32_t> data_ret = {};
         int32_t offset = 0;
         for (int i = 0; i < (int)samples + 1; i++) {
-            offset = i * 8;
+            offset = (i * 8);
+            // offset = (i * 8)+(16384*8);
             mic1= ram.read_array_value_at_index<uint32_t, 1>(i_mic0 + offset);
             mic2= ram.read_array_value_at_index<uint32_t, 1>(i_mic1 + offset);
             mic3= ram.read_array_value_at_index<uint32_t, 1>(i_mic2 + offset);

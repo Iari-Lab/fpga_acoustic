@@ -7,7 +7,8 @@ import numpy as np
 
 from koheron import command
 
-class Sesenta(object):
+# class Sesenta(object):
+class QRP(object):
     def __init__(self, client):
         self.client = client
         self.mic_size = 1<<10
@@ -21,7 +22,31 @@ class Sesenta(object):
         pass
 
     @command()
+    def cic_on(self):
+        pass
+
+    @command()
+    def cic_off(self):
+        pass
+
+    @command()
+    def dig_on(self):
+        pass
+
+    @command()
+    def dig_off(self):
+        pass
+
+    @command()
     def reset_led(self):
+        pass
+
+    @command()
+    def set_rate(self, rate):
+        pass
+
+    @command()
+    def set_f1(self, freq):
         pass
 
     @command()
@@ -29,9 +54,13 @@ class Sesenta(object):
         pass
 
     @command()
-    def get_mics(self, samples):
+    def get_micsu(self, samples):
         return self.client.recv_vector(dtype='uint32')
 
+
+    @command()
+    def get_mics(self, samples):
+        return self.client.recv_vector(dtype='int32')
 
     # @command()
     # def get_data(self):

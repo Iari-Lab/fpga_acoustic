@@ -113,9 +113,9 @@ endif
 ###############################################################################
 # PYTHON
 ###############################################################################
-PYTHON_PATH := $(SDK_PATH)/python
-PYTHON_MK ?= $(PYTHON_PATH)/python.mk
-include $(PYTHON_MK)
+# PYTHON_PATH := $(SDK_PATH)/python
+# PYTHON_MK ?= $(PYTHON_PATH)/python.mk
+# include $(PYTHON_MK)
 
 ###############################################################################
 # SETUP TARGETS

@@ -30,6 +30,7 @@ class DmaS2MM
         start();
         ctx.print<DEBUG>("DmaS2MM::2");
         set_destination_address(dest_addr);
+        // set_destination_address(dest_addr+16384*8));
         ctx.print<DEBUG>("DmaS2MM::3");
         set_length(length);
         ctx.print<DEBUG>("DmaS2MM::4");
@@ -39,11 +40,15 @@ class DmaS2MM
         const auto target_duration = std::chrono::milliseconds(static_cast<uint32_t>(1000 * duration));
         auto remaining_time = target_duration;
         auto check_interval = std::chrono::milliseconds(500); // Interval for sleeping and checking status
-
-        while (remaining_time.count() > 0) {
+        // while ( remaining_time.count() > 0 || (! idle())) {
+        while ( remaining_time.count() > 0 ) {
             std::this_thread::sleep_for(check_interval);
             remaining_time -= check_interval;
         }
+        // while (remaining_time.count() > 0) {
+        //     std::this_thread::sleep_for(check_interval);
+        //     remaining_time -= check_interval;
+        // }
     }
 
 

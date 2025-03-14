@@ -5,9 +5,9 @@
 # set_property KEEPER true [get_ports M1_DATA]
 
 
-## M59 M58 ------------D58
+# M59 M58 ------------D58
 
-## MCL4 MCLK3
+# MCL4 MCLK3
 set_property IOSTANDARD LVCMOS33 [get_ports M1_CLK]
 set_property PACKAGE_PIN J18 [get_ports M1_CLK]
 

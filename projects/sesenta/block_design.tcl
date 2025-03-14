@@ -2,14 +2,20 @@
 source $board_path/config/ports.tcl
 
 # Add PS and AXI Interconnect
-set board_preset $board_path/config/board_preset.tcl
-# set board_preset $board_path/config/board_preset_orig2.tcl
+# set board_preset $board_path/config/board_preset.tcl
+# set board_preset $board_path/config/board_preset_old_current_commit.tcl
+set board_preset $board_path/config/board_preset_rp2.tcl
+# set board_preset $board_path/config/board_preset_orig_60.tcl
+# set board_preset $board_path/config/board_preset_orig.tcl
+# set board_preset $board_path/config/board_preset.tcl
 source $sdk_path/fpga/lib/starting_point.tcl
+source $sdk_path/projects/sesenta/amd.tcl
+# connect_pins FCLK_CLK0 $ps_clk0
+# connect_pins FCLK_CLK1 $ps_clk0
+# connect_pins peripheral_aresetn $rst0_name/peripheral_aresetn
 
 connect_pins FCLK_CLK0 $ps_clk0
-connect_pins FCLK_CLK1 $ps_clk0
-connect_pins peripheral_aresetn $rst0_name/peripheral_aresetn
-
+connect_port_pin reset $rst0_name/peripheral_aresetn
 
 
 
@@ -17,8 +23,8 @@ connect_pins peripheral_aresetn $rst0_name/peripheral_aresetn
 source $sdk_path/fpga/lib/ctl_sts.tcl
 add_ctl_sts $ps_clk0 $rst0_name/peripheral_aresetn
 
-source $sdk_path/projects/sesenta/amd.tcl
-connect_port_pin rst_regs [ctl_pin rst_regs]
+# source $sdk_path/projects/sesenta/amd.tcl
+# connect_port_pin rst_regs [ctl_pin rst_regs]
 
 connect_pins ps_0/S_AXI_HP0_ACLK $ps_clk0
 
@@ -45,30 +51,137 @@ set_property -dict [list CONFIG.NUM_SI {1} CONFIG.NUM_MI {3}] [get_bd_cells axi_
 connect_pins axi_mem_intercon_0/M02_ACLK    $ps_clk0
 connect_pins axi_mem_intercon_0/M02_ARESETN $rst0_name/peripheral_aresetn
 
+# cell xilinx.com:ip:c_counter_binary:12.0 count_strobe_0 {
+#     Output_Width 12
+# } {
+#       CLK $ps_clk0
+# }
 
+# for {set i 0} {$i < 8} {incr i} {
+#     cell xilinx.com:ip:c_counter_binary:12.0 count_$i {
+#         Output_Width 10
+#     } {
+#       CLK $ps_clk0
+#       }
+# }
+# set left_zeros [get_constant_pin 0 22]
 
+# set mics [get_concat_pin [list \
+#    [get_concat_pin { [get_constant_pin 0 22 k0] count_0/Q } c1] \
+#    [get_concat_pin { [get_constant_pin 0 22 k1] count_1/Q } c2] \
+#    [get_concat_pin { [get_constant_pin 0 22 k2] count_2/Q } c3] \
+#    [get_concat_pin { [get_constant_pin 0 22 k3] count_3/Q } c4] \
+#    [get_concat_pin { [get_constant_pin 0 22 k4] count_4/Q } c5] \
+#    [get_concat_pin { [get_constant_pin 0 22 k5] count_5/Q } c6] \
+#    [get_concat_pin { [get_constant_pin 0 22 k6] count_6/Q } c7] \
+#    [get_concat_pin { [get_constant_pin 0 22 k7] count_7/Q } c8] \
+#   ] mics_list 
+# ]
+# set mics [get_concat_pin [list \
+#    [get_concat_pin { count_0/Q [get_constant_pin 0 22 k0] } c1] \
+#    [get_concat_pin { count_1/Q [get_constant_pin 0 22 k1] } c2] \
+#    [get_concat_pin { count_2/Q [get_constant_pin 0 22 k2] } c3] \
+#    [get_concat_pin { count_3/Q [get_constant_pin 0 22 k3] } c4] \
+#    [get_concat_pin { count_4/Q [get_constant_pin 0 22 k4] } c5] \
+#    [get_concat_pin { count_5/Q [get_constant_pin 0 22 k5] } c6] \
+#    [get_concat_pin { count_6/Q [get_constant_pin 0 22 k6] } c7] \
+#    [get_concat_pin { count_7/Q [get_constant_pin 0 22 k7] } c8] \
+#   ] mics_list 
+# ]
+
+# set mics [get_concat_pin [list \
+#    [get_concat_pin { $left_zeros count_0/Q }] \
+#    [get_concat_pin { $left_zeros count_1/Q }] \
+#    [get_concat_pin { $left_zeros count_2/Q }] \
+#    [get_concat_pin { $left_zeros count_3/Q }] \
+#    [get_concat_pin { $left_zeros count_4/Q }] \
+#    [get_concat_pin { $left_zeros count_5/Q }] \
+#    [get_concat_pin { $left_zeros count_6/Q }] \
+#    [get_concat_pin { $left_zeros count_7/Q }] \
+#   ] mics_list 
+# ]
+# set mics [get_concat_pin [list \
+#    [get_concat_pin [list [get_constant_pin 0 22] count_0/Q ]] \
+#    [get_concat_pin [list [get_constant_pin 0 22] count_1/Q ]] \
+#    [get_concat_pin [list [get_constant_pin 0 22] count_2/Q ]] \
+#    [get_concat_pin [list [get_constant_pin 0 22] count_3/Q ]] \
+#    [get_concat_pin [list [get_constant_pin 0 22] count_4/Q ]] \
+#    [get_concat_pin [list [get_constant_pin 0 22] count_5/Q ]] \
+#    [get_concat_pin [list [get_constant_pin 0 22] count_6/Q ]] \
+#    [get_concat_pin [list [get_constant_pin 0 22] count_7/Q ]] \
+#   ] mics_list 
+# ]
+
+# set mics [get_concat_pin [list \
+#    [get_constant_pin 2 32]  \
+#    [get_constant_pin 4 32]  \
+#    [get_constant_pin 6 32]  \
+#    [get_constant_pin 8 32]  \
+#    [get_constant_pin 10 32]  \
+#    [get_constant_pin 12 32]  \
+#    [get_constant_pin 14 32]  \
+#    [get_constant_pin 16 32]  
+#    ]
+# ]
+# cell pavel-demin:user:axis_constant:1.0 mics_0 {
+#     AXIS_TDATA_WIDTH 256
+#   } {
+#     cfg_data $mics
+#     aclk $ps_clk0
+#   }
 #  for {set i 0} {$i < 8} {incr i} {
 #     set from [expr 31+$i*32]
 #     set to   [expr $i*32]
 #   }
 
-cell pavel-demin:user:axis_variable:1.0 mics_0 {
+# cell quantune:user:pulser pulser_0 {
+#   PULSE_WIDTH_WIDTH 12
+#   PULSE_PERIOD_WIDTH 12
+# } {
+#   clk $ps_clk0
+#   width [get_constant_pin 20 12]
+#   period [get_constant_pin 200 12]
+#   rst $rst0_name/peripheral_aresetn
+# }
+
+cell pavel-demin:user:axis_var:1.0 lockins_0 {
    AXIS_TDATA_WIDTH 256
 } {
    aclk $ps_clk0
+   strobe mics_data_valid
    aresetn $rst0_name/peripheral_aresetn
    cfg_data mics
 }
 
-cell sesenta:user:axis_tlast:1.0 tlast_0 {
+
+cell koheron:user:tlast_gen_dyn_gated:1.0 tlast_gen_0 {
   TDATA_WIDTH 256
 } {
-  enable [get_slice_pin [ctl_pin rst_regs] 3 3 enable_tlast]
+  enable [get_slice_pin [ctl_pin dma_gate] 0 0 enable_tlast]
   cfg_data [ctl_pin n_samples]
   aclk $ps_clk0
   resetn $rst0_name/peripheral_aresetn
-  s_axis mics_0/M_AXIS
+  s_axis lockins_0/m_axis
 }
+
+
+# cell pavel-demin:user:axis_variable:1.0 mics_0 {
+#   AXIS_TDATA_WIDTH 256
+# } {
+#   aclk $ps_clk0
+#   aresetn $rst0_name/peripheral_aresetn
+#   cfg_data $mics
+# }
+
+# cell sesenta:user:axis_tlast:1.0 tlast_0 {
+#   TDATA_WIDTH 256
+# } {
+#   enable [get_slice_pin [ctl_pin rst_regs] 3 3 enable_tlast]
+#   cfg_data [ctl_pin n_samples]
+#   aclk $ps_clk0
+#   resetn $rst0_name/peripheral_aresetn
+#   s_axis mics_0/M_AXIS
+# }
 
 # cell xilinx.com:ip:system_ila:1.1 ila_axis {
 #     C_SLOT_0_INTF_TYPE {xilinx.com:interface:aximm_rtl:1.0}
@@ -91,7 +204,7 @@ cell xilinx.com:ip:axi_dma:7.1 axi_dma_0 {
   c_sg_length_width 23
   c_s2mm_burst_size 64
 } {
-  S_AXIS_S2MM tlast_0/m_axis
+  S_AXIS_S2MM tlast_gen_0/m_axis
   S_AXI_LITE axi_mem_intercon_0/M02_AXI
   s_axi_lite_aclk $ps_clk0
   M_AXI_S2MM axi_mem_intercon_1/S00_AXI
