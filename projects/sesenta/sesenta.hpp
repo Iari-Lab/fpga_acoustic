@@ -99,28 +99,28 @@ class Sesenta
         uint32_t npoints = get_nsamples();
         dma.setup_transfer(mem::ram_addr, 256 * npoints );
         dma_on();
-        double pdm_f = 4000.0;
+        double pdm_f = 307200.0;
         dma_transfer_duration = float(npoints / pdm_f);
-        dma.wait(dma_transfer_duration); // so far this works
+        dma.wait_for_transfer(dma_transfer_duration); // so far this works
     }
-
-    auto get_mics(uint32_t samples) {
+    auto get_mics1(uint32_t samples) {
         start_dma_transfer(samples);
         ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
-        uint32_t mic1=0,mic2=0,mic3=0,mic4=0,mic5=0,mic6=0,mic7=0,mic8=0;
-        std::vector<uint32_t> data_ret = {};
+        uint32_t mic1 = 0, mic2 = 0, mic3 = 0, mic4 = 0, mic5 = 0, mic6 = 0,
+                mic7 = 0, mic8 = 0;
+        std::vector<int32_t> data_ret = {};
         int32_t offset = 0;
-        for (int i = 0; i < (int)samples + 1; i++) {
+        for (int i = 1; i < (int)samples + 1; i++) {
             offset = (i * 8);
             // offset = (i * 8)+(16384*8);
-            mic1= ram.read_array_value_at_index<uint32_t, 1>(i_mic0 + offset);
-            mic2= ram.read_array_value_at_index<uint32_t, 1>(i_mic1 + offset);
-            mic3= ram.read_array_value_at_index<uint32_t, 1>(i_mic2 + offset);
-            mic4= ram.read_array_value_at_index<uint32_t, 1>(i_mic3 + offset);
-            mic5= ram.read_array_value_at_index<uint32_t, 1>(i_mic4 + offset);
-            mic6= ram.read_array_value_at_index<uint32_t, 1>(i_mic5 + offset);
-            mic7= ram.read_array_value_at_index<uint32_t, 1>(i_mic6 + offset);
-            mic8= ram.read_array_value_at_index<uint32_t, 1>(i_mic7 + offset);    
+            mic1 = ram.read_array_value_at_index<int32_t, 1>(i_mic0 + offset);
+            mic2 = ram.read_array_value_at_index<int32_t, 1>(i_mic1 + offset);
+            mic3 = ram.read_array_value_at_index<int32_t, 1>(i_mic2 + offset);
+            mic4 = ram.read_array_value_at_index<int32_t, 1>(i_mic3 + offset);
+            mic5 = ram.read_array_value_at_index<int32_t, 1>(i_mic4 + offset);
+            mic6 = ram.read_array_value_at_index<int32_t, 1>(i_mic5 + offset);
+            mic7 = ram.read_array_value_at_index<int32_t, 1>(i_mic6 + offset);
+            mic8 = ram.read_array_value_at_index<int32_t, 1>(i_mic7 + offset);
 
             data_ret.push_back(mic1);
             data_ret.push_back(mic2);
@@ -130,13 +130,46 @@ class Sesenta
             data_ret.push_back(mic6);
             data_ret.push_back(mic7);
             data_ret.push_back(mic8);
-            ctx.print<INFO>("MICS1 %d %d %d %d %d %d %d %d\n", mic1, mic2, mic3, mic4,mic5, mic6, mic7, mic8);
+            ctx.print<INFO>("MICS1 %d %d %d %d %d %d %d %d\n", mic1, mic2, mic3,
+                            mic4, mic5, mic6, mic7, mic8);
         }
         dma_off();
         return data_ret;
     }
 
+    auto get_mics(uint32_t samples) {
+      start_dma_transfer(samples);
+      ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
+      uint32_t mic1 = 0, mic2 = 0, mic3 = 0, mic4 = 0, mic5 = 0, mic6 = 0,
+               mic7 = 0, mic8 = 0;
+      std::vector<uint32_t> data_ret = {};
+      int32_t offset = 0;
+      for (int i = 1; i < (int)samples + 1; i++) {
+        offset = (i * 8);
+        // offset = (i * 8)+(16384*8);
+        mic1 = ram.read_array_value_at_index<uint32_t, 1>(i_mic0 + offset);
+        mic2 = ram.read_array_value_at_index<uint32_t, 1>(i_mic1 + offset);
+        mic3 = ram.read_array_value_at_index<uint32_t, 1>(i_mic2 + offset);
+        mic4 = ram.read_array_value_at_index<uint32_t, 1>(i_mic3 + offset);
+        mic5 = ram.read_array_value_at_index<uint32_t, 1>(i_mic4 + offset);
+        mic6 = ram.read_array_value_at_index<uint32_t, 1>(i_mic5 + offset);
+        mic7 = ram.read_array_value_at_index<uint32_t, 1>(i_mic6 + offset);
+        mic8 = ram.read_array_value_at_index<uint32_t, 1>(i_mic7 + offset);
 
+        data_ret.push_back(mic1);
+        data_ret.push_back(mic2);
+        data_ret.push_back(mic3);
+        data_ret.push_back(mic4);
+        data_ret.push_back(mic5);
+        data_ret.push_back(mic6);
+        data_ret.push_back(mic7);
+        data_ret.push_back(mic8);
+        ctx.print<INFO>("MICS1 %d %d %d %d %d %d %d %d\n", mic1, mic2, mic3,
+                        mic4, mic5, mic6, mic7, mic8);
+      }
+      dma_off();
+      return data_ret;
+    }
 
     uint32_t get_mic_size() {
         return mic_size;

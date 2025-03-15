@@ -9,8 +9,8 @@ from scipy.signal import step, lti
 import numpy as np
 import os
 import time
-from sesenta import QRP
-# from sesenta import Sesenta
+# from sesenta import QRP
+from sesenta import Sesenta
 from koheron import connect
 import matplotlib
 from scipy.io.wavfile import write
@@ -34,12 +34,12 @@ class Acoustic():
         self.host = os.getenv('MYIR_HOST', host)
         # client = connect(host, 'Sesenta', restart=False)
         client = connect(host, 'lockin', restart=False)
-        self.driver = QRP(client)
+        self.driver = Sesenta(client)
         # self.driver = Sesenta(client)
         # self.driver.reset_clk_leds() 
         # self.driver.reset_clk_mics()
-        self.driver.set_rate(64)
-        self.driver.set_f1(640)
+        # self.driver.set_rate(64)
+        # self.driver.set_f1(640)
         # self.driver.reset_led()
 
     def set_rate(self, rate):
@@ -47,8 +47,9 @@ class Acoustic():
 
 
     def data_streameru(self, samples, name):
-        mics = self.driver.get_micsu(samples)
-        reshaped_array = mics.reshape(8, 32)
+        mics = self.driver.get_mics1(samples)
+        reshaped_array = mics.reshape(8, samples)
+        # for i in range(samples):
         for i in range(8):
             self.plot_step_response(reshaped_array[i], "{}{}".format(name, i))
             self.gen_audio(reshaped_array[i],"{}{}".format(name, i))

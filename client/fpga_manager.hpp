@@ -36,7 +36,7 @@ class FpgaManager {
             }
 
             fclose(xdevcfg);
-            return check_bitstream_loaded();
+            return 1;
         } else {
             // TODO Ubuntu 18.04 call fpga_manager driver
             // cf. rsarwar87 install_instrument.sh

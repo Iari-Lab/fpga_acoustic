@@ -91,7 +91,7 @@ module sesenta (
         .rst(~rst),
         .pdm_data_in(M_DATA[0]),
         .pdm_clock_in_en(1'b0),
-        .pcm_strobe_out(write_memory),
+        .pcm_strobe_out(mics_data_valid),
         .pdm_clock_out(pdm_clk),
         .pcm_data_out(mics_data[0+:32])
   ); 
@@ -134,7 +134,7 @@ module sesenta (
 
   system system_i (
       .mics(mics_data_dbg),
-      .mics_data_valid(write_memory),
+      .mics_data_valid(mics_data_valid),
       .DDR_addr(DDR_addr),
       .DDR_ba(DDR_ba),
       .DDR_cas_n(DDR_cas_n),
