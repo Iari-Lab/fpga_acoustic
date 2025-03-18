@@ -1,14 +1,14 @@
 # required TCL dependencies
 source $board_path/config/ports.tcl
-
+source $board_path/base_system.tcl
 # Add PS and AXI Interconnect
 # set board_preset $board_path/config/board_preset.tcl
 # set board_preset $board_path/config/board_preset_old_current_commit.tcl
-set board_preset $board_path/config/board_preset_rp2.tcl
+# set board_preset $board_path/config/board_preset_rp2.tcl
 # set board_preset $board_path/config/board_preset_orig_60.tcl
 # set board_preset $board_path/config/board_preset_orig.tcl
 # set board_preset $board_path/config/board_preset.tcl
-source $sdk_path/fpga/lib/starting_point.tcl
+# source $sdk_path/fpga/lib/starting_point.tcl
 source $sdk_path/projects/sesenta/amd.tcl
 # connect_pins FCLK_CLK0 $ps_clk0
 # connect_pins FCLK_CLK1 $ps_clk0
@@ -20,8 +20,8 @@ connect_port_pin reset $rst0_name/peripheral_aresetn
 
 
 # Add control and status registers
-source $sdk_path/fpga/lib/ctl_sts.tcl
-add_ctl_sts $ps_clk0 $rst0_name/peripheral_aresetn
+# source $sdk_path/fpga/lib/ctl_sts.tcl
+# add_ctl_sts $ps_clk0 $rst0_name/peripheral_aresetn
 
 # source $sdk_path/projects/sesenta/amd.tcl
 # connect_port_pin rst_regs [ctl_pin rst_regs]
@@ -134,28 +134,29 @@ connect_pins axi_mem_intercon_0/M02_ARESETN $rst0_name/peripheral_aresetn
 #     set to   [expr $i*32]
 #   }
 
-# cell quantune:user:pulser pulser_0 {
-#   PULSE_WIDTH_WIDTH 12
-#   PULSE_PERIOD_WIDTH 12
-# } {
-#   clk $ps_clk0
-#   width [get_constant_pin 20 12]
-#   period [get_constant_pin 200 12]
-#   rst $rst0_name/peripheral_aresetn
-# }
+cell quantune:user:pulser pulser_0 {
+  PULSE_WIDTH_WIDTH 12
+  PULSE_PERIOD_WIDTH 12
+} {
+  clk $ps_clk0
+  width [get_constant_pin 20 12]
+  period [get_constant_pin 200 12]
+  rst $rst0_name/peripheral_aresetn
+}
 
+  #  strobe pulser_0/f1start20
 cell pavel-demin:user:axis_var:1.0 lockins_0 {
-   AXIS_TDATA_WIDTH 256
+   AXIS_TDATA_WIDTH 32
 } {
    aclk $ps_clk0
    strobe mics_data_valid
    aresetn $rst0_name/peripheral_aresetn
-   cfg_data mics
+   cfg_data [get_slice_pin mics 32 0]
 }
 
 
 cell koheron:user:tlast_gen_dyn_gated:1.0 tlast_gen_0 {
-  TDATA_WIDTH 256
+  TDATA_WIDTH 32
 } {
   enable [get_slice_pin [ctl_pin dma_gate] 0 0 enable_tlast]
   cfg_data [ctl_pin n_samples]

@@ -93,16 +93,26 @@ class Sesenta
     //     dma_on();
     //     dma_transfer_duration = npoints / 40000;
     //     dma.wait(dma_transfer_duration); // so far this works
-    // }
+    // 
     void start_dma_transfer(uint32_t samples) {
         set_nsamples(samples + read_offset);
         uint32_t npoints = get_nsamples();
-        dma.setup_transfer(mem::ram_addr, 256 * npoints );
+        dma.setup_transfer(mem::ram_addr, 32 * npoints );
+        // dma.setup_transfer(mem::ram_addr, 256 * npoints );
         dma_on();
-        double pdm_f = 307200.0;
+        double pdm_f = 30720.0;
         dma_transfer_duration = float(npoints / pdm_f);
         dma.wait_for_transfer(dma_transfer_duration); // so far this works
     }
+    // void start_dma_transfer(uint32_t samples) {
+    //     set_nsamples(samples + read_offset);
+    //     uint32_t npoints = get_nsamples();
+    //     dma.setup_transfer(mem::ram_addr, 256 * npoints );
+    //     dma_on();
+    //     double pdm_f = 30720.0;
+    //     dma_transfer_duration = float(npoints / pdm_f);
+    //     dma.wait_for_transfer(dma_transfer_duration); // so far this works
+    // }
     auto get_mics1(uint32_t samples) {
         start_dma_transfer(samples);
         ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
@@ -170,6 +180,22 @@ class Sesenta
       dma_off();
       return data_ret;
     }
+
+    auto get_mic(uint32_t samples) {
+        start_dma_transfer(samples);
+        ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
+        uint32_t mic1=0;
+        std::vector<int32_t> data_ret = {};
+        for (uint32_t i = 1; i < samples + 1; i++) {
+            mic1= ram.read_array_value_at_index<int32_t, 1>(i);
+            data_ret.push_back(mic1);
+            ctx.print<INFO>("%d ", mic1);
+        }
+        ctx.print<INFO>("MICS0 %d\n", mic1);
+        dma_off();
+        return data_ret;
+    }
+
 
     uint32_t get_mic_size() {
         return mic_size;

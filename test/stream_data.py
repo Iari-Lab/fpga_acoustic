@@ -9,8 +9,8 @@ from scipy.signal import step, lti
 import numpy as np
 import os
 import time
-# from sesenta import QRP
-from sesenta import Sesenta
+from sesenta import QRP
+# from sesenta import Sesenta
 from koheron import connect
 import matplotlib
 from scipy.io.wavfile import write
@@ -34,7 +34,7 @@ class Acoustic():
         self.host = os.getenv('MYIR_HOST', host)
         # client = connect(host, 'Sesenta', restart=False)
         client = connect(host, 'lockin', restart=False)
-        self.driver = Sesenta(client)
+        self.driver = QRP(client)
         # self.driver = Sesenta(client)
         # self.driver.reset_clk_leds() 
         # self.driver.reset_clk_mics()
@@ -46,9 +46,37 @@ class Acoustic():
         self.driver.set_rate(rate)
 
 
+    # def to_signed(unsigned_value):
+    #     # Convert to signed
+    #     if unsigned_value >= 0x80000000:
+    #         signed_value = unsigned_value - 0x100000000
+    #     else:
+    #         signed_value = unsigned_value
+
+    def data_stream_diga(self, samples, name):
+        mics = self.driver.get_mics_ad(samples)
+        reshaped_array = np.vstack([mics[i::2] for i in range(2)])
+        # analog_mic = reshaped_array[1]
+        analog_mic = reshaped_array[1].astype(np.int32)
+        dig_mic = reshaped_array[0].astype(np.int32)
+        self.plot_step_response(analog_mic, "{}_{}".format(name, "analog"))
+        self.gen_audio(analog_mic,"{}_{}".format(name, "digital"))
+        self.plot_step_response(dig_mic, "{}{}".format(name, 1))
+        self.gen_audio(dig_mic,"{}{}".format(name, 1))
+
     def data_streameru(self, samples, name):
         mics = self.driver.get_mics1(samples)
-        reshaped_array = mics.reshape(8, samples)
+        reshaped_array = np.vstack([mics[i::8] for i in range(8)])
+        # reshaped_array = mics.reshape(8, samples)
+        # for i in range(samples):
+        for i in range(8):
+            self.plot_step_response(reshaped_array[i], "{}{}".format(name, i))
+            self.gen_audio(reshaped_array[i],"{}{}".format(name, i))
+
+    def data_streameru(self, samples, name):
+        mics = self.driver.get_mics1(samples)
+        reshaped_array = np.vstack([mics[i::8] for i in range(8)])
+        # reshaped_array = mics.reshape(8, samples)
         # for i in range(samples):
         for i in range(8):
             self.plot_step_response(reshaped_array[i], "{}{}".format(name, i))
@@ -66,7 +94,7 @@ class Acoustic():
     #     self.gen_audio(mics, name)
 
     def data_streamer(self, samples, name):
-        mics = self.driver.get_mics(samples)
+        mics = self.driver.get_mic(samples)
         # self.plot_spectrum(mics)
         # self.plot_freq_response(mics)
         self.plot_step_response(mics, name)
