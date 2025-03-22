@@ -9,8 +9,8 @@ from scipy.signal import step, lti
 import numpy as np
 import os
 import time
-from sesenta import QRP
-# from sesenta import Sesenta
+# from sesenta import QRP
+from sesenta import Sesenta
 from koheron import connect
 import matplotlib
 from scipy.io.wavfile import write
@@ -32,10 +32,10 @@ class Acoustic():
 
     def initialize_driver(self, host):
         self.host = os.getenv('MYIR_HOST', host)
-        # client = connect(host, 'Sesenta', restart=False)
-        client = connect(host, 'lockin', restart=False)
-        self.driver = QRP(client)
-        # self.driver = Sesenta(client)
+        client = connect(host, 'Sesenta', restart=False)
+        # client = connect(host, 'lockin', restart=False)
+        # self.driver = QRP(client)
+        self.driver = Sesenta(client)
         # self.driver.reset_clk_leds() 
         # self.driver.reset_clk_mics()
         # self.driver.set_rate(64)
@@ -53,19 +53,19 @@ class Acoustic():
     #     else:
     #         signed_value = unsigned_value
 
-    def data_stream_diga(self, samples, name):
+    def data_stream_diga(self, samples, name, test):
         mics = self.driver.get_mics_ad(samples)
         reshaped_array = np.vstack([mics[i::2] for i in range(2)])
         # analog_mic = reshaped_array[1]
         analog_mic = reshaped_array[1].astype(np.int32)
         dig_mic = reshaped_array[0].astype(np.int32)
-        self.plot_step_response(analog_mic, "{}_{}".format(name, "analog"))
-        self.gen_audio(analog_mic,"{}_{}".format(name, "digital"))
-        self.plot_step_response(dig_mic, "{}{}".format(name, 1))
-        self.gen_audio(dig_mic,"{}{}".format(name, 1))
+        self.plot_step_response(analog_mic, "{}_{}_{}".format(name, "analog", test))
+        self.gen_audio(analog_mic,"{}_{}_{}".format(name, "analog", test))
+        self.plot_step_response(dig_mic, "{}_{}_{}".format(name, "digital", test))
+        self.gen_audio(dig_mic,"{}_{}_{}".format(name, "digital", test))
 
-    def data_streameru(self, samples, name):
-        mics = self.driver.get_mics1(samples)
+    def data_flow(self, samples, name):
+        mics = self.driver.get_mics(samples)
         reshaped_array = np.vstack([mics[i::8] for i in range(8)])
         # reshaped_array = mics.reshape(8, samples)
         # for i in range(samples):
@@ -176,7 +176,7 @@ class Acoustic():
         data_normalized = data_centered / np.max(np.abs(data_centered))
         data_int16 = np.int16(data_normalized * 32767)
         sample_rate = 48000  # For example, if your decimated audio is 48 kHz
-        write("{}.npy".format(name), sample_rate, data_int16)
+        write("{}.wav".format(name), sample_rate, data_int16)
         print("Saving data to data.npy", data)
         np.save("{}.npy".format(name), data)
 

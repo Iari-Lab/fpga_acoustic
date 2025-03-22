@@ -10,23 +10,23 @@ source $board_path/base_system.tcl
 # set board_preset $board_path/config/board_preset.tcl
 # source $sdk_path/fpga/lib/starting_point.tcl
 source $sdk_path/projects/sesenta/amd.tcl
-# connect_pins FCLK_CLK0 $ps_clk0
-# connect_pins FCLK_CLK1 $ps_clk0
-# connect_pins peripheral_aresetn $rst0_name/peripheral_aresetn
+# connect_pins FCLK_CLK0 $mics_clk
+# connect_pins FCLK_CLK1 $mics_clk
+# connect_pins peripheral_aresetn proc_sys_reset_adc_clk/peripheral_aresetn
 
-connect_pins FCLK_CLK0 $ps_clk0
-connect_port_pin reset $rst0_name/peripheral_aresetn
+connect_pins FCLK_CLK0 $mics_clk
+connect_port_pin reset proc_sys_reset_adc_clk/peripheral_aresetn
 
 
 
 # Add control and status registers
 # source $sdk_path/fpga/lib/ctl_sts.tcl
-# add_ctl_sts $ps_clk0 $rst0_name/peripheral_aresetn
+# add_ctl_sts $mics_clk proc_sys_reset_adc_clk/peripheral_aresetn
 
 # source $sdk_path/projects/sesenta/amd.tcl
 # connect_port_pin rst_regs [ctl_pin rst_regs]
 
-connect_pins ps_0/S_AXI_HP0_ACLK $ps_clk0
+connect_pins ps_0/S_AXI_HP0_ACLK $mics_clk
 
 #config interconnect 1
  cell xilinx.com:ip:axi_interconnect:2.1 axi_mem_intercon_1 {
@@ -36,32 +36,32 @@ connect_pins ps_0/S_AXI_HP0_ACLK $ps_clk0
     SYNCHRONIZATION_STAGES 4
     CONFIG.STRATEGY 1
   } {
-    ARESETN $rst0_name/peripheral_aresetn
-    S00_ARESETN $rst0_name/peripheral_aresetn
-    M00_ARESETN $rst0_name/peripheral_aresetn
-    ACLK $ps_clk0
-    S00_ACLK $ps_clk0
-    M00_ACLK $ps_clk0
+    ARESETN proc_sys_reset_adc_clk/peripheral_aresetn
+    S00_ARESETN proc_sys_reset_adc_clk/peripheral_aresetn
+    M00_ARESETN proc_sys_reset_adc_clk/peripheral_aresetn
+    ACLK $mics_clk
+    S00_ACLK $mics_clk
+    M00_ACLK $mics_clk
     M00_AXI ps_0/S_AXI_HP0
    
   }
 
 # config interconnect 0
 set_property -dict [list CONFIG.NUM_SI {1} CONFIG.NUM_MI {3}] [get_bd_cells axi_mem_intercon_0]
-connect_pins axi_mem_intercon_0/M02_ACLK    $ps_clk0
-connect_pins axi_mem_intercon_0/M02_ARESETN $rst0_name/peripheral_aresetn
+connect_pins axi_mem_intercon_0/M02_ACLK    $mics_clk
+connect_pins axi_mem_intercon_0/M02_ARESETN proc_sys_reset_adc_clk/peripheral_aresetn
 
 # cell xilinx.com:ip:c_counter_binary:12.0 count_strobe_0 {
 #     Output_Width 12
 # } {
-#       CLK $ps_clk0
+#       CLK $mics_clk
 # }
 
 # for {set i 0} {$i < 8} {incr i} {
 #     cell xilinx.com:ip:c_counter_binary:12.0 count_$i {
 #         Output_Width 10
 #     } {
-#       CLK $ps_clk0
+#       CLK $mics_clk
 #       }
 # }
 # set left_zeros [get_constant_pin 0 22]
@@ -127,41 +127,41 @@ connect_pins axi_mem_intercon_0/M02_ARESETN $rst0_name/peripheral_aresetn
 #     AXIS_TDATA_WIDTH 256
 #   } {
 #     cfg_data $mics
-#     aclk $ps_clk0
+#     aclk $mics_clk
 #   }
 #  for {set i 0} {$i < 8} {incr i} {
 #     set from [expr 31+$i*32]
 #     set to   [expr $i*32]
 #   }
 
-cell quantune:user:pulser pulser_0 {
-  PULSE_WIDTH_WIDTH 12
-  PULSE_PERIOD_WIDTH 12
-} {
-  clk $ps_clk0
-  width [get_constant_pin 20 12]
-  period [get_constant_pin 200 12]
-  rst $rst0_name/peripheral_aresetn
-}
+# cell quantune:user:pulser pulser_0 {
+#   PULSE_WIDTH_WIDTH 12
+#   PULSE_PERIOD_WIDTH 12
+# } {
+#   clk $mics_clk
+#   width [get_constant_pin 20 12]
+#   period [get_constant_pin 200 12]
+#   rst proc_sys_reset_adc_clk/peripheral_aresetn
+# }
 
   #  strobe pulser_0/f1start20
 cell pavel-demin:user:axis_var:1.0 lockins_0 {
-   AXIS_TDATA_WIDTH 32
+   AXIS_TDATA_WIDTH 256
 } {
-   aclk $ps_clk0
+   aclk $mics_clk
    strobe mics_data_valid
-   aresetn $rst0_name/peripheral_aresetn
-   cfg_data [get_slice_pin mics 32 0]
+   aresetn proc_sys_reset_adc_clk/peripheral_aresetn
+   cfg_data mics
 }
 
 
 cell koheron:user:tlast_gen_dyn_gated:1.0 tlast_gen_0 {
-  TDATA_WIDTH 32
+  TDATA_WIDTH 256
 } {
   enable [get_slice_pin [ctl_pin dma_gate] 0 0 enable_tlast]
   cfg_data [ctl_pin n_samples]
-  aclk $ps_clk0
-  resetn $rst0_name/peripheral_aresetn
+  aclk $mics_clk
+  resetn proc_sys_reset_adc_clk/peripheral_aresetn
   s_axis lockins_0/m_axis
 }
 
@@ -169,8 +169,8 @@ cell koheron:user:tlast_gen_dyn_gated:1.0 tlast_gen_0 {
 # cell pavel-demin:user:axis_variable:1.0 mics_0 {
 #   AXIS_TDATA_WIDTH 256
 # } {
-#   aclk $ps_clk0
-#   aresetn $rst0_name/peripheral_aresetn
+#   aclk $mics_clk
+#   aresetn proc_sys_reset_adc_clk/peripheral_aresetn
 #   cfg_data $mics
 # }
 
@@ -179,8 +179,8 @@ cell koheron:user:tlast_gen_dyn_gated:1.0 tlast_gen_0 {
 # } {
 #   enable [get_slice_pin [ctl_pin rst_regs] 3 3 enable_tlast]
 #   cfg_data [ctl_pin n_samples]
-#   aclk $ps_clk0
-#   resetn $rst0_name/peripheral_aresetn
+#   aclk $mics_clk
+#   resetn proc_sys_reset_adc_clk/peripheral_aresetn
 #   s_axis mics_0/M_AXIS
 # }
 
@@ -192,9 +192,9 @@ cell koheron:user:tlast_gen_dyn_gated:1.0 tlast_gen_0 {
 #     C_NUM_MONITOR_SLOTS 1
 #   } {
 #     probe0 enable_tlast/Dout
-#     clk $ps_clk0
+#     clk $mics_clk
 #     SLOT_0_AXI axi_mem_intercon_1/S00_AXI
-#     resetn $rst0_name/peripheral_aresetn
+#     resetn proc_sys_reset_adc_clk/peripheral_aresetn
 # }
 
   # LOGIC ANALIZER DEBUG
@@ -207,10 +207,10 @@ cell xilinx.com:ip:axi_dma:7.1 axi_dma_0 {
 } {
   S_AXIS_S2MM tlast_gen_0/m_axis
   S_AXI_LITE axi_mem_intercon_0/M02_AXI
-  s_axi_lite_aclk $ps_clk0
+  s_axi_lite_aclk $mics_clk
   M_AXI_S2MM axi_mem_intercon_1/S00_AXI
-  m_axi_s2mm_aclk $ps_clk0
-  axi_resetn $rst0_name/peripheral_aresetn
+  m_axi_s2mm_aclk $mics_clk
+  axi_resetn proc_sys_reset_adc_clk/peripheral_aresetn
 }
 
 set_property -dict [list CONFIG.S00_HAS_REGSLICE {4} CONFIG.S00_HAS_DATA_FIFO {1}] [get_bd_cells axi_mem_intercon_1]

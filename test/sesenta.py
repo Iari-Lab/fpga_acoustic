@@ -7,8 +7,8 @@ import numpy as np
 
 from koheron import command
 
-class QRP(object):
-# class Sesenta(object):
+# class QRP(object):
+class Sesenta(object):
     def __init__(self, client):
         self.client = client
         self.mic_size = 1<<10
