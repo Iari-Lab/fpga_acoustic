@@ -55,19 +55,35 @@ class Sesenta(object):
 
     @command()
     def get_mics1(self, samples):
-        return self.client.recv_vector(dtype='int32')
+        return self.client.recv_vector(dtype='int16')
 
     @command()
     def get_mic(self, samples):
-        return self.client.recv_vector(dtype='int32')
+        return self.client.recv_vector(dtype='int16')
 
     @command()
     def get_mics(self, samples):
-        return self.client.recv_vector(dtype='uint32')
+        return self.client.recv_vector(dtype='uint16')
 
     @command()
     def get_mics_ad(self, samples):
-        return self.client.recv_vector(dtype='uint32')
+        return self.client.recv_vector(dtype='uint16')
+
+    # @command()
+    # def get_mics1(self, samples):
+    #     return self.client.recv_vector(dtype='int32')
+
+    # @command()
+    # def get_mic(self, samples):
+    #     return self.client.recv_vector(dtype='int32')
+
+    # @command()
+    # def get_mics(self, samples):
+    #     return self.client.recv_vector(dtype='uint32')
+
+    # @command()
+    # def get_mics_ad(self, samples):
+    #     return self.client.recv_vector(dtype='uint32')
 
     # @command()
     # def get_data(self):

@@ -43,7 +43,7 @@ module sesenta (
     output M0_CLK,
     output M1_CLK,
     output M2_CLK,
-    input [7:0] M_DATA,
+    input [29:0] M_DATA,
     output LEDS
 
 );
@@ -55,9 +55,9 @@ module sesenta (
   wire clk, clk_leds, rst;
   wire clk_rising_mics;
   wire mics_data_valid;
-  wire [255:0] mics_data, mics_data_dbg;
+  wire [511:0] mics_data, mics_data_dbg;
 
-  reg [255:0] reg_mics_data;
+  reg [511:0] reg_mics_data;
   //Reset signals
   assign M0_CLK = pdm_clk;
   assign M2_CLK = pdm_clk;
@@ -93,12 +93,12 @@ module sesenta (
         .pdm_clock_in_en(1'b0),
         .pcm_strobe_out(mics_data_valid),
         .pdm_clock_out(pdm_clk),
-        .pcm_data_out(mics_data[0+:32])
+        .pcm_data_out(mics_data[0+:16])
   ); 
 
   genvar i;
   generate
-    for (i = 1; i < 8; i = i + 1) begin : pdms_gen
+    for (i = 1; i < 30; i = i + 1) begin : pdms_gen_pose
         pdm_cic #(
     ) pdm_cic_all (
             .clk(clk),
@@ -107,24 +107,44 @@ module sesenta (
             .pdm_clock_in_en(1'b1),
             .pdm_clock_in(pdm_clk),
             .pcm_strobe_out(1'b0),
-            .pcm_data_out(mics_data[i*32+:32])
+            .pcm_data_out(mics_data[i*16+:16])
     );
     end
   endgenerate
+  // genvar j;
+  // generate
+  //   for (j = 0; j < 30; j = j + 1) begin : pdms_gen_nege
+  //       pdm_cic #(
+  //   ) pdm_cic_all (
+  //           .clk(clk),
+  //           .rst(~rst),
+  //           .pdm_data_in(M_DATA[j]),
+  //           .pdm_clock_in_en(1'b1),
+  //           .pdm_clock_in(~pdm_clk),
+  //           .pcm_strobe_out(1'b0),
+  //           .pcm_data_out(mics_data[(480+(j*16))+:16])
+  //   );
+  //   end
+  // endgenerate
 
-  ila_0 ila_bram (
-      .clk(clk),  // input wire clk
-      .probe0(pdm_clk),
-      .probe1(mics_data_valid),
-      .probe2(mics_data_dbg[32*0+:32]),
-      .probe3(mics_data_dbg[32*1+:32]),
-      .probe4(mics_data_dbg[32*2+:32]),
-      .probe5(mics_data_dbg[32*3+:32]),
-      .probe6(mics_data_dbg[32*4+:32]),
-      .probe7(mics_data_dbg[32*5+:32]),
-      .probe8(mics_data_dbg[32*6+:32]),
-      .probe9(mics_data_dbg[32*7+:32])
-  );
+ila_0 ila_bram (
+    .clk(clk),  // input wire clk
+    .probe0(pdm_clk),
+    .probe1(mics_data_valid),
+    .probe2(mics_data_dbg[16*1+:16]),
+    .probe3(mics_data_dbg[16*2+:16]),
+    .probe4(mics_data_dbg[16*3+:16]),
+    .probe5(mics_data_dbg[16*4+:16]),
+    .probe6(mics_data_dbg[16*5+:16]),
+    .probe7(mics_data_dbg[16*6+:16]),
+    .probe8(mics_data_dbg[16*7+:16]),
+    .probe9(mics_data_dbg[16*8+:16]),
+    .probe10(mics_data_dbg[16*9+:16]),
+    .probe11(mics_data_dbg[16*10+:16]),
+    .probe12(mics_data_dbg[16*11+:16]),
+    .probe13(mics_data_dbg[16*12+:16]),
+    .probe14(mics_data_dbg[16*13+:16])
+);
 
 //  ila_0 ila_bram (
 //      .clk(clk),  // input wire clk

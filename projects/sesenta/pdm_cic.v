@@ -4,59 +4,60 @@
 (* generator = "Amaranth" *)
 module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
   reg \$auto$verilog_backend.cc:2184:dump_module$23  = 0;
-  wire [32:0] \$1 ;
+  wire [19:0] \$1 ;
   wire \$10 ;
   wire [6:0] \$12 ;
   wire [6:0] \$13 ;
   wire \$15 ;
-  wire [32:0] \$17 ;
-  wire [32:0] \$18 ;
-  wire [32:0] \$2 ;
-  wire [32:0] \$20 ;
-  wire [32:0] \$21 ;
-  wire [32:0] \$23 ;
-  wire [32:0] \$24 ;
-  wire [31:0] \$26 ;
-  wire [32:0] \$4 ;
-  wire [32:0] \$5 ;
-  wire [32:0] \$7 ;
-  wire [32:0] \$8 ;
+  wire [19:0] \$17 ;
+  wire [19:0] \$18 ;
+  wire [19:0] \$2 ;
+  wire [19:0] \$20 ;
+  wire [19:0] \$21 ;
+  wire [19:0] \$23 ;
+  wire [19:0] \$24 ;
+  wire [18:0] \$26 ;
+  wire [18:0] \$27 ;
+  wire [19:0] \$4 ;
+  wire [19:0] \$5 ;
+  wire [19:0] \$7 ;
+  wire [19:0] \$8 ;
   input clk;
   wire clk;
   reg comb_edge = 1'h0;
   reg \comb_edge$next ;
   reg [5:0] decimate_counter = 6'h00;
   reg [5:0] \decimate_counter$next ;
-  reg [31:0] dy0 = 32'd0;
-  reg [31:0] \dy0$next ;
-  reg [31:0] dy1 = 32'd0;
-  reg [31:0] \dy1$next ;
-  reg [31:0] dy2 = 32'd0;
-  reg [31:0] \dy2$next ;
+  reg [18:0] dy0 = 19'h00000;
+  reg [18:0] \dy0$next ;
+  reg [18:0] dy1 = 19'h00000;
+  reg [18:0] \dy1$next ;
+  reg [18:0] dy2 = 19'h00000;
+  reg [18:0] \dy2$next ;
   input rst;
   wire rst;
-  input [31:0] signal_in;
-  wire [31:0] signal_in;
-  output [31:0] signal_out;
-  reg [31:0] signal_out = 32'd0;
-  reg [31:0] \signal_out$next ;
+  input [15:0] signal_in;
+  wire [15:0] signal_in;
+  output [15:0] signal_out;
+  reg [15:0] signal_out = 16'h0000;
+  reg [15:0] \signal_out$next ;
   input strobe_in;
   wire strobe_in;
   output strobe_out;
   reg strobe_out = 1'h0;
   reg \strobe_out$next ;
-  reg [31:0] x0 = 32'd0;
-  reg [31:0] \x0$next ;
-  reg [31:0] x1 = 32'd0;
-  reg [31:0] \x1$next ;
-  reg [31:0] x2 = 32'd0;
-  reg [31:0] \x2$next ;
-  reg [31:0] y0 = 32'd0;
-  reg [31:0] \y0$next ;
-  reg [31:0] y1 = 32'd0;
-  reg [31:0] \y1$next ;
-  reg [31:0] y2 = 32'd0;
-  reg [31:0] \y2$next ;
+  reg [18:0] x0 = 19'h00000;
+  reg [18:0] \x0$next ;
+  reg [18:0] x1 = 19'h00000;
+  reg [18:0] \x1$next ;
+  reg [18:0] x2 = 19'h00000;
+  reg [18:0] \x2$next ;
+  reg [18:0] y0 = 19'h00000;
+  reg [18:0] \y0$next ;
+  reg [18:0] y1 = 19'h00000;
+  reg [18:0] \y1$next ;
+  reg [18:0] y2 = 19'h00000;
+  reg [18:0] \y2$next ;
   assign \$10  = decimate_counter < 6'h3f;
   assign \$13  = decimate_counter + 1'h1;
   assign \$15  = decimate_counter < 6'h3f;
@@ -106,11 +107,11 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     casez (strobe_in)
       /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:79" */
       1'h1:
-          \x0$next  = \$2 [31:0];
+          \x0$next  = \$2 [18:0];
     endcase
     casez (rst)
       1'h1:
-          \x0$next  = 32'd0;
+          \x0$next  = 19'h00000;
     endcase
   end
   always @* begin
@@ -123,7 +124,7 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     endcase
     casez (rst)
       1'h1:
-          \dy0$next  = 32'd0;
+          \dy0$next  = 19'h00000;
     endcase
   end
   always @* begin
@@ -136,7 +137,7 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     endcase
     casez (rst)
       1'h1:
-          \dy1$next  = 32'd0;
+          \dy1$next  = 19'h00000;
     endcase
   end
   always @* begin
@@ -149,7 +150,7 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     endcase
     casez (rst)
       1'h1:
-          \dy2$next  = 32'd0;
+          \dy2$next  = 19'h00000;
     endcase
   end
   always @* begin
@@ -158,11 +159,11 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     casez (strobe_in)
       /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:79" */
       1'h1:
-          \x1$next  = \$5 [31:0];
+          \x1$next  = \$5 [18:0];
     endcase
     casez (rst)
       1'h1:
-          \x1$next  = 32'd0;
+          \x1$next  = 19'h00000;
     endcase
   end
   always @* begin
@@ -171,11 +172,11 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     casez (strobe_in)
       /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:79" */
       1'h1:
-          \x2$next  = \$8 [31:0];
+          \x2$next  = \$8 [18:0];
     endcase
     casez (rst)
       1'h1:
-          \x2$next  = 32'd0;
+          \x2$next  = 19'h00000;
     endcase
   end
   always @* begin
@@ -231,11 +232,11 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     casez (comb_edge)
       /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:89" */
       1'h1:
-          \y0$next  = \$18 [31:0];
+          \y0$next  = \$18 [18:0];
     endcase
     casez (rst)
       1'h1:
-          \y0$next  = 32'd0;
+          \y0$next  = 19'h00000;
     endcase
   end
   always @* begin
@@ -244,11 +245,11 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     casez (comb_edge)
       /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:89" */
       1'h1:
-          \y1$next  = \$21 [31:0];
+          \y1$next  = \$21 [18:0];
     endcase
     casez (rst)
       1'h1:
-          \y1$next  = 32'd0;
+          \y1$next  = 19'h00000;
     endcase
   end
   always @* begin
@@ -257,11 +258,11 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     casez (comb_edge)
       /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:89" */
       1'h1:
-          \y2$next  = \$24 [31:0];
+          \y2$next  = \$24 [18:0];
     endcase
     casez (rst)
       1'h1:
-          \y2$next  = 32'd0;
+          \y2$next  = 19'h00000;
     endcase
   end
   always @* begin
@@ -270,11 +271,11 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     casez (comb_edge)
       /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:89" */
       1'h1:
-          \signal_out$next  = \$26 ;
+          \signal_out$next  = \$27 [15:0];
     endcase
     casez (rst)
       1'h1:
-          \signal_out$next  = 32'd0;
+          \signal_out$next  = 16'h0000;
     endcase
   end
   assign \$1  = \$2 ;
@@ -284,7 +285,8 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
   assign \$17  = \$18 ;
   assign \$20  = \$21 ;
   assign \$23  = \$24 ;
-  assign \$26  = y2;
+  assign \$26  = \$27 ;
+  assign \$27  = { y2[18], y2[18], y2[18], y2[18:3] };
 endmodule
 
 (* \amaranth.hierarchy  = "pdm_cic.clk_divider" *)
@@ -368,17 +370,17 @@ module pdm_cic(pdm_clock_in, pdm_data_in, pcm_strobe_out, pcm_data_out, pdm_cloc
   reg \$sample$s$base_clock$sync$1  = 1'h0;
   wire \$sample$s$base_clock$sync$1$next ;
   wire base_clock;
-  reg [31:0] cic_signal_in;
-  wire [31:0] cic_signal_out;
+  reg [15:0] cic_signal_in;
+  wire [15:0] cic_signal_out;
   wire cic_strobe_in;
   wire cic_strobe_out;
   input clk;
   wire clk;
   wire clk_divider_clock_enable_in;
   wire clk_divider_clock_out;
-  output [31:0] pcm_data_out;
-  reg [31:0] pcm_data_out = 32'd0;
-  reg [31:0] \pcm_data_out$next ;
+  output [15:0] pcm_data_out;
+  reg [15:0] pcm_data_out = 16'h0000;
+  reg [15:0] \pcm_data_out$next ;
   output pcm_strobe_out;
   wire pcm_strobe_out;
   input pdm_clock_in;
@@ -451,7 +453,7 @@ module pdm_cic(pdm_clock_in, pdm_data_in, pcm_strobe_out, pcm_data_out, pdm_cloc
     endcase
     casez (rst)
       1'h1:
-          \pcm_data_out$next  = 32'd0;
+          \pcm_data_out$next  = 16'h0000;
     endcase
   end
   always @* begin
@@ -492,10 +494,10 @@ module pdm_cic(pdm_clock_in, pdm_data_in, pcm_strobe_out, pcm_data_out, pdm_cloc
     casez (pdm_data_in_sy1)
       /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/pdm_cic.py:114" */
       1'h1:
-          cic_signal_in = 32'd1;
+          cic_signal_in = 16'h0001;
       /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/pdm_cic.py:116" */
       default:
-          cic_signal_in = 32'd4294967295;
+          cic_signal_in = 16'hffff;
     endcase
   end
   assign \$sample$s$base_clock$sync$1$next  = base_clock;

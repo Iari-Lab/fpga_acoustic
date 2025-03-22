@@ -30,44 +30,10 @@ class Sesenta
     int32_t i_mic6 = 6;
     int32_t i_mic7 = 7;
 
-    // int32_t i_mic0 = 0;
-    // int32_t i_mic1 = 2;
-    // int32_t i_mic2 = 4;
-    // int32_t i_mic3 = 6;
-    // int32_t i_mic4 = 8;
-    // int32_t i_mic5 = 10;
-    // int32_t i_mic6 = 12;
-    // int32_t i_mic7 = 14;
-
     uint32_t i_rst_clk_mics = 0;
     uint32_t i_rst_leds = 1;
     unsigned int i_dma_gate = 2;
 
-
-    // void reset_led() {
-    //     ctx.print<DEBUG>(" reset led::\n");
-    //     ctl.set_bit<reg::rst_regs, 2>();
-    //     ctl.clear_bit<reg::rst_regs, 2>();
-    // }
-    // void reset_clk_mics() {
-    //     ctx.print<DEBUG>(" reset clk mics::\n");
-    //     ctl.set_bit<reg::rst_regs, 0>();
-    //     ctl.clear_bit<reg::rst_regs,0>();
-    // }
-    // void reset_clk_leds() {
-    //     ctx.print<DEBUG>(" reset leds clk::\n");
-    //     ctl.set_bit<reg::rst_regs, 1>();
-    //     ctl.clear_bit<reg::rst_regs,1>();
-    // }
-
-    // void dma_on() {
-    //     ctl.set_bit<reg::rst_regs, 3>();
-    //     ctx.print<DEBUG>(" DMA on::\n");
-    // }
-    // void dma_off() {
-    //     ctl.clear_bit<reg::rst_regs, 3>();
-    //     ctx.print<DEBUG>(" DMA off::\n");
-    // }
     void dma_on() {
         ctl.set_bit<reg::dma_gate, 0>();
     }
@@ -86,34 +52,40 @@ class Sesenta
         return samples;
     }
 
-    // void start_dma_transfer(uint32_t samples) {
-    //     set_nsamples(samples + read_offset);
-    //     uint32_t npoints = get_nsamples();
-    //     dma.setup_transfer(mem::ram_addr, 256 * npoints );
-    //     dma_on();
-    //     dma_transfer_duration = npoints / 40000;
-    //     dma.wait(dma_transfer_duration); // so far this works
-    // 
     void start_dma_transfer(uint32_t samples) {
         set_nsamples(samples + read_offset);
         uint32_t npoints = get_nsamples();
-        dma.setup_transfer(mem::ram_addr, 32 * npoints );
+        dma.setup_transfer(mem::ram_addr, 512 * npoints );
         // dma.setup_transfer(mem::ram_addr, 256 * npoints );
         dma_on();
         double pdm_f = 30720.0;
         dma_transfer_duration = float(npoints / pdm_f);
         dma.wait_for_transfer(dma_transfer_duration); // so far this works
     }
-    // void start_dma_transfer(uint32_t samples) {
-    //     set_nsamples(samples + read_offset);
-    //     uint32_t npoints = get_nsamples();
-    //     dma.setup_transfer(mem::ram_addr, 256 * npoints );
-    //     dma_on();
-    //     double pdm_f = 30720.0;
-    //     dma_transfer_duration = float(npoints / pdm_f);
-    //     dma.wait_for_transfer(dma_transfer_duration); // so far this works
-    // }
+
     auto get_mics1(uint32_t samples) {
+        start_dma_transfer(samples);
+        ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
+
+        std::vector<int16_t> data_ret = {}; 
+        int32_t offset = 0;
+
+        for (int i = 1; i < (int)samples + 1; i++) {
+            offset = (i * 30); 
+
+            for (int mic = 0; mic < 30; mic++) {
+                int16_t mic_value = ram.read_array_value_at_index<int16_t, 1>(mic + offset);
+                data_ret.push_back(mic_value); 
+                ctx.print<INFO>("%d ", mic_value);
+            }
+
+            ctx.print<INFO>("\n");
+        }
+
+        dma_off();
+        return data_ret;
+    }
+    auto get_mics2(uint32_t samples) {
         start_dma_transfer(samples);
         ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
         uint32_t mic1 = 0, mic2 = 0, mic3 = 0, mic4 = 0, mic5 = 0, mic6 = 0,

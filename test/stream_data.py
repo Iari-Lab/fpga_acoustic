@@ -73,6 +73,15 @@ class Acoustic():
             self.plot_step_response(reshaped_array[i], "{}{}".format(name, i))
             self.gen_audio(reshaped_array[i],"{}{}".format(name, i))
 
+    def data_stream_pro(self, samples, name):
+        mics = self.driver.get_mics1(samples)
+        reshaped_array = np.vstack([mics[i::30] for i in range(30)])
+        # reshaped_array = mics.reshape(8, samples)
+        # for i in range(samples):
+        for i in range(30):
+            self.plot_step_response(reshaped_array[i], "{}{}".format(name, i))
+            self.gen_audio(reshaped_array[i],"{}{}".format(name, i))
+
     def data_streameru(self, samples, name):
         mics = self.driver.get_mics1(samples)
         reshaped_array = np.vstack([mics[i::8] for i in range(8)])
