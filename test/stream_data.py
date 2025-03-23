@@ -73,6 +73,25 @@ class Acoustic():
             self.plot_step_response(reshaped_array[i], "{}{}".format(name, i))
             self.gen_audio(reshaped_array[i],"{}{}".format(name, i))
 
+   
+    def data_stream_pro2(self, samples, name):
+        mics = self.driver.get_mics1(samples)
+        reshaped_array = np.vstack([mics[i::8] for i in range(8)])
+        # reshaped_array = mics.reshape(8, samples)
+        # for i in range(samples):
+        for i in range(8):
+            self.gen_audio(reshaped_array[i],"{}{}".format(name, i))
+        self.plot_all(reshaped_array, "{}{}".format(name, 66))
+
+    def data_stream_pro(self, samples, name):
+        mics = self.driver.get_mics1(samples)
+        reshaped_array = np.vstack([mics[i::30] for i in range(30)])
+        # reshaped_array = mics.reshape(8, samples)
+        # for i in range(samples):
+        for i in range(30):
+            self.gen_audio(reshaped_array[i],"{}{}".format(name, i))
+        self.plot_all(reshaped_array, "{}{}".format(name, 66))
+
     def data_streameru(self, samples, name):
         mics = self.driver.get_mics1(samples)
         reshaped_array = np.vstack([mics[i::8] for i in range(8)])
@@ -141,6 +160,28 @@ class Acoustic():
         plt.savefig("{}".format(name))
         plt.show()
 
+    def plot_all(self, data_arrays, name):
+        """
+        Plots multiple arrays of data on the same plot.
+    
+        Parameters:
+        - data_arrays: List or array of arrays, where each sub-array represents a dataset to be plotted.
+        - name: The base name for the plot and legend.
+        """
+        plt.figure(figsize=(10, 6))
+        
+        for idx, data in enumerate(data_arrays):
+            time_axis = np.arange(len(data))
+            plt.plot(time_axis, data, label="{} {}".format(name, idx))  # Add index to the label for distinction
+    
+        plt.title("{}".format(name))
+        plt.xlabel("Time (s)")
+        plt.ylabel("Amplitude")
+        plt.grid(True)
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig("{}.png".format(name))  # Save the plot as a PNG file
+        plt.show()
     def plot_freq_response(self, data, fs=48e3):
         # Remove DC offset
         data = data - np.mean(data)

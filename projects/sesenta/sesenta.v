@@ -43,7 +43,7 @@ module sesenta (
     output M0_CLK,
     output M1_CLK,
     output M2_CLK,
-    input [7:0] M_DATA,
+    input [29:0] M_DATA,
     output LEDS
 
 );
@@ -98,7 +98,7 @@ module sesenta (
 
   genvar i;
   generate
-    for (i = 1; i < 8; i = i + 1) begin : pdms_gen
+    for (i = 1; i < 8; i = i + 1) begin : pdms_gen_pose
         pdm_cic #(
     ) pdm_cic_all (
             .clk(clk),
@@ -111,20 +111,35 @@ module sesenta (
     );
     end
   endgenerate
+  // genvar j;
+  // generate
+  //   for (j = 0; j < 30; j = j + 1) begin : pdms_gen_nege
+  //       pdm_cic #(
+  //   ) pdm_cic_all (
+  //           .clk(clk),
+  //           .rst(~rst),
+  //           .pdm_data_in(M_DATA[j]),
+  //           .pdm_clock_in_en(1'b1),
+  //           .pdm_clock_in(~pdm_clk),
+  //           .pcm_strobe_out(1'b0),
+  //           .pcm_data_out(mics_data[(480+(j*16))+:16])
+  //   );
+  //   end
+  // endgenerate
 
-  ila_0 ila_bram (
-      .clk(clk),  // input wire clk
-      .probe0(pdm_clk),
-      .probe1(mics_data_valid),
-      .probe2(mics_data_dbg[32*0+:32]),
-      .probe3(mics_data_dbg[32*1+:32]),
-      .probe4(mics_data_dbg[32*2+:32]),
-      .probe5(mics_data_dbg[32*3+:32]),
-      .probe6(mics_data_dbg[32*4+:32]),
-      .probe7(mics_data_dbg[32*5+:32]),
-      .probe8(mics_data_dbg[32*6+:32]),
-      .probe9(mics_data_dbg[32*7+:32])
-  );
+ila_0 ila_bram (
+    .clk(clk),  // input wire clk
+    .probe0(pdm_clk),
+    .probe1(mics_data_valid),
+    .probe2(mics_data_dbg[32*0+:32]),
+    .probe3(mics_data_dbg[32*1+:32]),
+    .probe4(mics_data_dbg[32*2+:32]),
+    .probe5(mics_data_dbg[32*3+:32]),
+    .probe6(mics_data_dbg[32*4+:32]),
+    .probe7(mics_data_dbg[32*5+:32]),
+    .probe8(mics_data_dbg[32*6+:32]),
+    .probe9(mics_data_dbg[32*7+:32])
+);
 
 //  ila_0 ila_bram (
 //      .clk(clk),  // input wire clk
