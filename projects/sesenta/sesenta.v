@@ -55,9 +55,9 @@ module sesenta (
   wire clk, clk_leds, rst;
   wire clk_rising_mics;
   wire mics_data_valid;
-  wire [255:0] mics_data, mics_data_dbg;
+  wire [511:0] mics_data, mics_data_dbg;
 
-  reg [255:0] reg_mics_data;
+  reg [511:0] reg_mics_data;
   //Reset signals
   assign M0_CLK = pdm_clk;
   assign M2_CLK = pdm_clk;
@@ -111,21 +111,21 @@ module sesenta (
     );
     end
   endgenerate
-  // genvar j;
-  // generate
-  //   for (j = 0; j < 30; j = j + 1) begin : pdms_gen_nege
-  //       pdm_cic #(
-  //   ) pdm_cic_all (
-  //           .clk(clk),
-  //           .rst(~rst),
-  //           .pdm_data_in(M_DATA[j]),
-  //           .pdm_clock_in_en(1'b1),
-  //           .pdm_clock_in(~pdm_clk),
-  //           .pcm_strobe_out(1'b0),
-  //           .pcm_data_out(mics_data[(480+(j*16))+:16])
-  //   );
-  //   end
-  // endgenerate
+  genvar j;
+  generate
+    for (j = 8; j < 16; j = j + 1) begin : pdms_gen_nege
+        pdm_cic #(
+    ) pdm_cic_all (
+            .clk(clk),
+            .rst(~rst),
+            .pdm_data_in(M_DATA[j]),
+            .pdm_clock_in_en(1'b1),
+            .pdm_clock_in(~pdm_clk),
+            .pcm_strobe_out(1'b0),
+            .pcm_data_out(mics_data[j*32+:32])
+    );
+    end
+  endgenerate
 
 ila_0 ila_bram (
     .clk(clk),  // input wire clk

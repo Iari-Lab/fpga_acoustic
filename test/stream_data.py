@@ -9,8 +9,8 @@ from scipy.signal import step, lti
 import numpy as np
 import os
 import time
-# from sesenta import QRP
-from sesenta import Sesenta
+from sesenta import QRP
+# from sesenta import Sesenta
 from koheron import connect
 import matplotlib
 from scipy.io.wavfile import write
@@ -32,10 +32,10 @@ class Acoustic():
 
     def initialize_driver(self, host):
         self.host = os.getenv('MYIR_HOST', host)
-        client = connect(host, 'Sesenta', restart=False)
-        # client = connect(host, 'lockin', restart=False)
-        # self.driver = QRP(client)
-        self.driver = Sesenta(client)
+        # client = connect(host, 'Sesenta', restart=False)
+        client = connect(host, 'lockin', restart=False)
+        self.driver = QRP(client)
+        # self.driver = Sesenta(client)
         # self.driver.reset_clk_leds() 
         # self.driver.reset_clk_mics()
         # self.driver.set_rate(64)
@@ -53,16 +53,134 @@ class Acoustic():
     #     else:
     #         signed_value = unsigned_value
 
-    def data_stream_diga(self, samples, name, test):
+    def data_stream_dig_unit(self, samples, name, test):
+        # mics = self.driver.get_mics(samples)
+        # mics = self.driver.get_mics(samples) / 7812.5
+        mics = self.driver.get_mics(samples) / 640.0
+        # mics = self.driver.get_mics(samples) / 2604.1
+        # mics = self.driver.get_mics(samples) / 5000.0
+        analog_mic = mics.astype(np.int32)
+        self.plot_step_response(analog_mic, "{}_{}_{}".format(name, "analog", test))
+        self.gen_audio(analog_mic,"{}_{}_{}".format(name, "analog", test))
+
+
+    def data_stream_diga2(self, samples, name, test, cic=0):
+        if cic == 0:
+            self.driver.set_cic(0)
+        if cic == 3:
+            self.driver.set_cic(3)
+        if cic == 2:
+            self.driver.set_cic(2)
+        if cic == 1:
+            self.driver.set_cic(1)
+
         mics = self.driver.get_mics_ad(samples)
         reshaped_array = np.vstack([mics[i::2] for i in range(2)])
         # analog_mic = reshaped_array[1]
-        analog_mic = reshaped_array[1].astype(np.int32)
-        dig_mic = reshaped_array[0].astype(np.int32)
-        self.plot_step_response(analog_mic, "{}_{}_{}".format(name, "analog", test))
+        # CIC 3 48k, 64, 
+        if cic == 3:
+            analog_mic = reshaped_array[0].astype(np.int32) / 2604.1 
+        # CIC 2 16k, 200, 
+        elif cic == 2:
+            analog_mic = reshaped_array[0].astype(np.int32) / 8000.0 
+        # CIC 1 25k, 125, 
+        elif cic == 1:
+            analog_mic = reshaped_array[0].astype(np.int32) / 5000.0
+        elif cic == 0:
+        # 192k, 16. CIC 0 
+            # analog_mic = reshaped_array[0].astype(np.int32) / 640.0
+            analog_mic = reshaped_array[0].astype(np.int32) / 1280.0
+
+        dig_mic = reshaped_array[1].astype(np.int32) 
+        # dig_mic = reshaped_array[0].astype(np.int32) / 5000.0
+        # dig_mic = reshaped_array[0].astype(np.int32) / 7812.5
+        # dig_mic = reshaped_array[0].astype(np.int32)
+        # self.plot_dual_axis(analog_mic, dig_mic, "{}_{}_{}".format(name, "dual", test), "Analog Mic", "Digital Mic", True)
+        # self.plot_step_response(analog_mic, "{}_{}_{}".format(name, "analog", test))
         self.gen_audio(analog_mic,"{}_{}_{}".format(name, "analog", test))
         self.plot_step_response(dig_mic, "{}_{}_{}".format(name, "digital", test))
         self.gen_audio(dig_mic,"{}_{}_{}".format(name, "digital", test))
+
+    def data_stream_diga(self, samples, name, test, cic=0):
+        if cic == 0:
+            self.driver.set_cic(0)
+        if cic == 3:
+            self.driver.set_cic(3)
+        if cic == 2:
+            self.driver.set_cic(2)
+        if cic == 1:
+            self.driver.set_cic(1)
+
+        mics = self.driver.get_mics_ad(samples)
+        reshaped_array = np.vstack([mics[i::2] for i in range(2)])
+        # analog_mic = reshaped_array[1]
+        # CIC 3 48k, 64, 
+        if cic == 3:
+            analog_mic1 = reshaped_array[0].astype(np.int32) / 2604.1 
+            analog_mic2 = reshaped_array[1].astype(np.int32) / 2604.1 
+        # CIC 2 16k, 200, 
+        elif cic == 2:
+            analog_mic1 = reshaped_array[0].astype(np.int32) / 8000.0 
+            analog_mic2 = reshaped_array[1].astype(np.int32) / 8000.0 
+        # CIC 1 25k, 125, 
+        elif cic == 1:
+            analog_mic1 = reshaped_array[0].astype(np.int32) / 5000.0
+            analog_mic2 = reshaped_array[1].astype(np.int32) / 5000.0
+        elif cic == 0:
+        # 192k, 16. CIC 0 
+            # analog_mic = reshaped_array[0].astype(np.int32) / 640.0
+            analog_mic1 = reshaped_array[0].astype(np.int32) / 1280.0
+            analog_mic2 = reshaped_array[1].astype(np.int32) / 1280.0
+
+        self.plot_dual_axis(analog_mic1, analog_mic2, "{}_{}_{}".format(name, "dual", test), "Analog Mic Infineon", "Analog Mic SPM", True)
+        # self.plot_step_response(analog_mic, "{}_{}_{}".format(name, "analog", test))
+        self.gen_audio(analog_mic1,"{}_{}_{}".format(name, "analog_infineon", test))
+        # self.plot_step_response(dig_mic, "{}_{}_{}".format(name, "digital", test))
+        self.gen_audio(analog_mic2,"{}_{}_{}".format(name, "analog_spm", test))
+
+    def plot_dual_axis(self, analog_data, digital_data, title, analog_label, digital_label, block):
+        time_axis = np.arange(len(analog_data)) 
+
+        # digital_data = digital_data - np.mean(digital_data)
+        analog_range = max(analog_data) - min(analog_data)
+        digital_range = max(digital_data) - min(digital_data)
+
+        # snr_analog_db = self.calculate_snr(analog_data)
+        # snr_digital_db = self.calculate_snr(digital_data)
+
+        fig, ax1 = plt.subplots(figsize=(10, 6))
+        ax2 = ax1.twinx()
+        
+        # ax1.scatter(time_axis, analog_data, label=f"{analog_label} (Range: {analog_range:.2f} )", color='blue')
+        ax1.plot(time_axis, analog_data, label=f"{analog_label} (Range: {analog_range:.2f} )", color='blue')
+        ax2.plot(time_axis, digital_data, label=f"{digital_label} (Range: {digital_range:.2f} )", color='orange')
+        
+        ax1.set_xlabel("Time (s)")
+        ax1.set_ylabel("Analog Amplitude", color='blue')
+        ax2.set_ylabel("Digital Amplitude", color='orange')
+        ax1.set_title(title)
+        
+        ax1.grid(True)
+        ax1.legend(loc='upper left')
+        ax2.legend(loc='upper right')
+        
+        plt.tight_layout()
+        plt.savefig(f'{title}.png')
+        plt.show(block=block)
+
+    def data_stream_diga2(self, samples, name, test):
+        mics = self.driver.get_mics_ad(samples)
+        reshaped_array = np.vstack([mics[i::3] for i in range(3)])
+        # analog_mic = reshaped_array[1]
+        analog_mic = reshaped_array[1].astype(np.int32)
+        dig_mic = reshaped_array[0].astype(np.int32)
+        dig_mic_fir = reshaped_array[2].astype(np.int32)
+        self.plot_step_response(analog_mic, "{}_{}_{}".format(name, "analog", test))
+        self.gen_audio(analog_mic,"{}_{}_{}".format(name, "analog", test))
+        self.plot_step_response(dig_mic, "{}_{}_{}".format(name, "digital_cic", test))
+        self.gen_audio(dig_mic,"{}_{}_{}".format(name, "digital_cic", test))
+        self.plot_step_response(dig_mic_fir, "{}_{}_{}".format(name, "digital_fir", test))
+        self.gen_audio(dig_mic_fir,"{}_{}_{}".format(name, "digital_fir", test))
 
     def data_flow(self, samples, name):
         mics = self.driver.get_mics(samples)
@@ -146,7 +264,7 @@ class Acoustic():
         # baseline = np.mean(data[:int(0.1 * len(data))])  # averag
         # data = data - baseline
 
-        # data = data - np.mean(data)
+        data = data - np.mean(data)
         time_axis = np.arange(len(data))
         plt.figure(figsize=(8, 4))
         plt.plot(time_axis, data, label="{}".format(name))
@@ -182,6 +300,7 @@ class Acoustic():
         plt.tight_layout()
         plt.savefig("{}.png".format(name))  # Save the plot as a PNG file
         plt.show()
+
     def plot_freq_response(self, data, fs=48e3):
         # Remove DC offset
         data = data - np.mean(data)

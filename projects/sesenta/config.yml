@@ -6,10 +6,8 @@ board: boards/myir
 cores:
   - fpga/cores/axi_ctl_register_v1_0
   - fpga/cores/axi_sts_register_v1_0
-  - fpga/cores/axis_constant_v1_0
   - fpga/cores/axis_var_v1_0
   - fpga/cores/tlast_gen_dyn_gated_v1_0
-  - fpga/cores/pulser_v1_0
 
 memory:
   - name: control
