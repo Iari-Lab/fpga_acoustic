@@ -51,14 +51,12 @@ module sesenta (
   localparam integer INPUT_FREQ = 125000000;
   localparam integer PDM_FREQ = 2400000;
   localparam integer LED_FREQ = 12000000;
-  // Clocks for mics and leds
   wire clk, clk_leds, rst;
   wire clk_rising_mics;
   wire mics_data_valid;
-  wire [511:0] mics_data, mics_data2, mics_data_dbg;
+  wire [511:0] mics_data, mics_data2, mics_data_dbg, mics_data_dbg2;
 
   reg [511:0] reg_mics_data, reg_mics_data2;
-  //Reset signals
   assign M0_CLK = pdm_clk;
   assign M2_CLK = pdm_clk;
   assign M1_CLK = pdm_clk;
@@ -97,10 +95,7 @@ module sesenta (
         .pdm_clock_out(pdm_clk),
         .pcm_data_out()
   ); 
-// // Declare the wire array
-// wire [32*16-1:0] mics_data;
 
-// Manually assign values to each 32-bit slice
   assign mics_data2[0*32+:32] = 32'd0;
   assign mics_data2[1*32+:32] = 32'd1;
   assign mics_data2[2*32+:32] = 32'd2;
@@ -134,28 +129,7 @@ assign mics_data[12*32+:32] = 32'd12;
 assign mics_data[13*32+:32] = 32'd13;
 assign mics_data[14*32+:32] = 32'd14;
 assign mics_data[15*32+:32] = 32'd15;
-// assign mics_data[16*32+:32] = 32'd16;
-// assign mics_data[17*32+:32] = 32'd17;
-// assign mics_data[18*32+:32] = 32'd18;
-// assign mics_data[19*32+:32] = 32'd19;
-// assign mics_data[20*32+:32] = 32'd20;
-// assign mics_data[21*32+:32] = 32'd21;
-// assign mics_data[22*32+:32] = 32'd22;
-// assign mics_data[23*32+:32] = 32'd23;
-// assign mics_data[24*32+:32] = 32'd24;
-// assign mics_data[25*32+:32] = 32'd25;
-// assign mics_data[26*32+:32] = 32'd26;
-// assign mics_data[27*32+:32] = 32'd27;
-// assign mics_data[28*32+:32] = 32'd28;
-// assign mics_data[29*32+:32] = 32'd29;
-// assign mics_data[30*32+:32] = 32'd30;
-// assign mics_data[31*32+:32] = 32'd31;
-  //  genvar i;
-  // generate
-  //     for (i = 1; i < 16; i = i + 1) begin : pdms_sim
-  //         assign mics_data[i*32+:32] = {29'b0, i}; // Zero-extend 'i' to 32 bits
-  //     end 
-  // endgenerate
+
   // genvar i;
   // generate
   //   for (i = 1; i < 8; i = i + 1) begin : pdms_gen_pose
@@ -202,15 +176,10 @@ ila_0 ila_bram (
     // .probe9(mics_data_dbg[32*7+:32])
 );
 
-//  ila_0 ila_bram (
-//      .clk(clk),  // input wire clk
-//      .probe0(clk_mics),
-//      .probe1(mics_data_dbg[32*0+:32])
-//  );
 
   system system_i (
       .mics(mics_data_dbg),
-      .mics2(mics_data_dbg),
+      .mics2(mics_data_dbg2),
       .mics_data_valid(mics_data_valid),
       .DDR_addr(DDR_addr),
       .DDR_ba(DDR_ba),
