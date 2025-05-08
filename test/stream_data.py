@@ -9,8 +9,8 @@ from scipy.signal import step, lti
 import numpy as np
 import os
 import time
-from sesenta import QRP
-# from sesenta import Sesenta
+# from sesenta import QRP
+from sesenta import Sesenta
 from koheron import connect
 import matplotlib
 from scipy.io.wavfile import write
@@ -34,8 +34,8 @@ class Acoustic():
         self.host = os.getenv('MYIR_HOST', host)
         # client = connect(host, 'Sesenta', restart=False)
         client = connect(host, 'lockin', restart=False)
-        self.driver = QRP(client)
-        # self.driver = Sesenta(client)
+        # self.driver = QRP(client)
+        self.driver = Sesenta(client)
         # self.driver.reset_clk_leds() 
         # self.driver.reset_clk_mics()
         # self.driver.set_rate(64)
@@ -64,7 +64,7 @@ class Acoustic():
         self.gen_audio(analog_mic,"{}_{}_{}".format(name, "analog", test))
 
 
-    def data_stream_diga2(self, samples, name, test, cic=0):
+    def data_stream_diga(self, samples, name, test, cic=0):
         if cic == 0:
             self.driver.set_cic(0)
         if cic == 3:
@@ -95,13 +95,13 @@ class Acoustic():
         # dig_mic = reshaped_array[0].astype(np.int32) / 5000.0
         # dig_mic = reshaped_array[0].astype(np.int32) / 7812.5
         # dig_mic = reshaped_array[0].astype(np.int32)
-        # self.plot_dual_axis(analog_mic, dig_mic, "{}_{}_{}".format(name, "dual", test), "Analog Mic", "Digital Mic", True)
+        self.plot_dual_axis(analog_mic, dig_mic, "{}_{}_{}".format(name, "dual", test), "Analog Mic", "Digital Mic", True)
         # self.plot_step_response(analog_mic, "{}_{}_{}".format(name, "analog", test))
         self.gen_audio(analog_mic,"{}_{}_{}".format(name, "analog", test))
-        self.plot_step_response(dig_mic, "{}_{}_{}".format(name, "digital", test))
+        # self.plot_step_response(dig_mic, "{}_{}_{}".format(name, "digital", test))
         self.gen_audio(dig_mic,"{}_{}_{}".format(name, "digital", test))
 
-    def data_stream_diga(self, samples, name, test, cic=0):
+    def data_stream_diga2(self, samples, name, test, cic=0):
         if cic == 0:
             self.driver.set_cic(0)
         if cic == 3:
@@ -183,13 +183,14 @@ class Acoustic():
         self.gen_audio(dig_mic_fir,"{}_{}_{}".format(name, "digital_fir", test))
 
     def data_flow(self, samples, name):
-        mics = self.driver.get_mics(samples)
-        reshaped_array = np.vstack([mics[i::8] for i in range(8)])
+        mics = self.driver.get_mics3(samples)
+        reshaped_array = np.vstack([mics[i::32] for i in range(32)])
+        self.plot_all(reshaped_array, "{}{}".format(name, 66))
         # reshaped_array = mics.reshape(8, samples)
         # for i in range(samples):
-        for i in range(8):
-            self.plot_step_response(reshaped_array[i], "{}{}".format(name, i))
-            self.gen_audio(reshaped_array[i],"{}{}".format(name, i))
+        # for i in range(16):
+        #     self.plot_step_response(reshaped_array[i], "{}{}".format(name, i))
+        #     self.gen_audio(reshaped_array[i],"{}{}".format(name, i))
 
    
     def data_stream_pro2(self, samples, name):
@@ -286,7 +287,8 @@ class Acoustic():
         - data_arrays: List or array of arrays, where each sub-array represents a dataset to be plotted.
         - name: The base name for the plot and legend.
         """
-        plt.figure(figsize=(10, 6))
+        # plt.subplots(figsize=(10, 6))
+        # plt.figure(figsize=(10, 6))
         
         for idx, data in enumerate(data_arrays):
             time_axis = np.arange(len(data))
@@ -332,11 +334,11 @@ class Acoustic():
         plt.show()
 
     def gen_audio(self, data, name):
-        data_centered = data - np.mean(data)
-        data_normalized = data_centered / np.max(np.abs(data_centered))
-        data_int16 = np.int16(data_normalized * 32767)
-        sample_rate = 48000  # For example, if your decimated audio is 48 kHz
-        write("{}.wav".format(name), sample_rate, data_int16)
+        # data_centered = data - np.mean(data)
+        # data_normalized = data_centered / np.max(np.abs(data_centered))
+        # data_int16 = np.int16(data_normalized * 32767)
+        # sample_rate = 48000  # For example, if your decimated audio is 48 kHz
+        # write("{}.wav".format(name), sample_rate, data_int16)
         print("Saving data to data.npy", data)
         np.save("{}.npy".format(name), data)
 

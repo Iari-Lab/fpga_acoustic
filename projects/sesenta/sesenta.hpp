@@ -97,10 +97,10 @@ class Sesenta
     void start_dma_transfer(uint32_t samples) {
         set_nsamples(samples + read_offset);
         uint32_t npoints = get_nsamples();
-        dma.setup_transfer(mem::ram_addr, 32 * npoints );
+        dma.setup_transfer(mem::ram_addr, 1024 * npoints );
         // dma.setup_transfer(mem::ram_addr, 256 * npoints );
         dma_on();
-        double pdm_f = 30720.0;
+        double pdm_f = 3072.0;
         dma_transfer_duration = float(npoints / pdm_f);
         dma.wait_for_transfer(dma_transfer_duration); // so far this works
     }
@@ -146,7 +146,58 @@ class Sesenta
         dma_off();
         return data_ret;
     }
+  auto get_mics3(uint32_t samples) {
+    const int num_mics = 32; 
+    start_dma_transfer(samples);
+    ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
 
+    int32_t mic=0; 
+    std::vector<int32_t> data_ret = {};
+    int32_t offset = 0;
+
+    for (int i = 1; i < (int)samples + 1; i++) {
+        offset = (i * num_mics); // s
+        ctx.print<INFO>("MICS1 ");
+        for (int mic_idx = 0; mic_idx < num_mics; mic_idx++) {
+            mic = ram.read_array_value_at_index<int32_t, 1>(mic_idx + offset);
+            data_ret.push_back(mic);
+            ctx.print<INFO>("%d ", mic);
+        }
+
+        ctx.print<INFO>("\n");
+    }
+
+    dma_off();
+    return data_ret;
+}
+  auto get_mics0(uint32_t samples) {
+    const int num_mics = 32; 
+    start_dma_transfer(samples);
+    ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
+
+    std::vector<uint32_t> mic_values(num_mics, 0); 
+    std::vector<int32_t> data_ret = {};
+    int32_t offset = 0;
+
+    for (int i = 1; i < (int)samples + 1; i++) {
+        offset = (i * num_mics); // s
+
+        for (int mic_idx = 0; mic_idx < num_mics; mic_idx++) {
+            mic_values[mic_idx] = ram.read_array_value_at_index<int32_t, 1>(mic_idx + offset);
+            data_ret.push_back(mic_values[mic_idx]);
+        }
+
+        // Print microphone values
+        ctx.print<INFO>("MICS1 ");
+        for (int mic_idx = 0; mic_idx < num_mics; mic_idx++) {
+            ctx.print<INFO>("%d ", mic_values[mic_idx]);
+        }
+        ctx.print<INFO>("\n");
+    }
+
+    dma_off();
+    return data_ret;
+}
     auto get_mics(uint32_t samples) {
       start_dma_transfer(samples);
       ctx.print<DEBUG>("Samples-----------------> %d\n", samples);

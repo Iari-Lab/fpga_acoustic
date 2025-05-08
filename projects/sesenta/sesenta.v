@@ -55,9 +55,9 @@ module sesenta (
   wire clk, clk_leds, rst;
   wire clk_rising_mics;
   wire mics_data_valid;
-  wire [511:0] mics_data, mics_data_dbg;
+  wire [511:0] mics_data, mics_data2, mics_data_dbg;
 
-  reg [511:0] reg_mics_data;
+  reg [511:0] reg_mics_data, reg_mics_data2;
   //Reset signals
   assign M0_CLK = pdm_clk;
   assign M2_CLK = pdm_clk;
@@ -80,9 +80,10 @@ module sesenta (
 
     always @(posedge clk) begin
         reg_mics_data <= mics_data;
+        reg_mics_data2 <= mics_data2;
     end
-
   assign mics_data_dbg = reg_mics_data;
+  assign mics_data_dbg2 = reg_mics_data2;
   wire pdm_clk, write_memory;
   assign M0_CLK = pdm_clk;
     pdm_cic #(
@@ -91,54 +92,114 @@ module sesenta (
         .rst(~rst),
         .pdm_data_in(M_DATA[0]),
         .pdm_clock_in_en(1'b0),
+        .pdm_clock_in(),
         .pcm_strobe_out(mics_data_valid),
         .pdm_clock_out(pdm_clk),
-        .pcm_data_out(mics_data[0+:32])
+        .pcm_data_out()
   ); 
+// // Declare the wire array
+// wire [32*16-1:0] mics_data;
 
-  genvar i;
-  generate
-    for (i = 1; i < 8; i = i + 1) begin : pdms_gen_pose
-        pdm_cic #(
-    ) pdm_cic_all (
-            .clk(clk),
-            .rst(~rst),
-            .pdm_data_in(M_DATA[i]),
-            .pdm_clock_in_en(1'b1),
-            .pdm_clock_in(pdm_clk),
-            .pcm_strobe_out(1'b0),
-            .pcm_data_out(mics_data[i*32+:32])
-    );
-    end
-  endgenerate
-  genvar j;
-  generate
-    for (j = 8; j < 16; j = j + 1) begin : pdms_gen_nege
-        pdm_cic #(
-    ) pdm_cic_all (
-            .clk(clk),
-            .rst(~rst),
-            .pdm_data_in(M_DATA[j]),
-            .pdm_clock_in_en(1'b1),
-            .pdm_clock_in(~pdm_clk),
-            .pcm_strobe_out(1'b0),
-            .pcm_data_out(mics_data[j*32+:32])
-    );
-    end
-  endgenerate
+// Manually assign values to each 32-bit slice
+  assign mics_data2[0*32+:32] = 32'd0;
+  assign mics_data2[1*32+:32] = 32'd1;
+  assign mics_data2[2*32+:32] = 32'd2;
+  assign mics_data2[3*32+:32] = 32'd3;
+  assign mics_data2[4*32+:32] = 32'd4;
+  assign mics_data2[5*32+:32] = 32'd5;
+  assign mics_data2[6*32+:32] = 32'd6;
+  assign mics_data2[7*32+:32] = 32'd7;
+  assign mics_data2[8*32+:32] = 32'd8;
+  assign mics_data2[9*32+:32] = 32'd9;
+  assign mics_data2[10*32+:32] = 32'd10;
+  assign mics_data2[11*32+:32] = 32'd11;
+  assign mics_data2[12*32+:32] = 32'd12;
+  assign mics_data2[13*32+:32] = 32'd13;
+  assign mics_data2[14*32+:32] = 32'd14;
+  assign mics_data2[15*32+:32] = 32'd15;
+
+assign mics_data[0*32+:32] = 32'd0;
+assign mics_data[1*32+:32] = 32'd1;
+assign mics_data[2*32+:32] = 32'd2;
+assign mics_data[3*32+:32] = 32'd3;
+assign mics_data[4*32+:32] = 32'd4;
+assign mics_data[5*32+:32] = 32'd5;
+assign mics_data[6*32+:32] = 32'd6;
+assign mics_data[7*32+:32] = 32'd7;
+assign mics_data[8*32+:32] = 32'd8;
+assign mics_data[9*32+:32] = 32'd9;
+assign mics_data[10*32+:32] = 32'd10;
+assign mics_data[11*32+:32] = 32'd11;
+assign mics_data[12*32+:32] = 32'd12;
+assign mics_data[13*32+:32] = 32'd13;
+assign mics_data[14*32+:32] = 32'd14;
+assign mics_data[15*32+:32] = 32'd15;
+// assign mics_data[16*32+:32] = 32'd16;
+// assign mics_data[17*32+:32] = 32'd17;
+// assign mics_data[18*32+:32] = 32'd18;
+// assign mics_data[19*32+:32] = 32'd19;
+// assign mics_data[20*32+:32] = 32'd20;
+// assign mics_data[21*32+:32] = 32'd21;
+// assign mics_data[22*32+:32] = 32'd22;
+// assign mics_data[23*32+:32] = 32'd23;
+// assign mics_data[24*32+:32] = 32'd24;
+// assign mics_data[25*32+:32] = 32'd25;
+// assign mics_data[26*32+:32] = 32'd26;
+// assign mics_data[27*32+:32] = 32'd27;
+// assign mics_data[28*32+:32] = 32'd28;
+// assign mics_data[29*32+:32] = 32'd29;
+// assign mics_data[30*32+:32] = 32'd30;
+// assign mics_data[31*32+:32] = 32'd31;
+  //  genvar i;
+  // generate
+  //     for (i = 1; i < 16; i = i + 1) begin : pdms_sim
+  //         assign mics_data[i*32+:32] = {29'b0, i}; // Zero-extend 'i' to 32 bits
+  //     end 
+  // endgenerate
+  // genvar i;
+  // generate
+  //   for (i = 1; i < 8; i = i + 1) begin : pdms_gen_pose
+  //       pdm_cic #(
+  //   ) pdm_cic_all (
+  //           .clk(clk),
+  //           .rst(~rst),
+  //           .pdm_data_in(M_DATA[i]),
+  //           .pdm_clock_in_en(1'b1),
+  //           .pdm_clock_in(pdm_clk),
+  //           .pcm_strobe_out(1'b0),
+  //           .pdm_clock_out(),
+  //           .pcm_data_out(mics_data[i*32+:32])
+  //   );
+  //   end
+  // endgenerate
+  // genvar j;
+  // generate
+  //   for (j = 8; j < 16; j = j + 1) begin : pdms_gen_nege
+  //       pdm_cic #(
+  //   ) pdm_cic_all (
+  //           .clk(clk),
+  //           .rst(~rst),
+  //           .pdm_data_in(M_DATA[j]),
+  //           .pdm_clock_in_en(1'b1),
+  //           .pdm_clock_in(~pdm_clk),
+  //           .pcm_strobe_out(1'b0),
+  //           .pcm_data_out(mics_data[j*32+:32])
+  //   );
+  //   end
+  // endgenerate
 
 ila_0 ila_bram (
     .clk(clk),  // input wire clk
     .probe0(pdm_clk),
-    .probe1(mics_data_valid),
-    .probe2(mics_data_dbg[32*0+:32]),
-    .probe3(mics_data_dbg[32*1+:32]),
-    .probe4(mics_data_dbg[32*2+:32]),
-    .probe5(mics_data_dbg[32*3+:32]),
-    .probe6(mics_data_dbg[32*4+:32]),
-    .probe7(mics_data_dbg[32*5+:32]),
-    .probe8(mics_data_dbg[32*6+:32]),
-    .probe9(mics_data_dbg[32*7+:32])
+    .probe1(mics_data_valid)
+    // .probe2(mics_data_dbg[32*0+:32]),
+    // .probe3(mics_data_dbg[32*1+:32]),
+    // .probe4(mics_data_dbg[32*2+:32]),
+    // .probe5(mics_data_dbg[32*3+:32]),
+    // .probe6(mics_data_dbg[32*4+:32]),
+    // .probe7(mics_data_dbg[32*5+:32]),
+    // .probe8(mics_data_dbg[32*6+:32]),
+    // .probe9(mics_data_dbg[32*7+:32])
 );
 
 //  ila_0 ila_bram (
@@ -149,6 +210,7 @@ ila_0 ila_bram (
 
   system system_i (
       .mics(mics_data_dbg),
+      .mics2(mics_data_dbg),
       .mics_data_valid(mics_data_valid),
       .DDR_addr(DDR_addr),
       .DDR_ba(DDR_ba),

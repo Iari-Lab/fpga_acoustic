@@ -7,8 +7,8 @@ import numpy as np
 
 from koheron import command
 
-class QRP(object):
-# class Sesenta(object):
+# class QRP(object):
+class Sesenta(object):
     def __init__(self, client):
         self.client = client
         self.mic_size = 1<<10
@@ -67,6 +67,10 @@ class QRP(object):
 
     @command()
     def get_mics1(self, samples):
+        return self.client.recv_vector(dtype='int32')
+
+    @command()
+    def get_mics3(self, samples):
         return self.client.recv_vector(dtype='int32')
 
     @command()
