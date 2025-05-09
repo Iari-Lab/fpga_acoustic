@@ -56,9 +56,9 @@ class PDM(Elaboratable):
             ripple/attenuation of pass/stop bands
         """
     def __init__(self,
-                 divisor: int=48,
+                 divisor: int=40,
                  bitwidth: int=32,
-                 cic_stage: int=3,
+                 cic_stage: int=5,
                  cic_decimation: int=64):
         self.pdm_clock_in_en = Signal()
         self.pdm_clock_in = Signal()
@@ -141,25 +141,49 @@ class PDM2PCMTest(GatewareTestCase):
             yield dut.pdm_data_in.eq(1 if v[i//64] > 0 else 0)
             #yield dut.pdm_clock_in.eq(1 if (i%16) >= 8 else 0)
             yield
+def save_file(module_name, verilog_str):
+    file_out = f'{module_name}.v'
+    with open(file_out, 'w') as f:
+        f.write(verilog_str)
 
 if __name__ == "__main__":
 
-    pdm2pcm = PDM()
+    pdm2cic = PDM()
 
     ports = [
-        pdm2pcm.pdm_clock_in_en,
-        pdm2pcm.pdm_clock_in,
-        pdm2pcm.pdm_data_in,
-        pdm2pcm.pcm_strobe_out,
-        pdm2pcm.pcm_data_out,   
-        pdm2pcm.pdm_clock_out
+        pdm2cic.pdm_clock_in_en,
+        pdm2cic.pdm_clock_in,
+        pdm2cic.pdm_data_in,
+        pdm2cic.pcm_strobe_out,
+        pdm2cic.pcm_data_out,   
+        pdm2cic.pdm_clock_out, 
+        pdm2cic.cic_sel
 
     ]
-    # main(pdm2pcm, name="PDM2PCM", ports=ports)
     v = verilog.convert(
-        pdm2pcm, name="pdm_cic", ports=ports,
+        pdm2cic, name="dmic_cic", ports=ports,
         emit_src=False, strip_internal_attrs=True)
     print(v)
+    save_file("{}".format("dmic_cic"), v)
+
+# if __name__ == "__main__":
+
+#     pdm2pcm = PDM()
+
+#     ports = [
+#         pdm2pcm.pdm_clock_in_en,
+#         pdm2pcm.pdm_clock_in,
+#         pdm2pcm.pdm_data_in,
+#         pdm2pcm.pcm_strobe_out,
+#         pdm2pcm.pcm_data_out,   
+#         pdm2pcm.pdm_clock_out
+
+#     ]
+#     # main(pdm2pcm, name="PDM2PCM", ports=ports)
+#     v = verilog.convert(
+#         pdm2pcm, name="pdm_cic", ports=ports,
+#         emit_src=False, strip_internal_attrs=True)
+#     print(v)
 
 # if __name__ == "__main__":
 

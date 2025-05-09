@@ -184,8 +184,8 @@ class Acoustic():
 
     def data_flow(self, samples, name):
         mics = self.driver.get_mics3(samples)
-        reshaped_array = np.vstack([mics[i::32] for i in range(32)])
-        self.plot_all(reshaped_array, "{}{}".format(name, 66))
+        reshaped_array = np.vstack([mics[i::2] for i in range(2)])
+        self.plot_all(reshaped_array, "{}{}".format(name, 666))
         # reshaped_array = mics.reshape(8, samples)
         # for i in range(samples):
         # for i in range(16):
@@ -288,9 +288,9 @@ class Acoustic():
         - name: The base name for the plot and legend.
         """
         # plt.subplots(figsize=(10, 6))
-        # plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(10, 6))
         
-        for idx, data in enumerate(data_arrays):
+        for idx, data in enumerate(data_arrays[:30]):
             time_axis = np.arange(len(data))
             plt.plot(time_axis, data, label="{} {}".format(name, idx))  # Add index to the label for distinction
     

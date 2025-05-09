@@ -148,7 +148,7 @@ class Sesenta
         return data_ret;
     }
   auto get_mics3(uint32_t samples) {
-    const int num_mics = 16; 
+    const int num_mics = 15; 
     start_dma_transfer(samples);
     ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
 
