@@ -78,9 +78,13 @@ bits: $(TMP_FPGA_PATH)/$(NAME).xpr | $(TMP_FPGA_PATH)
 	@echo [$@] OK
 
 # Build and test a module in Vivado GUI
-.PHONY: flash
+# .PHONY: flash
+# flash:
+# 	$(VIVADO_BATCH) -source $(FPGA_PATH)/vivado/flash.tcl -tclargs $(BITSTREAM)$(NAME).bit
+# Build and test a module in Vivado GUI
+.PHONY: 
 flash:
-	$(VIVADO_BATCH) -source $(FPGA_PATH)/vivado/flash.tcl -tclargs $(BITSTREAM)$(NAME).bit
+	$(VIVADO_BATCH) -source $(FPGA_PATH)/vivado/flash.tcl -tclargs $(NAME) $(TMP_FPGA_PATH)
 
 # Build and test a module in Vivado GUI
 .PHONY: test_module

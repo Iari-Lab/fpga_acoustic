@@ -19,6 +19,7 @@ class Sesenta
     , ctl(ctx.mm.get<mem::control>())
     , sts(ctx.mm.get<mem::status>())
     , ram(ctx.mm.get<mem::ram>())
+    , ram2(ctx.mm.get<mem::ram2>())
     {
     }
     int32_t i_mic0 = 0;
@@ -97,11 +98,11 @@ class Sesenta
     void start_dma_transfer(uint32_t samples) {
         set_nsamples(samples + read_offset);
         uint32_t npoints = get_nsamples();
-        dma.setup_transfer(mem::ram_addr, 1024 * npoints );
+        dma.setup_transfer(mem::ram_addr,mem::ram2_addr,  512 * npoints );
         // dma.setup_transfer(mem::ram_addr, 256 * npoints );
         dma_on();
         double pdm_f = 3072.0;
-        dma_transfer_duration = float(npoints / pdm_f);
+        dma_transfer_duration = float(npoints / pdm_f) * 2.0f;
         dma.wait_for_transfer(dma_transfer_duration); // so far this works
     }
     // void start_dma_transfer(uint32_t samples) {
@@ -147,11 +148,12 @@ class Sesenta
         return data_ret;
     }
   auto get_mics3(uint32_t samples) {
-    const int num_mics = 32; 
+    const int num_mics = 16; 
     start_dma_transfer(samples);
     ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
 
     int32_t mic=0; 
+    int32_t mic2=0; 
     std::vector<int32_t> data_ret = {};
     int32_t offset = 0;
 
@@ -163,9 +165,21 @@ class Sesenta
             data_ret.push_back(mic);
             ctx.print<INFO>("%d ", mic);
         }
+        ctx.print<INFO>("MICS2 ");
+        for (int mic_idx = 0; mic_idx < num_mics; mic_idx++) {
+            mic2 = ram2.read_array_value_at_index<int32_t, 1>(mic_idx + offset);
+            data_ret.push_back(mic2);
+            ctx.print<INFO>("%d ", mic2);
+        }
+
+        // ctx.print<INFO>("\n");
 
         ctx.print<INFO>("\n");
     }
+    // for (int i = 1; i < (int)samples + 1; i++) {
+    //     offset = (i * num_mics); // s
+    // }
+
 
     dma_off();
     return data_ret;
@@ -268,6 +282,7 @@ class Sesenta
     static constexpr float fs_adc = prm::fclk0; 
     float fs;
     Memory<mem::ram>& ram;
+    Memory<mem::ram2>& ram2;
 
 
 

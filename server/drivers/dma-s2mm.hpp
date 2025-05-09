@@ -17,11 +17,15 @@ class DmaS2MM
     DmaS2MM(Context& ctx_)
     : ctx(ctx_)
     , dma(ctx.mm.get<mem::dma>())
-    , axi_hp0(ctx.mm.get<mem::axi_hp0>())
+    , dma1(ctx.mm.get<mem::dma1>())
+    // , axi_hp0(ctx.mm.get<mem::axi_hp0>())
+    // , axi_hp1(ctx.mm.get<mem::axi_hp1>())
     {
         // Set AXI_HP0 to 32 bits
-        axi_hp0.set_bit<0x0, 0>();
-        axi_hp0.set_bit<0x14, 0>();
+        // axi_hp0.set_bit<0x0, 0>();
+        // axi_hp0.set_bit<0x14, 0>();
+        // axi_hp1.set_bit<0x0, 0>();
+        // axi_hp1.set_bit<0x14, 0>();
     }
 
     // void setup_transfer(uint32_t dest_addr, uint32_t length) {
@@ -50,10 +54,10 @@ class DmaS2MM
     //     //     remaining_time -= check_interval;
     //     // }
     // }
-  void setup_transfer(uint32_t dest_addr, uint32_t length) {
+  void setup_transfer(uint32_t dest_addr, uint32_t dest_addr2, uint32_t length) {
         reset();
         start();
-        set_destination_address(dest_addr);
+        set_destination_address(dest_addr, dest_addr2);
         set_length(length);
     }
 
@@ -69,6 +73,7 @@ class DmaS2MM
             std::this_thread::sleep_for(sleep_interval);
             total_sleep_duration -= sleep_interval;
             ctx.print<INFO>("DmaS2MM::start: halted = %d, idle = %d\n", halted()?1:0, idle()?1:0);
+            ctx.print<INFO>("DmaS2MM::start: halted = %d, idle = %d\n", halted1()?1:0, idle1()?1:0);
             // if (!idle() ) {
             //     ctx.print<DEBUG>("BREAK, iddle active: %d ms remaining\n", total_sleep_duration.count());
             //     break;
@@ -103,10 +108,13 @@ class DmaS2MM
 
     Context& ctx;
     Memory<mem::dma>& dma;
-    Memory<mem::axi_hp0>& axi_hp0;
+    Memory<mem::dma1>& dma1;
+    // Memory<mem::axi_hp0>& axi_hp0;
+    // Memory<mem::axi_hp1>& axi_hp1;
 
     void reset() {
         dma.set_bit<s2mm_dmacr, 2>();
+        dma1.set_bit<s2mm_dmacr, 2>();
 
         // Wait for reset
         uint32_t cnt = 0;
@@ -120,15 +128,25 @@ class DmaS2MM
                 break;
             }
         }
+        while (dma1.read_bit<s2mm_dmacr, 2>()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            cnt++;
+
+            if (cnt > max_sleeps_cnt) {
+                ctx.log<ERROR>("DmaS2MM::reset: Max number of sleeps exceeded.\n");
+                break;
+            }
+        }
     }
 
     void start() {
         dma.set_bit<s2mm_dmacr, 0>();
+        dma1.set_bit<s2mm_dmacr, 0>();
 
         // Wait for start up
         uint32_t cnt = 0;
 
-        while (halted()) {
+        while (halted() && halted1()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             cnt++;
 
@@ -139,12 +157,15 @@ class DmaS2MM
         }
     }
 
-    void set_destination_address(uint32_t address) {
+    void set_destination_address(uint32_t address, uint32_t address2) {
         dma.write<s2mm_da>(address);
+        dma1.write<s2mm_da>(address2);
     }
+
 
     void set_length(uint32_t length) {
         dma.write<s2mm_length>(length);
+        dma1.write<s2mm_length>(length);
     }
 
     // Status
@@ -153,8 +174,16 @@ class DmaS2MM
         return dma.read_bit<s2mm_dmasr, 0>();
     }
 
+    bool halted1() {
+        return dma1.read_bit<s2mm_dmasr, 0>();
+    }
+
     bool idle() {
         return dma.read_bit<s2mm_dmasr, 1>();
+    }
+
+    bool idle1() {
+        return dma1.read_bit<s2mm_dmasr, 1>();
     }
 };
 

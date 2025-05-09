@@ -14,8 +14,8 @@ cell xilinx.com:ip:processing_system7:5.5 $ps_name {
   PCW_USE_S_AXI_HP0 1
   PCW_USE_S_AXI_HP1 1
   PCW_EN_CLK1_PORT 0
-  PCW_S_AXI_HP0_DATA_WIDTH 32
-  PCW_S_AXI_HP1_DATA_WIDTH 32
+  PCW_S_AXI_HP0_DATA_WIDTH 64
+  PCW_S_AXI_HP1_DATA_WIDTH 64
 } {}
 
 source $board_preset
