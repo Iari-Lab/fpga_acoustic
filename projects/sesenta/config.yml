@@ -17,7 +17,7 @@ memory:
     range: 4K
     offset: '0x50000000'
   - name: ram
-    offset: '0x10000000'
+    offset: '0x1E000000'
     range: 16M
   - name: ram2
     offset: '0x1F000000'
@@ -26,8 +26,33 @@ memory:
     offset: '0x40400000'
     range: 64K
   - name: dma1
-    offset: '0x40600000'
+    offset: '0x40480000'
     range: 64K
+  - name: axi_hp0
+    offset: '0xF8008000'
+    range: 4K
+  - name: axi_hp1
+    offset: '0xF800F000'
+    range: 4K
+# memory:
+#   - name: control
+#     range: 4K
+#     offset: '0x40000000'
+#   - name: status
+#     range: 4K
+#     offset: '0x50000000'
+#   - name: ram
+#     offset: '0x1E000000'
+#     range: 16M
+#   - name: ram2
+#     offset: '0x1F000000'
+#     range: 16M
+#   - name: dma
+#     offset: '0x40400000'
+#     range: 64K
+#   - name: dma1
+#     offset: '0x40480000'
+#     range: 64K
   # - name: axi_hp0
   #   offset: '0xF8008000'
   #   range: 4K

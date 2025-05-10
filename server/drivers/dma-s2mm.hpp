@@ -18,12 +18,12 @@ class DmaS2MM
     : ctx(ctx_)
     , dma(ctx.mm.get<mem::dma>())
     , dma1(ctx.mm.get<mem::dma1>())
-    // , axi_hp0(ctx.mm.get<mem::axi_hp0>())
-    // , axi_hp1(ctx.mm.get<mem::axi_hp1>())
+    , axi_hp0(ctx.mm.get<mem::axi_hp0>())
+    , axi_hp1(ctx.mm.get<mem::axi_hp1>())
     {
         // Set AXI_HP0 to 32 bits
-        // axi_hp0.set_bit<0x0, 0>();
-        // axi_hp0.set_bit<0x14, 0>();
+        axi_hp0.set_bit<0x0, 0>();
+        axi_hp0.set_bit<0x14, 0>();
         // axi_hp1.set_bit<0x0, 0>();
         // axi_hp1.set_bit<0x14, 0>();
     }
@@ -109,8 +109,8 @@ class DmaS2MM
     Context& ctx;
     Memory<mem::dma>& dma;
     Memory<mem::dma1>& dma1;
-    // Memory<mem::axi_hp0>& axi_hp0;
-    // Memory<mem::axi_hp1>& axi_hp1;
+    Memory<mem::axi_hp0>& axi_hp0;
+    Memory<mem::axi_hp1>& axi_hp1;
 
     void reset() {
         dma.set_bit<s2mm_dmacr, 2>();
@@ -146,7 +146,16 @@ class DmaS2MM
         // Wait for start up
         uint32_t cnt = 0;
 
-        while (halted() && halted1()) {
+        while (halted()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            cnt++;
+
+            if (cnt > max_sleeps_cnt) {
+                ctx.log<ERROR>("DmaS2MM::start: Max number of sleeps exceeded.\n");
+                break;
+            }
+        }
+        while (halted1()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             cnt++;
 

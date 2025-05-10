@@ -3,28 +3,20 @@
 (* \amaranth.hierarchy  = "pdm_cic.cic" *)
 (* generator = "Amaranth" *)
 module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
-  reg \$auto$verilog_backend.cc:2184:dump_module$29  = 0;
+  reg \$auto$verilog_backend.cc:2184:dump_module$23  = 0;
   wire [32:0] \$1 ;
-  wire [32:0] \$10 ;
-  wire [32:0] \$11 ;
-  wire [32:0] \$13 ;
-  wire [32:0] \$14 ;
-  wire \$16 ;
-  wire [6:0] \$18 ;
-  wire [6:0] \$19 ;
+  wire \$10 ;
+  wire [6:0] \$12 ;
+  wire [6:0] \$13 ;
+  wire \$15 ;
+  wire [32:0] \$17 ;
+  wire [32:0] \$18 ;
   wire [32:0] \$2 ;
-  wire \$21 ;
+  wire [32:0] \$20 ;
+  wire [32:0] \$21 ;
   wire [32:0] \$23 ;
   wire [32:0] \$24 ;
-  wire [32:0] \$26 ;
-  wire [32:0] \$27 ;
-  wire [32:0] \$29 ;
-  wire [32:0] \$30 ;
-  wire [32:0] \$32 ;
-  wire [32:0] \$33 ;
-  wire [32:0] \$35 ;
-  wire [32:0] \$36 ;
-  wire [31:0] \$38 ;
+  wire [31:0] \$26 ;
   wire [32:0] \$4 ;
   wire [32:0] \$5 ;
   wire [32:0] \$7 ;
@@ -41,10 +33,6 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
   reg [31:0] \dy1$next ;
   reg [31:0] dy2 = 32'd0;
   reg [31:0] \dy2$next ;
-  reg [31:0] dy3 = 32'd0;
-  reg [31:0] \dy3$next ;
-  reg [31:0] dy4 = 32'd0;
-  reg [31:0] \dy4$next ;
   input rst;
   wire rst;
   input [31:0] signal_in;
@@ -63,45 +51,25 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
   reg [31:0] \x1$next ;
   reg [31:0] x2 = 32'd0;
   reg [31:0] \x2$next ;
-  reg [31:0] x3 = 32'd0;
-  reg [31:0] \x3$next ;
-  reg [31:0] x4 = 32'd0;
-  reg [31:0] \x4$next ;
   reg [31:0] y0 = 32'd0;
   reg [31:0] \y0$next ;
   reg [31:0] y1 = 32'd0;
   reg [31:0] \y1$next ;
   reg [31:0] y2 = 32'd0;
   reg [31:0] \y2$next ;
-  reg [31:0] y3 = 32'd0;
-  reg [31:0] \y3$next ;
-  reg [31:0] y4 = 32'd0;
-  reg [31:0] \y4$next ;
-  assign \$11  = $signed(x2) + $signed(x3);
-  assign \$14  = $signed(x3) + $signed(x4);
-  assign \$16  = decimate_counter < 6'h3f;
-  assign \$19  = decimate_counter + 1'h1;
-  assign \$21  = decimate_counter < 6'h3f;
-  assign \$24  = $signed(x4) - $signed(dy0);
-  assign \$27  = $signed(y0) - $signed(dy1);
+  assign \$10  = decimate_counter < 6'h3f;
+  assign \$13  = decimate_counter + 1'h1;
+  assign \$15  = decimate_counter < 6'h3f;
+  assign \$18  = $signed(x2) - $signed(dy0);
+  assign \$21  = $signed(y0) - $signed(dy1);
+  assign \$24  = $signed(y1) - $signed(dy2);
   assign \$2  = $signed(signal_in) + $signed(x0);
-  assign \$30  = $signed(y1) - $signed(dy2);
-  assign \$33  = $signed(y2) - $signed(dy3);
-  assign \$36  = $signed(y3) - $signed(dy4);
   assign \$5  = $signed(x0) + $signed(x1);
   assign \$8  = $signed(x1) + $signed(x2);
-  always @(posedge clk)
-    dy2 <= \dy2$next ;
-  always @(posedge clk)
-    dy1 <= \dy1$next ;
   always @(posedge clk)
     dy0 <= \dy0$next ;
   always @(posedge clk)
     signal_out <= \signal_out$next ;
-  always @(posedge clk)
-    y4 <= \y4$next ;
-  always @(posedge clk)
-    y3 <= \y3$next ;
   always @(posedge clk)
     y2 <= \y2$next ;
   always @(posedge clk)
@@ -113,10 +81,6 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
   always @(posedge clk)
     decimate_counter <= \decimate_counter$next ;
   always @(posedge clk)
-    x4 <= \x4$next ;
-  always @(posedge clk)
-    x3 <= \x3$next ;
-  always @(posedge clk)
     x2 <= \x2$next ;
   always @(posedge clk)
     x1 <= \x1$next ;
@@ -125,11 +89,11 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
   always @(posedge clk)
     strobe_out <= \strobe_out$next ;
   always @(posedge clk)
-    dy4 <= \dy4$next ;
+    dy2 <= \dy2$next ;
   always @(posedge clk)
-    dy3 <= \dy3$next ;
+    dy1 <= \dy1$next ;
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$23 ) begin end
     \strobe_out$next  = comb_edge;
     casez (rst)
       1'h1:
@@ -137,10 +101,10 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     endcase
   end
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$23 ) begin end
     \x0$next  = x0;
     casez (strobe_in)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:75" */
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:79" */
       1'h1:
           \x0$next  = \$2 [31:0];
     endcase
@@ -150,64 +114,12 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     endcase
   end
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
-    \y2$next  = y2;
-    casez (comb_edge)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:85" */
-      1'h1:
-          \y2$next  = \$30 [31:0];
-    endcase
-    casez (rst)
-      1'h1:
-          \y2$next  = 32'd0;
-    endcase
-  end
-  always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
-    \y3$next  = y3;
-    casez (comb_edge)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:85" */
-      1'h1:
-          \y3$next  = \$33 [31:0];
-    endcase
-    casez (rst)
-      1'h1:
-          \y3$next  = 32'd0;
-    endcase
-  end
-  always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
-    \y4$next  = y4;
-    casez (comb_edge)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:85" */
-      1'h1:
-          \y4$next  = \$36 [31:0];
-    endcase
-    casez (rst)
-      1'h1:
-          \y4$next  = 32'd0;
-    endcase
-  end
-  always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
-    \signal_out$next  = signal_out;
-    casez (comb_edge)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:85" */
-      1'h1:
-          \signal_out$next  = \$38 ;
-    endcase
-    casez (rst)
-      1'h1:
-          \signal_out$next  = 32'd0;
-    endcase
-  end
-  always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$23 ) begin end
     \dy0$next  = dy0;
     casez (comb_edge)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:85" */
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:89" */
       1'h1:
-          \dy0$next  = x4;
+          \dy0$next  = x2;
     endcase
     casez (rst)
       1'h1:
@@ -215,10 +127,10 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     endcase
   end
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$23 ) begin end
     \dy1$next  = dy1;
     casez (comb_edge)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:85" */
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:89" */
       1'h1:
           \dy1$next  = y0;
     endcase
@@ -228,10 +140,10 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     endcase
   end
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$23 ) begin end
     \dy2$next  = dy2;
     casez (comb_edge)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:85" */
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:89" */
       1'h1:
           \dy2$next  = y1;
     endcase
@@ -241,36 +153,10 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     endcase
   end
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
-    \dy3$next  = dy3;
-    casez (comb_edge)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:85" */
-      1'h1:
-          \dy3$next  = y2;
-    endcase
-    casez (rst)
-      1'h1:
-          \dy3$next  = 32'd0;
-    endcase
-  end
-  always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
-    \dy4$next  = dy4;
-    casez (comb_edge)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:85" */
-      1'h1:
-          \dy4$next  = y3;
-    endcase
-    casez (rst)
-      1'h1:
-          \dy4$next  = 32'd0;
-    endcase
-  end
-  always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$23 ) begin end
     \x1$next  = x1;
     casez (strobe_in)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:75" */
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:79" */
       1'h1:
           \x1$next  = \$5 [31:0];
     endcase
@@ -280,10 +166,10 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     endcase
   end
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$23 ) begin end
     \x2$next  = x2;
     casez (strobe_in)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:75" */
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:79" */
       1'h1:
           \x2$next  = \$8 [31:0];
     endcase
@@ -293,43 +179,17 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     endcase
   end
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
-    \x3$next  = x3;
-    casez (strobe_in)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:75" */
-      1'h1:
-          \x3$next  = \$11 [31:0];
-    endcase
-    casez (rst)
-      1'h1:
-          \x3$next  = 32'd0;
-    endcase
-  end
-  always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
-    \x4$next  = x4;
-    casez (strobe_in)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:75" */
-      1'h1:
-          \x4$next  = \$14 [31:0];
-    endcase
-    casez (rst)
-      1'h1:
-          \x4$next  = 32'd0;
-    endcase
-  end
-  always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$23 ) begin end
     \decimate_counter$next  = decimate_counter;
     casez (strobe_in)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:75" */
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:79" */
       1'h1:
           (* full_case = 32'd1 *)
-          casez (\$16 )
-            /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:78" */
+          casez (\$10 )
+            /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:82" */
             1'h1:
-                \decimate_counter$next  = \$19 [5:0];
-            /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:81" */
+                \decimate_counter$next  = \$13 [5:0];
+            /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:85" */
             default:
                 \decimate_counter$next  = 6'h00;
           endcase
@@ -340,23 +200,23 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     endcase
   end
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$23 ) begin end
     \comb_edge$next  = comb_edge;
     casez (strobe_in)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:75" */
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:79" */
       1'h1:
           (* full_case = 32'd1 *)
-          casez (\$21 )
-            /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:78" */
+          casez (\$15 )
+            /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:82" */
             1'h1:
                 /* empty */;
-            /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:81" */
+            /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:85" */
             default:
                 \comb_edge$next  = 1'h1;
           endcase
     endcase
     casez (comb_edge)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:85" */
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:89" */
       1'h1:
           \comb_edge$next  = 1'h0;
     endcase
@@ -366,12 +226,12 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     endcase
   end
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$23 ) begin end
     \y0$next  = y0;
     casez (comb_edge)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:85" */
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:89" */
       1'h1:
-          \y0$next  = \$24 [31:0];
+          \y0$next  = \$18 [31:0];
     endcase
     casez (rst)
       1'h1:
@@ -379,36 +239,58 @@ module cic(strobe_in, strobe_out, signal_out, rst, clk, signal_in);
     endcase
   end
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$29 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$23 ) begin end
     \y1$next  = y1;
     casez (comb_edge)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/amlib/dsp/fixedpointcicfilter.py:85" */
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:89" */
       1'h1:
-          \y1$next  = \$27 [31:0];
+          \y1$next  = \$21 [31:0];
     endcase
     casez (rst)
       1'h1:
           \y1$next  = 32'd0;
     endcase
   end
+  always @* begin
+    if (\$auto$verilog_backend.cc:2184:dump_module$23 ) begin end
+    \y2$next  = y2;
+    casez (comb_edge)
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:89" */
+      1'h1:
+          \y2$next  = \$24 [31:0];
+    endcase
+    casez (rst)
+      1'h1:
+          \y2$next  = 32'd0;
+    endcase
+  end
+  always @* begin
+    if (\$auto$verilog_backend.cc:2184:dump_module$23 ) begin end
+    \signal_out$next  = signal_out;
+    casez (comb_edge)
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/fixedpointcicfilter.py:89" */
+      1'h1:
+          \signal_out$next  = \$26 ;
+    endcase
+    casez (rst)
+      1'h1:
+          \signal_out$next  = 32'd0;
+    endcase
+  end
   assign \$1  = \$2 ;
   assign \$4  = \$5 ;
   assign \$7  = \$8 ;
-  assign \$10  = \$11 ;
-  assign \$13  = \$14 ;
-  assign \$18  = \$19 ;
+  assign \$12  = \$13 ;
+  assign \$17  = \$18 ;
+  assign \$20  = \$21 ;
   assign \$23  = \$24 ;
-  assign \$26  = \$27 ;
-  assign \$29  = \$30 ;
-  assign \$32  = \$33 ;
-  assign \$35  = \$36 ;
-  assign \$38  = y4;
+  assign \$26  = y2;
 endmodule
 
 (* \amaranth.hierarchy  = "pdm_cic.clk_divider" *)
 (* generator = "Amaranth" *)
 module clk_divider(clock_out, rst, clk, clock_enable_in);
-  reg \$auto$verilog_backend.cc:2184:dump_module$30  = 0;
+  reg \$auto$verilog_backend.cc:2184:dump_module$24  = 0;
   wire \$1 ;
   wire \$3 ;
   wire \$5 ;
@@ -425,26 +307,26 @@ module clk_divider(clock_out, rst, clk, clock_enable_in);
   reg \clock_out$next ;
   input rst;
   wire rst;
-  assign \$1  = clock_counter >= 5'h13;
+  assign \$1  = clock_counter >= 5'h17;
   assign \$3  = ~ clock_out;
-  assign \$5  = clock_counter >= 5'h13;
+  assign \$5  = clock_counter >= 5'h17;
   assign \$8  = clock_counter + 1'h1;
   always @(posedge clk)
     clock_counter <= \clock_counter$next ;
   always @(posedge clk)
     clock_out <= \clock_out$next ;
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$30 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$24 ) begin end
     \clock_out$next  = clock_out;
     casez (\$1 )
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/test/clockdivider.py:20" */
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/test/clockdivider.py:20" */
       1'h1:
           (* full_case = 32'd1 *)
           casez (clock_enable_in)
-            /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/test/clockdivider.py:21" */
+            /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/test/clockdivider.py:21" */
             1'h1:
                 \clock_out$next  = \$3 ;
-            /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/test/clockdivider.py:23" */
+            /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/test/clockdivider.py:23" */
             default:
                 \clock_out$next  = 1'h0;
           endcase
@@ -455,13 +337,13 @@ module clk_divider(clock_out, rst, clk, clock_enable_in);
     endcase
   end
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$30 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$24 ) begin end
     (* full_case = 32'd1 *)
     casez (\$5 )
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/test/clockdivider.py:20" */
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/test/clockdivider.py:20" */
       1'h1:
           \clock_counter$next  = 5'h00;
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/test/clockdivider.py:28" */
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/test/clockdivider.py:28" */
       default:
           \clock_counter$next  = \$8 [4:0];
     endcase
@@ -477,7 +359,7 @@ endmodule
 (* top =  1  *)
 (* generator = "Amaranth" *)
 module pdm_cic(pdm_clock_in, pdm_data_in, pcm_strobe_out, pcm_data_out, pdm_clock_out, clk, rst, pdm_clock_in_en);
-  reg \$auto$verilog_backend.cc:2184:dump_module$31  = 0;
+  reg \$auto$verilog_backend.cc:2184:dump_module$25  = 0;
   wire \$1 ;
   wire \$3 ;
   wire \$5 ;
@@ -552,7 +434,7 @@ module pdm_cic(pdm_clock_in, pdm_data_in, pcm_strobe_out, pcm_data_out, pdm_cloc
     .rst(rst)
   );
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$31 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$25 ) begin end
     \pdm_clock_in_sy0$next  = pdm_clock_in;
     casez (rst)
       1'h1:
@@ -560,10 +442,10 @@ module pdm_cic(pdm_clock_in, pdm_data_in, pcm_strobe_out, pcm_data_out, pdm_cloc
     endcase
   end
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$31 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$25 ) begin end
     \pcm_data_out$next  = pcm_data_out;
     casez (strobe_out)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/pdm_cic2.py:125" */
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/pdm_cic.py:125" */
       1'h1:
           \pcm_data_out$next  = cic_signal_out;
     endcase
@@ -573,7 +455,7 @@ module pdm_cic(pdm_clock_in, pdm_data_in, pcm_strobe_out, pcm_data_out, pdm_cloc
     endcase
   end
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$31 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$25 ) begin end
     \pdm_clock_in_sy1$next  = pdm_clock_in_sy0;
     casez (rst)
       1'h1:
@@ -581,7 +463,7 @@ module pdm_cic(pdm_clock_in, pdm_data_in, pcm_strobe_out, pcm_data_out, pdm_cloc
     endcase
   end
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$31 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$25 ) begin end
     \pdm_clock_out$next  = clk_divider_clock_out;
     casez (rst)
       1'h1:
@@ -589,7 +471,7 @@ module pdm_cic(pdm_clock_in, pdm_data_in, pcm_strobe_out, pcm_data_out, pdm_cloc
     endcase
   end
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$31 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$25 ) begin end
     \pdm_data_in_sy0$next  = pdm_data_in;
     casez (rst)
       1'h1:
@@ -597,7 +479,7 @@ module pdm_cic(pdm_clock_in, pdm_data_in, pcm_strobe_out, pcm_data_out, pdm_cloc
     endcase
   end
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$31 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$25 ) begin end
     \pdm_data_in_sy1$next  = pdm_data_in_sy0;
     casez (rst)
       1'h1:
@@ -605,13 +487,13 @@ module pdm_cic(pdm_clock_in, pdm_data_in, pcm_strobe_out, pcm_data_out, pdm_cloc
     endcase
   end
   always @* begin
-    if (\$auto$verilog_backend.cc:2184:dump_module$31 ) begin end
+    if (\$auto$verilog_backend.cc:2184:dump_module$25 ) begin end
     (* full_case = 32'd1 *)
     casez (pdm_data_in_sy1)
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/pdm_cic2.py:114" */
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/pdm_cic.py:114" */
       1'h1:
           cic_signal_in = 32'd1;
-      /* src = "/home/tucanae47/gitprojects/Q_record_transient_mix2/mic_characterization/pdm_cic2.py:116" */
+      /* src = "/home/tucanae47/gitprojects/Q_DMIC/fpga/cores/cic_v1_0/pdm_cic.py:116" */
       default:
           cic_signal_in = 32'd4294967295;
     endcase
@@ -623,3 +505,4 @@ module pdm_cic(pdm_clock_in, pdm_data_in, pcm_strobe_out, pcm_data_out, pdm_cloc
   assign base_clock = \$3 ;
   assign clk_divider_clock_enable_in = \$1 ;
 endmodule
+
