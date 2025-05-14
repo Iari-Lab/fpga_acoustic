@@ -185,7 +185,10 @@ class Acoustic():
     def data_flow(self, samples, name):
         mics = self.driver.get_mics3(samples)
         reshaped_array = np.vstack([mics[i::2] for i in range(2)])
+        # reshaped_array = reshaped_array.astype(np.uint64)
+        print(reshaped_array)
         self.plot_all(reshaped_array, "{}{}".format(name, 666))
+        # self.plot_all(reshaped_array.astype(np.int64), "{}{}".format(name, 666))
         # reshaped_array = mics.reshape(8, samples)
         # for i in range(samples):
         # for i in range(16):

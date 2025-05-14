@@ -96,6 +96,39 @@ module sesenta (
         .pcm_data_out()
   ); 
 
+// assign mics_data2[0*32+:32] = 32'd16;
+// assign mics_data2[1*32+:32] = 32'd0;  // Odd position set to 0
+// assign mics_data2[2*32+:32] = 32'd18;
+// assign mics_data2[3*32+:32] = 32'd0;  // Odd position set to 0
+// assign mics_data2[4*32+:32] = 32'd20;
+// assign mics_data2[5*32+:32] = 32'd0;  // Odd position set to 0
+// assign mics_data2[6*32+:32] = 32'd22;
+// assign mics_data2[7*32+:32] = 32'd0;  // Odd position set to 0
+// assign mics_data2[8*32+:32] = 32'd24;
+// assign mics_data2[9*32+:32] = 32'd0;  // Odd position set to 0
+// assign mics_data2[10*32+:32] = 32'd26;
+// assign mics_data2[11*32+:32] = 32'd0;  // Odd position set to 0
+// assign mics_data2[12*32+:32] = 32'd28;
+// assign mics_data2[13*32+:32] = 32'd0;  // Odd position set to 0
+// assign mics_data2[14*32+:32] = 32'd30;
+// assign mics_data2[15*32+:32] = 32'd0;  // Odd position set to 0
+
+// assign mics_data[0*32+:32] = 32'd0;
+// assign mics_data[1*32+:32] = 32'd0;  // Odd position set to 0
+// assign mics_data[2*32+:32] = 32'd2;
+// assign mics_data[3*32+:32] = 32'd0;  // Odd position set to 0
+// assign mics_data[4*32+:32] = 32'd4;
+// assign mics_data[5*32+:32] = 32'd0;  // Odd position set to 0
+// assign mics_data[6*32+:32] = 32'd6;
+// assign mics_data[7*32+:32] = 32'd0;  // Odd position set to 0
+// assign mics_data[8*32+:32] = 32'd8;
+// assign mics_data[9*32+:32] = 32'd0;  // Odd position set to 0
+// assign mics_data[10*32+:32] = 32'd10;
+// assign mics_data[11*32+:32] = 32'd0;  // Odd position set to 0
+// assign mics_data[12*32+:32] = 32'd12;
+// assign mics_data[13*32+:32] = 32'd0;  // Odd position set to 0
+// assign mics_data[14*32+:32] = 32'd14;
+// assign mics_data[15*32+:32] = 32'd0;  // Odd position set to 0
   assign mics_data2[0*32+:32] = 32'd16;
   assign mics_data2[1*32+:32] = 32'd17;
   assign mics_data2[2*32+:32] = 32'd18;
@@ -129,6 +162,24 @@ assign mics_data[12*32+:32] = 32'd12;
 assign mics_data[13*32+:32] = 32'd13;
 assign mics_data[14*32+:32] = 32'd14;
 assign mics_data[15*32+:32] = 32'd15;
+
+// assign mics_data2[0*64+:64] = 64'd16;
+// assign mics_data2[1*64+:64] = 64'd17;
+// assign mics_data2[2*64+:64] = 64'd18;
+// assign mics_data2[3*64+:64] = 64'd19;
+// assign mics_data2[4*64+:64] = 64'd20;
+// assign mics_data2[5*64+:64] = 64'd21;
+// assign mics_data2[6*64+:64] = 64'd22;
+// assign mics_data2[7*64+:64] = 64'd23;
+
+// assign mics_data[0*64+:64] = 64'd4294967296;  // 2^32
+// assign mics_data[1*64+:64] = 64'd4294967297;  // 2^32 + 1
+// assign mics_data[2*64+:64] = 64'd4294967298;  // 2^32 + 2
+// assign mics_data[3*64+:64] = 64'd4294967299;  // 2^32 + 3
+// assign mics_data[4*64+:64] = 64'd4294967300;  // 2^32 + 4
+// assign mics_data[5*64+:64] = 64'd4294967301;  // 2^32 + 5
+// assign mics_data[6*64+:64] = 64'd4294967302;  // 2^32 + 6
+// assign mics_data[7*64+:64] = 64'd4294967303;  // 2^32 + 7
 
   // genvar i;
   // genvar j,idx;

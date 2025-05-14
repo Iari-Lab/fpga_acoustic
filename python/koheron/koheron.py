@@ -199,7 +199,7 @@ cpp_to_np_types = {
   'uint16_t': 'uint16', 'int16_t': 'int16',
   'uint32_t': 'uint32', 'unsigned int': 'uint32',
   'int32_t': 'int32', 'int': 'int32',
-  'uint64_t': 'uint64', 'int64_t': 'int64',
+  'uint64_t': 'uint64', 'int64_t': 'int64', 'long long': 'int64','unsigned long long': 'uint64',
   'float': 'float32',
   'double': 'float64'
 }

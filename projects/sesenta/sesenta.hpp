@@ -150,16 +150,44 @@ class Sesenta
         dma_off();
         return data_ret;
     }
-  auto get_mics3(uint32_t samples) {
-    const int num_mics = 15; 
+  
+  
+  auto get_mics4(uint32_t samples) {
+    const int num_mics =8; 
     start_dma_transfer(samples);
     ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
-
+    int64_t mic=0; 
+    int64_t mic2=0; 
+    std::vector<int32_t> data_ret = {};
+    int32_t offset = 0;
+    dma_off();
+    for (int i = 1; i < (int)samples + 1; i++) {
+        offset = (i * num_mics); // s
+        ctx.print<INFO>("MICS1 ");
+        for (int mic_idx = 0; mic_idx < num_mics; mic_idx++) {
+            mic = ram.read_array_value_at_index<int64_t, 1>(mic_idx + offset);
+            data_ret.push_back((int32_t)mic);
+            ctx.print<INFO>("%d ", mic);
+        }
+        ctx.print<INFO>("MICS2 ");
+        for (int mic_idx = 0; mic_idx < num_mics; mic_idx++) {
+            mic2 = ram2.read_array_value_at_index<int64_t, 1>(mic_idx + offset);
+            data_ret.push_back((int32_t)mic2);
+            ctx.print<INFO>("%d ", mic2);
+        }
+        ctx.print<INFO>("\n");
+    }
+    return data_ret;
+} 
+  auto get_mics3(uint32_t samples) {
+    const int num_mics =16; 
+    start_dma_transfer(samples);
+    ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
     int32_t mic=0; 
     int32_t mic2=0; 
     std::vector<int32_t> data_ret = {};
     int32_t offset = 0;
-
+    dma_off();
     for (int i = 1; i < (int)samples + 1; i++) {
         offset = (i * num_mics); // s
         ctx.print<INFO>("MICS1 ");
@@ -174,6 +202,41 @@ class Sesenta
             data_ret.push_back(mic2);
             ctx.print<INFO>("%d ", mic2);
         }
+        ctx.print<INFO>("\n");
+    }
+    return data_ret;
+} 
+  
+  auto get_mics5(uint32_t samples) {
+    const int num_mics = 8; 
+    start_dma_transfer(samples);
+    ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
+
+    int64_t mic=0; 
+    // int64_t mic2=0; 
+    std::vector<int32_t> data_ret = {};
+    int32_t offset = 0;
+
+    for (int i = 1; i < (int)samples + 1; i++) {
+        offset = (i * num_mics); // s
+        ctx.print<INFO>("MICS1 ");
+        for (int mic_idx = 0; mic_idx < num_mics; mic_idx++) {
+            mic = ram.read_array_value_at_index<int32_t, 1>(mic_idx + offset);
+            data_ret.push_back(mic);
+            ctx.print<INFO>("%d ", mic);
+            // mic = ram.read_array_value_at_index<int32_t, 1>(mic_idx + offset + 1);
+            // data_ret.push_back(mic);
+            // ctx.print<INFO>("%d ", mic);
+        }
+        ctx.print<INFO>("MICS2 ");
+        // for (int mic_idx = 0; mic_idx < num_mics; mic_idx++) {
+        //     mic2 = ram2.read_array_value_at_index<int32_t, 1>(mic_idx + offset);
+        //     data_ret.push_back(mic2);
+        //     ctx.print<INFO>("%d ", mic2);
+        //     mic2 = ram2.read_array_value_at_index<int32_t, 1>(mic_idx + offset + 1);
+        //     data_ret.push_back(mic2);
+        //     ctx.print<INFO>("%d ", mic2);
+        // }
 
         // ctx.print<INFO>("\n");
 
