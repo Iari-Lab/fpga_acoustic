@@ -104,7 +104,7 @@ class Sesenta
 
         // double pdm_f = 3072.0;
         // dma_transfer_duration = float(npoints / pdm_f) * 2.0f;
-        double pdm_f = 30720.0;
+        double pdm_f = 3072.0;
         dma_transfer_duration = float(npoints / pdm_f);
         dma.wait_for_transfer(dma_transfer_duration); // so far this works
     }

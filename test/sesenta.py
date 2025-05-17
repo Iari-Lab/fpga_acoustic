@@ -71,7 +71,7 @@ class Sesenta(object):
 
     @command()
     def get_mics3(self, samples):
-        return self.client.recv_vector(dtype='uint32')
+        return self.client.recv_vector(dtype='int32')
 
     @command()
     def get_mic(self, samples):

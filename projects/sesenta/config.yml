@@ -1,7 +1,7 @@
 ---
 name: sesenta
-board: boards/red-pitaya
-# board: boards/myir
+# board: boards/red-pitaya
+board: boards/myir
 
 cores:
   - fpga/cores/axi_ctl_register_v1_0
