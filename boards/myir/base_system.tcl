@@ -3,7 +3,7 @@
 # test 1 failed
 # set board_preset $board_path/board_preset_works.tcl
 
-# test 2 
+# test 2 failed
 # set board_preset $board_path/board_preset.tcl
 
 # test 3 
