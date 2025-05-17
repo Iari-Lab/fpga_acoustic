@@ -1,12 +1,5 @@
 
 # Add PS and AXI Interconnect
-# test 1 failed
-# set board_preset $board_path/board_preset_works.tcl
-
-# test 2 failed
-# set board_preset $board_path/board_preset.tcl
-
-# test 3  2nd dma works failed too, works?
 set board_preset $board_path/config/board_preset_1600K_l.tcl
 
 source $sdk_path/fpga/lib/starting_point.tcl
