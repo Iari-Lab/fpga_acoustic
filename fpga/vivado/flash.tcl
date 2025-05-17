@@ -6,7 +6,7 @@ open_hw_manager
 connect_hw_server -allow_non_jtag
 
 open_hw_target
-set bigf 1
+set bigf 0
 if {$bigf} {
    current_hw_device [get_hw_devices xc7z010_1]
 }

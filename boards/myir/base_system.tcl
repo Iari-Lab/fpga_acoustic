@@ -1,9 +1,13 @@
 
 # Add PS and AXI Interconnect
 # test 1 failed
-set board_preset $board_path/board_preset_works.tcl
+# set board_preset $board_path/board_preset_works.tcl
 
-set board_preset $board_path/board_works.tcl
+# test 2 
+# set board_preset $board_path/board_preset.tcl
+
+# test 3 
+set board_preset $board_path/config/board_preset_orig_60.tcl
 
 # set board_preset $board_path/config/board_preset_orig2.tcl
 # set board_preset $board_path/config/board_preset_rp2.tcl
