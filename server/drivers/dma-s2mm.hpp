@@ -22,8 +22,8 @@ class DmaS2MM
     , axi_hp1(ctx.mm.get<mem::axi_hp1>())
     {
         // Set AXI_HP0 to 32 bits
-        axi_hp0.set_bit<0x0, 0>();
-        axi_hp0.set_bit<0x14, 0>();
+        // axi_hp0.set_bit<0x0, 0>();
+        // axi_hp0.set_bit<0x14, 0>();
         // axi_hp1.set_bit<0x0, 0>();
         // axi_hp1.set_bit<0x14, 0>();
     }

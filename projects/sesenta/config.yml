@@ -97,6 +97,7 @@ memory:
 control_registers:
   - rst_regs
   - dma_gate
+  - dma_gate1
   - n_samples
 
 status_registers:

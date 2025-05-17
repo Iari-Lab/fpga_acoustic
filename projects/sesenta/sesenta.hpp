@@ -75,6 +75,12 @@ class Sesenta
     void dma_off() {
         ctl.clear_bit<reg::dma_gate, 0>();
     }
+    void dma1_on() {
+        ctl.set_bit<reg::dma_gate1, 0>();
+    }
+    void dma1_off() {
+        ctl.clear_bit<reg::dma_gate1, 0>();
+    }
 
     void set_nsamples(uint32_t samples) {
         ctx.print<DEBUG>(" set SAMPLES %d ::\n", samples);
@@ -101,6 +107,7 @@ class Sesenta
         dma.setup_transfer(mem::ram_addr,mem::ram2_addr,  512 * npoints );
         // dma.setup_transfer(mem::ram_addr, 256 * npoints );
         dma_on();
+        dma1_on();
 
         // double pdm_f = 3072.0;
         // dma_transfer_duration = float(npoints / pdm_f) * 2.0f;
@@ -188,6 +195,7 @@ class Sesenta
     std::vector<int32_t> data_ret = {};
     int32_t offset = 0;
     dma_off();
+    dma1_off();
     for (int i = 1; i < (int)samples + 1; i++) {
         offset = (i * num_mics); // s
         ctx.print<INFO>("MICS1 ");

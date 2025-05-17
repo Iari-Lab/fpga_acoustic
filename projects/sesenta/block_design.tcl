@@ -103,7 +103,7 @@ cell koheron:user:tlast_gen_dyn_gated:1.0 tlast_gen_0 {
 cell koheron:user:tlast_gen_dyn_gated:1.0 tlast_gen_1 {
   TDATA_WIDTH 512
 } {
-  enable [get_slice_pin [ctl_pin dma_gate] 0 0 enable_tlast]
+  enable [get_slice_pin [ctl_pin dma_gate1] 0 0 enable_tlast]
   cfg_data [ctl_pin n_samples]
   aclk $mics_clk
   resetn proc_sys_reset_adc_clk/peripheral_aresetn

@@ -6,11 +6,10 @@ open_hw_manager
 connect_hw_server -allow_non_jtag
 
 open_hw_target
-set bigf 0
-if {$bigf} {
+set z010 0
+if {$z010} {
    current_hw_device [get_hw_devices xc7z010_1]
-}
-else{
+} else {
     current_hw_device [get_hw_devices xc7z020_1]
 }
 
@@ -25,21 +24,20 @@ puts "ltx_file: $ltx_file"
 puts "full_bit_filename: $full_bit_filename"
 
 
-if {$bigf} {
+if {$z010} {
     set_property PROBES.FILE $ltx_file [get_hw_devices xc7z010_1]
     set_property FULL_PROBES.FILE $ltx_file [get_hw_devices xc7z010_1]
     refresh_hw_device -update_hw_probes true [lindex [get_hw_devices xc7z010_1] 0]
     set_property PROGRAM.FILE $full_bit_filename  [get_hw_devices xc7z010_1]
     program_hw_devices [get_hw_devices xc7z010_1]
     refresh_hw_device [lindex [get_hw_devices xc7z010_1] 0]
-else {
+} else {
     set_property PROBES.FILE $ltx_file [get_hw_devices xc7z020_1]
     set_property FULL_PROBES.FILE $ltx_file [get_hw_devices xc7z020_1]
     refresh_hw_device -update_hw_probes true [lindex [get_hw_devices xc7z020_1] 0]
     set_property PROGRAM.FILE $full_bit_filename  [get_hw_devices xc7z020_1]
     program_hw_devices [get_hw_devices xc7z020_1]
     refresh_hw_device [lindex [get_hw_devices xc7z020_1] 0]
-
 }
 
 
