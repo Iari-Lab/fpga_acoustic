@@ -24,7 +24,7 @@ connect_port_pin reset proc_sys_reset_adc_clk/peripheral_aresetn
 # add_ctl_sts $mics_clk proc_sys_reset_adc_clk/peripheral_aresetn
 
 # source $sdk_path/projects/sesenta/amd.tcl
-# connect_port_pin rst_regs [ctl_pin rst_regs]
+connect_pins mic_sel [get_slice_pin [ctl_pin mic_select] 6 0 mic_sel_pin]
 
 connect_pins ps_0/S_AXI_HP0_ACLK $mics_clk
 connect_pins ps_0/S_AXI_HP1_ACLK $mics_clk
