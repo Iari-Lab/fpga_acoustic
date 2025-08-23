@@ -84,7 +84,7 @@ module sesenta (
   assign mics_data_dbg2 = reg_mics_data2;
   wire pdm_clk, write_memory;
   assign M0_CLK = pdm_clk;
-    pdm_pcm16 #(
+    cic_16 #(
     ) pdm_main (
         .clk(clk),
         .rst(~rst),
@@ -100,7 +100,7 @@ module sesenta (
   genvar j,idx;
   generate
     for (i = 1; i < 30; i = i + 1) begin : pdms_gen_pose
-        pdm_pcm16 #(
+        cic_16 #(
         ) pdm_pcm_30 (
             .clk(clk),
             .rst(~rst),
@@ -114,54 +114,20 @@ module sesenta (
     end
   endgenerate
   generate
-    for (j = 30; j < 59; j = j + 1) begin : pdms_gen_nege
-      localparam HALF_MIC_INDEX = (j - 30);
-      localparam PCM_DATA_OUT_START_BIT = (j - 16) * 16;
-        pdm_pcm16 #(
+    for (j = 0; j < 30; j = j + 1) begin : pdms_gen_nege
+        cic_16 #(
         ) pdm_pcm_30_60 (
             .clk(clk),
             .rst(~rst),
-            .pdm_data_in(M_DATA[HALF_MIC_INDEX]),
+            .pdm_data_in(M_DATA[j]),
             .pdm_clock_in_en(1'b1),
             .pdm_clock_in(~pdm_clk),
             .pcm_strobe_out(1'b0),
-            .pcm_data_out(mics_data2[PCM_DATA_OUT_START_BIT+:16])
+            .pcm_data_out(mics_data2[j*16+:16])
     );
     end
   endgenerate
 
-  // genvar i;
-  // genvar j,idx;
-  // generate
-  //   for (i = 1; i < 16; i = i + 1) begin : pdms_gen_pose
-  //       pdm_cic #(
-  //   ) pdm_cic_all (
-  //           .clk(clk),
-  //           .rst(~rst),
-  //           .pdm_data_in(M_DATA[i]),
-  //           .pdm_clock_in_en(1'b1),
-  //           .pdm_clock_in(pdm_clk),
-  //           .pcm_strobe_out(1'b0),
-  //           .pdm_clock_out(),
-  //           .pcm_data_out(mics_data[i*32+:32])
-  //   );
-  //   end
-  // endgenerate
-  // generate
-  //   for (j = 16; j < 30; j = j + 1) begin : pdms_gen_nege
-  //     localparam PCM_DATA_OUT_START_BIT = (j - 16) * 32;
-  //       pdm_cic #(
-  //   ) pdm_cic_all1 (
-  //           .clk(clk),
-  //           .rst(~rst),
-  //           .pdm_data_in(M_DATA[j]),
-  //           .pdm_clock_in_en(1'b1),
-  //           .pdm_clock_in(~pdm_clk),
-  //           .pcm_strobe_out(1'b0),
-  //           .pcm_data_out(mics_data2[PCM_DATA_OUT_START_BIT+:32])
-  //   );
-  //   end
-  // endgenerate
   ila_0 ila_bram (
       .clk(clk),  // input wire clk
       .probe0(pdm_clk),
@@ -171,7 +137,7 @@ module sesenta (
   );
   wire [7:0] mic_sel;
   wire [15:0] mic_dbg;
-  assign mic_dbg = (mic_sel < 30)? mics_data[16*mic_sel+:16]: mics_data2[16*(mic_sel-30)+:16];
+  assign mic_dbg = (mic_sel < 30)? mics_data[16*mic_sel+:16]: mics_data2[16*(mic_sel)+:16];
 
 
   system system_i (
