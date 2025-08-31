@@ -115,7 +115,7 @@ module sesenta (
   genvar i;
   genvar j, idx;
   generate
-    for (i = 1; i < 30; i = i + 2) begin : pdms_gen_pose
+    for (i = 1; i < 30; i = i + 1) begin : pdms_gen_pose
       cic_decimator #(
           .PDM_CLOCK_FREQ(PDM_CLOCK_FREQ),
           .DATA_WIDTH(CIC_DATA_WIDTH),
