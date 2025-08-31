@@ -61,70 +61,95 @@ module sesenta (
   assign M2_CLK = pdm_clk;
   assign M1_CLK = pdm_clk;
 
-  clk_gen #(
-      .INPUT_FREQ (INPUT_FREQ),
-      .OUTPUT_FREQ(LED_FREQ)
-  ) led_clk_gen_i (
-      .clk(clk),
-      .rst(~rst),
-      .m_clk(clk_leds)
-  );
-
-  leds #() led_i (
-      .clk(clk_leds),
-      .ws_data(LEDS),
-      .reset(~rst)
-  );
-
-    always @(posedge clk) begin
-        reg_mics_data <= mics_data;
-        reg_mics_data2 <= mics_data2;
-    end
-  assign mics_data_dbg = reg_mics_data;
-  assign mics_data_dbg2 = reg_mics_data2;
-  wire pdm_clk, write_memory;
-  assign M0_CLK = pdm_clk;
-    cic_16 #(
-    ) pdm_main (
+    clk_gen #(
+        .INPUT_FREQ (INPUT_FREQ),
+        .OUTPUT_FREQ(LED_FREQ)
+    ) led_clk_gen_i (
         .clk(clk),
         .rst(~rst),
-        .pdm_data_in(M_DATA[0]),
-        .pdm_clock_in_en(1'b0),
-        .pdm_clock_in(),
-        .pcm_strobe_out(mics_data_valid),
-        .pdm_clock_out(pdm_clk),
-        .pcm_data_out()
-  ); 
+        .m_clk(clk_leds)
+    );
+
+    leds #() led_i (
+        .clk(clk_leds),
+        .ws_data(LEDS),
+        .reset(~rst)
+    );
+
+  localparam PDM_CLOCK_FREQ = 3072000;
+  localparam CIC_DATA_WIDTH = 16;
+  clk_divider #() clk_div (
+      .clk(clk),
+      .rst(~rst),
+      .clock_enable_in(1'b1),  // Always enabled
+      .clock_out(pdm_clk)
+  );
+
+  wire [29:0] cic_overflow, cic_overflow2;
+
+
+  always @(posedge clk) begin
+    reg_mics_data  <= mics_data;
+    reg_mics_data2 <= mics_data2;
+  end
+  assign mics_data_dbg  = reg_mics_data;
+  assign mics_data_dbg2 = reg_mics_data2;
+  wire pdm_clk, write_memory, pdm_clk_neg;
+
+  cic_decimator #(
+      .PDM_CLOCK_FREQ(PDM_CLOCK_FREQ),
+      .DATA_WIDTH(CIC_DATA_WIDTH),
+      .CIC_STAGES(4),
+      .CIC_DECIMATION(64)
+  ) cic_stage (
+      .clk(clk),
+      .rst(~rst),
+      .pdm_clk(pdm_clk),
+      .pdm_data(M_DATA[0]),
+      .pcm_valid(mics_data_valid),
+      .pcm_data(mics_data[0*16+:16]),
+      .overflow(cic_overflow[0]),
+      .sample_count()
+  );
 
   genvar i;
-  genvar j,idx;
+  genvar j, idx;
   generate
-    for (i = 1; i < 30; i = i + 1) begin : pdms_gen_pose
-        cic_16 #(
-        ) pdm_pcm_30 (
-            .clk(clk),
-            .rst(~rst),
-            .pdm_data_in(M_DATA[i]),
-            .pdm_clock_in_en(1'b1),
-            .pdm_clock_in(pdm_clk),
-            .pcm_strobe_out(1'b0),
-            .pdm_clock_out(),
-            .pcm_data_out(mics_data[i*16+:16])
-    );
+    for (i = 1; i < 30; i = i + 2) begin : pdms_gen_pose
+      cic_decimator #(
+          .PDM_CLOCK_FREQ(PDM_CLOCK_FREQ),
+          .DATA_WIDTH(CIC_DATA_WIDTH),
+          .CIC_STAGES(4),
+          .CIC_DECIMATION(32)
+      ) cic_stage (
+          .clk(clk),
+          .rst(~rst),
+          .pdm_clk(pdm_clk),
+          .pdm_data(M_DATA[i]),
+          .pcm_valid(),
+          .pcm_data(mics_data[i*16+:16]),
+          .overflow(cic_overflow[i]),
+          .sample_count()
+      );
     end
   endgenerate
   generate
     for (j = 0; j < 30; j = j + 1) begin : pdms_gen_nege
-        cic_16 #(
-        ) pdm_pcm_30_60 (
-            .clk(clk),
-            .rst(~rst),
-            .pdm_data_in(M_DATA[j]),
-            .pdm_clock_in_en(1'b1),
-            .pdm_clock_in(~pdm_clk),
-            .pcm_strobe_out(1'b0),
-            .pcm_data_out(mics_data2[j*16+:16])
-    );
+      cic_decimator #(
+          .PDM_CLOCK_FREQ(PDM_CLOCK_FREQ),
+          .DATA_WIDTH(CIC_DATA_WIDTH),
+          .CIC_STAGES(4),
+          .CIC_DECIMATION(32)
+      ) cic_stage (
+          .clk(clk),
+          .rst(~rst),
+          .pdm_clk(~pdm_clk),
+          .pdm_data(M_DATA[j]),
+          .pcm_valid(),
+          .pcm_data(mics_data2[j*16+:16]),
+          .overflow(cic_overflow2[j]),
+          .sample_count()
+      );
     end
   endgenerate
 
@@ -137,10 +162,13 @@ module sesenta (
   );
   wire [7:0] mic_sel;
   wire [15:0] mic_dbg;
-  assign mic_dbg = (mic_sel < 30)? mics_data[16*mic_sel+:16]: mics_data2[16*(mic_sel)+:16];
+  wire mic_valid;
+  assign mic_dbg = (mic_sel < 30) ? mics_data[16*mic_sel+:16] : mics_data2[16*(mic_sel-30)+:16];
+  //   assign mic_valid = (mic_sel < 30)? mics_data[16*mic_sel+:16]: mics_data2[16*(mic_sel)+:16];
 
 
   system system_i (
+      .mic_sel(mic_sel),
       .mics(mics_data_dbg),
       .mics2(mics_data_dbg2),
       .mics_data_valid(mics_data_valid),

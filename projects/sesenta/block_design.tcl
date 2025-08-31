@@ -69,45 +69,43 @@ connect_pins axi_mem_intercon_0/M02_ACLK    $mics_clk
 connect_pins axi_mem_intercon_0/M02_ARESETN proc_sys_reset_adc_clk/peripheral_aresetn
 connect_pins axi_mem_intercon_0/M03_ACLK    $mics_clk
 connect_pins axi_mem_intercon_0/M03_ARESETN proc_sys_reset_adc_clk/peripheral_aresetn
-# set_property -dict [list CONFIG.XBAR_DATA_WIDTH {64} CONFIG.S00_HAS_REGSLICE {4} CONFIG.S00_HAS_DATA_FIFO {1}] [get_bd_cells axi_mem_intercon_1]
 
-  #  strobe pulser_0/f1start20
-cell pavel-demin:user:axis_var:1.0 lockins_0 {
+cell pavel-demin:user:axis_variable:1.0 mics_0 {
    AXIS_TDATA_WIDTH 512
 } {
    aclk $mics_clk
-   strobe mics_data_valid
+   ctrl mics_data_valid
    aresetn proc_sys_reset_adc_clk/peripheral_aresetn
    cfg_data mics
 }
-cell pavel-demin:user:axis_var:1.0 lockins_1 {
+cell pavel-demin:user:axis_variable:1.0 mics_1 {
    AXIS_TDATA_WIDTH 512
 } {
    aclk $mics_clk
-   strobe mics_data_valid
+   ctrl mics_data_valid
    aresetn proc_sys_reset_adc_clk/peripheral_aresetn
    cfg_data mics2
 }
 
 
-cell koheron:user:tlast_gen_dyn_gated:1.0 tlast_gen_0 {
+cell koheron:user:axis_tlast:1.0 tlast_gen_0 {
   TDATA_WIDTH 512
 } {
   enable [get_slice_pin [ctl_pin dma_gate] 0 0 enable_tlast]
   cfg_data [ctl_pin n_samples]
   aclk $mics_clk
   resetn proc_sys_reset_adc_clk/peripheral_aresetn
-  s_axis lockins_0/m_axis
+  s_axis mics_0/m_axis
 }
 
-cell koheron:user:tlast_gen_dyn_gated:1.0 tlast_gen_1 {
+cell koheron:user:axis_tlast:1.0 tlast_gen_1 {
   TDATA_WIDTH 512
 } {
   enable [get_slice_pin [ctl_pin dma_gate1] 0 0 enable_tlast]
   cfg_data [ctl_pin n_samples]
   aclk $mics_clk
   resetn proc_sys_reset_adc_clk/peripheral_aresetn
-  s_axis lockins_1/m_axis
+  s_axis mics_1/m_axis
 }
 
   # LOGIC ANALIZER DEBUG
@@ -140,8 +138,6 @@ cell xilinx.com:ip:axi_dma:7.1 axi_dma_1 {
   axi_resetn proc_sys_reset_adc_clk/peripheral_aresetn
 }
 
-# set_property -dict [list CONFIG.S00_HAS_REGSLICE {4} CONFIG.S00_HAS_DATA_FIFO {1}] [get_bd_cells axi_mem_intercon_1]
-# set_property -dict [list CONFIG.M00_HAS_REGSLICE {4} CONFIG.M01_HAS_REGSLICE {4} CONFIG.M00_HAS_DATA_FIFO {1} CONFIG.M01_HAS_DATA_FIFO {1}] [get_bd_cells axi_mem_intercon_0]
 assign_bd_address [get_bd_addr_segs {axi_dma_0/S_AXI_LITE/Reg }]
 set_property range [get_memory_range dma] [get_bd_addr_segs {ps_0/Data/SEG_axi_dma_0_Reg}]
 set_property offset [get_memory_offset dma] [get_bd_addr_segs {ps_0/Data/SEG_axi_dma_0_Reg}]

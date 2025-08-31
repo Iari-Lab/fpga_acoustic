@@ -1,12 +1,11 @@
 ---
 name: sesenta
-# board: boards/red-pitaya
 board: boards/myir
 
 cores:
   - fpga/cores/axi_ctl_register_v1_0
-  - fpga/cores/axis_var_v1_0
-  - fpga/cores/tlast_gen_dyn_gated_v1_0
+  - fpga/cores/axis_variable_v1_0
+  - fpga/cores/axis_tlast_v1_0
   - fpga/cores/axi_sts_register_v1_0
 
 memory:
@@ -34,65 +33,6 @@ memory:
   - name: axi_hp1
     offset: '0xF800F000'
     range: 4K
-# memory:
-#   - name: control
-#     range: 4K
-#     offset: '0x40000000'
-#   - name: status
-#     range: 4K
-#     offset: '0x50000000'
-#   - name: ram
-#     offset: '0x1E000000'
-#     range: 16M
-#   - name: ram2
-#     offset: '0x1F000000'
-#     range: 16M
-#   - name: dma
-#     offset: '0x40400000'
-#     range: 64K
-#   - name: dma1
-#     offset: '0x40480000'
-#     range: 64K
-  # - name: axi_hp0
-  #   offset: '0xF8008000'
-  #   range: 4K
-  # - name: axi_hp1
-  #   offset: '0xF800F000'
-  #   range: 4K
-
-# memory:
-#   - name: control
-#     range: 4K
-#     offset: '0x40000000'
-#   - name: status
-#     range: 4K
-#     offset: '0x50000000'
-#   - name: ram
-#     offset: '0x00000000'
-#     range: 32M
-#   - name: dma
-#     offset: '0x40400000'
-#     range: 64K
-#   - name: axi_hp0
-#     offset: '0xF8008000'
-#     range: 4K
-# memory:
-#   - name: control
-#     range: 4K
-#     offset: '0x40000000'
-#   - name: status
-#     range: 4K
-#     offset: '0x50000000'
-#   - name: ram
-#     offset: '0x00000000'
-#     range: 128M
-#   - name: dma
-#     offset: '0x40400000'
-#     range: 128K
-#   - name: axi_hp0
-#     offset: '0xF8008000'
-#     range: 4K
-
 
 control_registers:
   - rst_regs

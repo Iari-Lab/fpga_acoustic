@@ -1,7 +1,7 @@
 # Makefile 
 # author: tucanae47
 
-CONFIG ?= ../projects/lockin/config.yml
+CONFIG ?= ../projects/sesenta/config.yml
 
 PROJECT_PATH := $(dir $(CONFIG))
 $(MEMORY_YML): $(CONFIG)
