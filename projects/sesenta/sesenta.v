@@ -43,7 +43,7 @@ module sesenta (
     output M0_CLK,
     output M1_CLK,
     output M2_CLK,
-    input [29:0] M_DATA,
+    input [5:0] M_DATA,
     output LEDS
 
 );
@@ -55,26 +55,30 @@ module sesenta (
   wire clk_rising_mics;
   wire mics_data_valid;
   wire [511:0] mics_data, mics_data2, mics_data_dbg, mics_data_dbg2;
+  // initial begin
+  //   reg_mics_data = 512'b0;
+  //   reg_mics_data2 = 512'b0;
+  // end
 
   reg [511:0] reg_mics_data, reg_mics_data2;
   assign M0_CLK = pdm_clk;
   assign M2_CLK = pdm_clk;
   assign M1_CLK = pdm_clk;
 
-    clk_gen #(
-        .INPUT_FREQ (INPUT_FREQ),
-        .OUTPUT_FREQ(LED_FREQ)
-    ) led_clk_gen_i (
-        .clk(clk),
-        .rst(~rst),
-        .m_clk(clk_leds)
-    );
+    // clk_gen #(
+    //     .INPUT_FREQ (INPUT_FREQ),
+    //     .OUTPUT_FREQ(LED_FREQ)
+    // ) led_clk_gen_i (
+    //     .clk(clk),
+    //     .rst(~rst),
+    //     .m_clk(clk_leds)
+    // );
 
-    leds #() led_i (
-        .clk(clk_leds),
-        .ws_data(LEDS),
-        .reset(~rst)
-    );
+    // leds #() led_i (
+    //     .clk(clk_leds),
+    //     .ws_data(LEDS),
+    //     .reset(~rst)
+    // );
 
   localparam PDM_CLOCK_FREQ = 3072000;
   localparam CIC_DATA_WIDTH = 16;
@@ -115,12 +119,12 @@ module sesenta (
   genvar i;
   genvar j, idx;
   generate
-    for (i = 1; i < 30; i = i + 1) begin : pdms_gen_pose
+    for (i = 1; i < 6; i = i + 1) begin : pdms_gen_pose
       cic_decimator #(
           .PDM_CLOCK_FREQ(PDM_CLOCK_FREQ),
           .DATA_WIDTH(CIC_DATA_WIDTH),
           .CIC_STAGES(4),
-          .CIC_DECIMATION(32)
+          .CIC_DECIMATION(64)
       ) cic_stage (
           .clk(clk),
           .rst(~rst),
@@ -134,12 +138,12 @@ module sesenta (
     end
   endgenerate
   generate
-    for (j = 0; j < 30; j = j + 1) begin : pdms_gen_nege
+    for (j = 0; j < 6; j = j + 1) begin : pdms_gen_nege
       cic_decimator #(
           .PDM_CLOCK_FREQ(PDM_CLOCK_FREQ),
           .DATA_WIDTH(CIC_DATA_WIDTH),
           .CIC_STAGES(4),
-          .CIC_DECIMATION(32)
+          .CIC_DECIMATION(64)
       ) cic_stage (
           .clk(clk),
           .rst(~rst),

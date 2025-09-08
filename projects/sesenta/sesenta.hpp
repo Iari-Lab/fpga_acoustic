@@ -52,6 +52,51 @@ public:
     mic2 = (mic_value >> 16) & 0xFFFF;
   }
 
+  auto get_mics6(uint32_t samples) {
+    const int num_mics = 16;
+    const int total_mics = 3;
+    start_dma_transfer(samples);
+    ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
+    uint32_t mic = 0;
+    uint32_t mic2 = 0;
+    std::vector<int32_t> data_ret = {};
+    int32_t offset = 0;
+    dma_off();
+    dma1_off();
+    for (int i = 1; i < (int)samples + 1; i++) {
+      offset = (i * num_mics); // s
+      ctx.print<INFO>("MICS1 ");
+      for (int mic_idx = 0; mic_idx < total_mics; mic_idx++) {
+        mic = ram.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
+        uint16_t _mic1 = 0;
+        uint16_t _mic2 = 0;
+        split_mic_value(mic, _mic1, _mic2);
+        int32_t mic1_signed = static_cast<int32_t>(static_cast<int16_t>(_mic1));
+        int32_t mic2_signed = static_cast<int32_t>(static_cast<int16_t>(_mic2));
+        data_ret.push_back(mic1_signed);
+        data_ret.push_back(mic2_signed);
+        ctx.print<INFO>(" %d %d", mic1_signed, mic2_signed);
+      }
+      ctx.print<INFO>("\n");
+    }
+    for (int i = 1; i < (int)samples + 1; i++) {
+      offset = (i *total_mics); // s
+      ctx.print<INFO>("MICS2 ");
+      for (int mic_idx = 0; mic_idx < num_mics; mic_idx++) {
+        mic2 = ram2.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
+        uint16_t _mic1 = 0;
+        uint16_t _mic2 = 0;
+        split_mic_value(mic2, _mic1, _mic2);
+        int32_t mic1_signed = static_cast<int32_t>(static_cast<int16_t>(_mic1));
+        int32_t mic2_signed = static_cast<int32_t>(static_cast<int16_t>(_mic2));
+        data_ret.push_back(mic1_signed);
+        data_ret.push_back(mic2_signed);
+        ctx.print<INFO>(" %d %d", mic1_signed, mic2_signed);
+      }
+      ctx.print<INFO>("\n");
+    }
+    return data_ret;
+  }
   auto get_mics(uint32_t samples) {
     const int num_mics = 16;
     start_dma_transfer(samples);

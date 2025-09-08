@@ -54,12 +54,13 @@ class Acoustic():
         print("Data received:", len(mics))
         dma1, dma2 = np.split(mics,2)
         print("Data split:", dma1, len(dma1))
+        _channels = 6
         # NOTE: we are not using the last 2 values from the 512 buffers from the dmas, so those mics are 0
-        mics_posedge = np.vstack([dma1[i::channels] for i in range(channels)]) # dma1
+        mics_posedge = np.vstack([dma1[i::channels] for i in range(_channels)]) # dma1
         # for i in range(channels):
         #     self.gen_audio(mics_posedge[i],"{}{}".format(name, i))
         self.plot_all(mics_posedge, "{}_dma1".format(name))
-        mics_negedge = np.vstack([dma2[i::channels] for i in range(channels)]) #dma2
+        mics_negedge = np.vstack([dma2[i::channels] for i in range(_channels)]) #dma2
         # for i in range(channels):
         #     self.gen_audio(mics_negedge[i],"{}{}".format(name, i))
         self.plot_all(mics_posedge, "{}_dma2".format(name))
@@ -74,7 +75,7 @@ class Acoustic():
         
         for idx, data in enumerate(data_arrays[:30]):
             time_axis = np.arange(len(data))
-            np.save(f"../mics_data/{name}{idx}.npy", data)
+            np.save(f"../mics_data3/{name}{idx}.npy", data)
             plt.plot(time_axis, data, label="{} {}".format(name, idx))  
     
         plt.title("{}".format(name))
@@ -83,7 +84,7 @@ class Acoustic():
         plt.grid(True)
         plt.legend()
         plt.tight_layout()
-        plt.savefig("../mics_data/{}_{}.png".format(name, test))
+        plt.savefig("../mics_data3/{}_{}.png".format(name, test))
         # plt.show()
 
 
@@ -110,53 +111,3 @@ if __name__ == '__main__':
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# def main():
-#     """Main function to run the dynamic plot."""
-#     # host = os.getenv('HOST', '192.168.8.139')
-#     host = os.getenv('HOST', '192.168.0.208')
-#     # host = os.getenv('HOST', 'rp-f0ab56.local')
-#     sampling_frequency = 125e6 # Hz
-    
-#     driver = initialize_driver(host)
-#     # print(f'ADC size = {driver.quad_size}')
-    
-#     fig, line1, t_us = initialize_plot(driver, sampling_frequency)
-#     driver.trigger_addr_count_rst() 
-#     # driver.trigger_mic_rst()
-#     iteration_count = 0
-#     try:
-#         while True:
-#             iteration_count += 1
-#             print(iteration_count)
-            
-#             li=driver.get_mic()
-#             print(li)
-#             # line1.set_data(t_us, li)
-#             # fig.canvas.draw()
-#             plt.pause(0.001)
-            
-#     except KeyboardInterrupt:
-#         print("Interrupted by user. Exiting.")
-#         exit(0)
-
-# if __name__ == '__main__':
-#     main()
