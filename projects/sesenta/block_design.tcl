@@ -71,7 +71,7 @@ connect_pins axi_mem_intercon_0/M03_ACLK    $mics_clk
 connect_pins axi_mem_intercon_0/M03_ARESETN proc_sys_reset_adc_clk/peripheral_aresetn
 
 cell pavel-demin:user:axis_variable:1.0 mics_0 {
-   AXIS_TDATA_WIDTH 512
+   AXIS_TDATA_WIDTH 256
 } {
    aclk $mics_clk
    ctrl mics_data_valid
@@ -79,7 +79,7 @@ cell pavel-demin:user:axis_variable:1.0 mics_0 {
    cfg_data mics
 }
 cell pavel-demin:user:axis_variable:1.0 mics_1 {
-   AXIS_TDATA_WIDTH 512
+   AXIS_TDATA_WIDTH 256
 } {
    aclk $mics_clk
    ctrl mics_data_valid
@@ -89,7 +89,7 @@ cell pavel-demin:user:axis_variable:1.0 mics_1 {
 
 
 cell koheron:user:axis_tlast:1.0 tlast_gen_0 {
-  TDATA_WIDTH 512
+  TDATA_WIDTH 256
 } {
   enable [get_slice_pin [ctl_pin dma_gate] 0 0 enable_tlast]
   cfg_data [ctl_pin n_samples]
@@ -99,7 +99,7 @@ cell koheron:user:axis_tlast:1.0 tlast_gen_0 {
 }
 
 cell koheron:user:axis_tlast:1.0 tlast_gen_1 {
-  TDATA_WIDTH 512
+  TDATA_WIDTH 256
 } {
   enable [get_slice_pin [ctl_pin dma_gate1] 0 0 enable_tlast]
   cfg_data [ctl_pin n_samples]

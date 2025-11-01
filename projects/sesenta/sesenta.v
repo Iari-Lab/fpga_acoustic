@@ -51,16 +51,17 @@ module sesenta (
   localparam integer INPUT_FREQ = 125000000;
   localparam integer PDM_FREQ = 2400000;
   localparam integer LED_FREQ = 12000000;
+  localparam integer DATA_WIDTH = 256;
   wire clk, clk_leds, rst;
   wire clk_rising_mics;
   wire mics_data_valid;
-  wire [511:0] mics_data, mics_data2, mics_data_dbg, mics_data_dbg2;
-  // initial begin
-  //   reg_mics_data = 512'b0;
-  //   reg_mics_data2 = 512'b0;
-  // end
+  wire [DATA_WIDTH-1:0] mics_data, mics_data2, mics_data_dbg, mics_data_dbg2;
+  initial begin
+    reg_mics_data = 512'b0;
+    reg_mics_data2 = 512'b0;
+  end
 
-  reg [511:0] reg_mics_data, reg_mics_data2;
+  reg [DATA_WIDTH-1:0] reg_mics_data, reg_mics_data2;
   assign M0_CLK = pdm_clk;
   assign M2_CLK = pdm_clk;
   assign M1_CLK = pdm_clk;

@@ -49,33 +49,46 @@ class Acoustic():
         print(reshaped_array)
         self.plot_all(reshaped_array, "{}".format(name), test= test)
 
+    def data_stream_pro6(self, samples, channels, name, filedir):
+        mics = self.driver.get_mics6(samples)
+        print("Data received:", len(mics))
+        dma1, dma2 = np.split(mics,2)
+        print("Data split:", dma1, len(dma1))
+        mics_posedge = np.vstack([dma1[i::channels] for i in range(channels)]) # dma1
+        self.plot_all(mics_posedge, "{}_dma1".format(name), filedir)
+        mics_negedge = np.vstack([dma2[i::channels] for i in range(channels)]) #dma2
+        self.plot_all(mics_negedge, "{}_dma2".format(name), filedir)
+
     def data_stream_pro(self, samples, channels, name):
         mics = self.driver.get_mics(samples)
         print("Data received:", len(mics))
         dma1, dma2 = np.split(mics,2)
         print("Data split:", dma1, len(dma1))
-        _channels = 6
+        # _channels = 6
         # NOTE: we are not using the last 2 values from the 512 buffers from the dmas, so those mics are 0
-        mics_posedge = np.vstack([dma1[i::channels] for i in range(_channels)]) # dma1
+        # mics_posedge = np.vstack([dma1[i::_channels] for i in range(_channels)]) # dma1
+        mics_posedge = np.vstack([dma1[i::channels] for i in range(channels)]) # dma1
         # for i in range(channels):
         #     self.gen_audio(mics_posedge[i],"{}{}".format(name, i))
-        self.plot_all(mics_posedge, "{}_dma1".format(name))
-        mics_negedge = np.vstack([dma2[i::channels] for i in range(_channels)]) #dma2
+        self.plot_all(mics_posedge[:6], "{}_dma1".format(name))
+        mics_negedge = np.vstack([dma2[i::channels] for i in range(channels)]) #dma2
+        # mics_negedge = np.vstack([dma2[i::_channels] for i in range(_channels)]) #dma2
         # for i in range(channels):
         #     self.gen_audio(mics_negedge[i],"{}{}".format(name, i))
-        self.plot_all(mics_posedge, "{}_dma2".format(name))
+        self.plot_all(mics_negedge[:6], "{}_dma2".format(name))
 
-    def plot_all(self, data_arrays, name, test=0):
+    def plot_all(self, data_arrays, name, filedir="mini", test=0):
         """
         Plots multiple arrays same plot
     
         """
         # plt.subplots(figsize=(10, 6))
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(12, 8))
+        # plt.figure(figsize=(10, 6))
         
-        for idx, data in enumerate(data_arrays[:30]):
+        for idx, data in enumerate(data_arrays):
             time_axis = np.arange(len(data))
-            np.save(f"../mics_data3/{name}{idx}.npy", data)
+            np.save(f"../{filedir}/{name}{idx}.npy", data)
             plt.plot(time_axis, data, label="{} {}".format(name, idx))  
     
         plt.title("{}".format(name))
@@ -84,7 +97,7 @@ class Acoustic():
         plt.grid(True)
         plt.legend()
         plt.tight_layout()
-        plt.savefig("../mics_data3/{}_{}.png".format(name, test))
+        plt.savefig(f"../{filedir}/{name}_{test}.png", dpi=300, bbox_inches='tight')
         # plt.show()
 
 

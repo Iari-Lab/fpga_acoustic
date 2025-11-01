@@ -39,10 +39,10 @@ public:
   void start_dma_transfer(uint32_t samples) {
     set_nsamples(samples + read_offset);
     uint32_t npoints = get_nsamples();
-    dma.setup_transfer(mem::ram_addr, mem::ram2_addr, 512 * npoints);
+    dma.setup_transfer(mem::ram_addr, mem::ram2_addr, 256 * npoints);
     dma_on();
     dma1_on();
-    double pdm_f = 3072.0;
+    double pdm_f = 307200.0;
     dma_transfer_duration = float(npoints / pdm_f);
     dma.wait_for_transfer(dma_transfer_duration); // so far this works
   }
@@ -53,7 +53,7 @@ public:
   }
 
   auto get_mics6(uint32_t samples) {
-    const int num_mics = 16;
+    const int num_mics = 8;
     const int total_mics = 3;
     start_dma_transfer(samples);
     ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
@@ -80,9 +80,9 @@ public:
       ctx.print<INFO>("\n");
     }
     for (int i = 1; i < (int)samples + 1; i++) {
-      offset = (i *total_mics); // s
+      offset = (i *num_mics); // s
       ctx.print<INFO>("MICS2 ");
-      for (int mic_idx = 0; mic_idx < num_mics; mic_idx++) {
+      for (int mic_idx = 0; mic_idx < total_mics; mic_idx++) {
         mic2 = ram2.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
         uint16_t _mic1 = 0;
         uint16_t _mic2 = 0;
@@ -152,7 +152,7 @@ public:
     dma_off();
     dma1_off();
     for (int i = 1; i < (int)samples + 1; i++) {
-      offset = (i * 16); // s
+      offset = (i * 8); // s
       ctx.print<INFO>("MICS1 ");
       mic = ram.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
       uint16_t _mic1 = 0;

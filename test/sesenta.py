@@ -28,6 +28,10 @@ class Sesenta(object):
         pass
 
     @command()
+    def get_mics6(self, samples):
+        return self.client.recv_vector(dtype='int32')
+
+    @command()
     def get_mics(self, samples):
         return self.client.recv_vector(dtype='int32')
 
