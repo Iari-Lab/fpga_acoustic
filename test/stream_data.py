@@ -50,14 +50,17 @@ class Acoustic():
         self.plot_all(reshaped_array, "{}".format(name), test= test)
 
     def data_stream_pro6(self, samples, channels, name, filedir):
+        # mics = self.driver.read_mics6(samples)
         mics = self.driver.get_mics6(samples)
         print("Data received:", len(mics))
         dma1, dma2 = np.split(mics,2)
         print("Data split:", dma1, len(dma1))
+        print("Data split:", dma2, len(dma2))
         mics_posedge = np.vstack([dma1[i::channels] for i in range(channels)]) # dma1
-        self.plot_all(mics_posedge, "{}_dma1".format(name), filedir)
+        print("Mics posedge shape:", mics_posedge.shape)
+        self.plot_all(mics_posedge[:3], "{}_dma1".format(name), filedir=filedir)
         mics_negedge = np.vstack([dma2[i::channels] for i in range(channels)]) #dma2
-        self.plot_all(mics_negedge, "{}_dma2".format(name), filedir)
+        self.plot_all(mics_negedge[:3], "{}_dma2".format(name), filedir=filedir)
 
     def data_stream_pro(self, samples, channels, name):
         mics = self.driver.get_mics(samples)
@@ -98,7 +101,7 @@ class Acoustic():
         plt.legend()
         plt.tight_layout()
         plt.savefig(f"../{filedir}/{name}_{test}.png", dpi=300, bbox_inches='tight')
-        # plt.show()
+        plt.show(block= False)
 
 
     def gen_audio(self, data, name):

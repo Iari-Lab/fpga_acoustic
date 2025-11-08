@@ -1,5 +1,6 @@
 FPGA_PATH := $(FPGA_PATH)
 TMP_FPGA_PATH := $(TMP_PROJECT_PATH)/fpga
+BOOTGEN := bootgen
 
 $(TMP_FPGA_PATH):
 	@mkdir -p $@
@@ -49,11 +50,19 @@ $(TMP_FPGA_PATH)/$(NAME).xpr: $(CONFIG_TCL) $(XDC) $(PROJECT_PATH)/*.tcl $(CORES
 	  -tclargs $(SDK_PATH) $(NAME) $(PROJECT_PATH) $(PART) $(BOARD_PATH) $(MODE) $(TMP_FPGA_PATH) $(TMP_FPGA_PATH)/xdc $(PYTHON)
 	@echo [$@] OK
 
+# .PHONY: fpga
+# fpga: $(BITSTREAM)
 .PHONY: fpga
-fpga: $(BITSTREAM)
+fpga: $(BITSTREAM).bin
 
 $(BITSTREAM): $(TMP_FPGA_PATH)/$(NAME).xpr | $(TMP_FPGA_PATH)
 	$(VIVADO_BATCH) -source $(FPGA_PATH)/vivado/bitstream.tcl -tclargs $< $@ $(N_CPUS)
+	@echo [$@] OK
+
+# bitstream from linux using the devicetree overlay
+$(BITSTREAM).bin: $(BITSTREAM)
+	echo "all:{$(BITSTREAM)}" > $(TMP_FPGA_PATH)/overlay.bif
+	$(BOOTGEN) -image $(TMP_FPGA_PATH)/overlay.bif -arch zynq -process_bitstream bin -w on -o $(BITSTREAM).bin
 	@echo [$@] OK
 
 $(TMP_FPGA_PATH)/$(NAME).hwdef: $(TMP_FPGA_PATH)/$(NAME).xpr | $(TMP_FPGA_PATH)

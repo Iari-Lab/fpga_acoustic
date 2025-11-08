@@ -42,7 +42,7 @@ public:
     dma.setup_transfer(mem::ram_addr, mem::ram2_addr, 256 * npoints);
     dma_on();
     dma1_on();
-    double pdm_f = 307200.0;
+    double pdm_f = 3072.0;
     dma_transfer_duration = float(npoints / pdm_f);
     dma.wait_for_transfer(dma_transfer_duration); // so far this works
   }
@@ -51,10 +51,52 @@ public:
     mic1 = mic_value & 0xFFFF;
     mic2 = (mic_value >> 16) & 0xFFFF;
   }
+  auto read_mics6(uint32_t samples) {
+    const int num_mics = 8;
+    const int total_mics = 2;
+    ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
+    uint32_t mic = 0;
+    uint32_t mic2 = 0;
+    std::vector<int32_t> data_ret = {};
+    int32_t offset = 0;
+    for (int i = 1; i < (int)samples + 1; i++) {
+      offset = (i * num_mics); // s
+      ctx.print<INFO>("MICS1 ");
+      for (int mic_idx = 0; mic_idx < total_mics; mic_idx++) {
+        mic = ram.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
+        uint16_t _mic1 = 0;
+        uint16_t _mic2 = 0;
+        split_mic_value(mic, _mic1, _mic2);
+        int32_t mic1_signed = static_cast<int32_t>(static_cast<int16_t>(_mic1));
+        int32_t mic2_signed = static_cast<int32_t>(static_cast<int16_t>(_mic2));
+        data_ret.push_back(mic1_signed);
+        data_ret.push_back(mic2_signed);
+        ctx.print<INFO>(" %d %d", mic1_signed, mic2_signed);
+      }
+      ctx.print<INFO>("-\n");
+    }
+    for (int i = 1; i < (int)samples + 1; i++) {
+      offset = (i *num_mics); // s
+      ctx.print<INFO>("MICS2 ");
+      for (int mic_idx = 0; mic_idx < total_mics; mic_idx++) {
+        mic2 = ram2.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
+        uint16_t _mic1 = 0;
+        uint16_t _mic2 = 0;
+        split_mic_value(mic2, _mic1, _mic2);
+        int32_t mic1_signed = static_cast<int32_t>(static_cast<int16_t>(_mic1));
+        int32_t mic2_signed = static_cast<int32_t>(static_cast<int16_t>(_mic2));
+        data_ret.push_back(mic1_signed);
+        data_ret.push_back(mic2_signed);
+        ctx.print<INFO>(" %d %d", mic1_signed, mic2_signed);
+      }
+      ctx.print<INFO>("-\n");
+    }
+    return data_ret;
+  }
 
   auto get_mics6(uint32_t samples) {
     const int num_mics = 8;
-    const int total_mics = 3;
+    const int total_mics = 2;
     start_dma_transfer(samples);
     ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
     uint32_t mic = 0;
@@ -77,7 +119,7 @@ public:
         data_ret.push_back(mic2_signed);
         ctx.print<INFO>(" %d %d", mic1_signed, mic2_signed);
       }
-      ctx.print<INFO>("\n");
+      ctx.print<INFO>("-\n");
     }
     for (int i = 1; i < (int)samples + 1; i++) {
       offset = (i *num_mics); // s
@@ -93,7 +135,7 @@ public:
         data_ret.push_back(mic2_signed);
         ctx.print<INFO>(" %d %d", mic1_signed, mic2_signed);
       }
-      ctx.print<INFO>("\n");
+      ctx.print<INFO>("-\n");
     }
     return data_ret;
   }

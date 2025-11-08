@@ -52,7 +52,7 @@ module sesenta (
   localparam integer PDM_FREQ = 2400000;
   localparam integer LED_FREQ = 12000000;
   localparam integer DATA_WIDTH = 256;
-  wire clk, clk_leds, rst;
+  wire clk, clk_leds, rst, pdm_clk;
   wire clk_rising_mics;
   wire mics_data_valid;
   wire [DATA_WIDTH-1:0] mics_data, mics_data2, mics_data_dbg, mics_data_dbg2;
@@ -66,20 +66,20 @@ module sesenta (
   assign M2_CLK = pdm_clk;
   assign M1_CLK = pdm_clk;
 
-    // clk_gen #(
-    //     .INPUT_FREQ (INPUT_FREQ),
-    //     .OUTPUT_FREQ(LED_FREQ)
-    // ) led_clk_gen_i (
-    //     .clk(clk),
-    //     .rst(~rst),
-    //     .m_clk(clk_leds)
-    // );
+    clk_gen #(
+        .INPUT_FREQ (INPUT_FREQ),
+        .OUTPUT_FREQ(LED_FREQ)
+    ) led_clk_gen_i (
+        .clk(clk),
+        .rst(~rst),
+        .m_clk(clk_leds)
+    );
 
-    // leds #() led_i (
-    //     .clk(clk_leds),
-    //     .ws_data(LEDS),
-    //     .reset(~rst)
-    // );
+    leds #() led_i (
+        .clk(clk_leds),
+        .ws_data(LEDS),
+        .reset(~rst)
+    );
 
   localparam PDM_CLOCK_FREQ = 3072000;
   localparam CIC_DATA_WIDTH = 16;
@@ -99,7 +99,7 @@ module sesenta (
   end
   assign mics_data_dbg  = reg_mics_data;
   assign mics_data_dbg2 = reg_mics_data2;
-  wire pdm_clk, write_memory, pdm_clk_neg;
+  
 
   cic_decimator #(
       .PDM_CLOCK_FREQ(PDM_CLOCK_FREQ),
@@ -120,7 +120,7 @@ module sesenta (
   genvar i;
   genvar j, idx;
   generate
-    for (i = 1; i < 6; i = i + 1) begin : pdms_gen_pose
+    for (i = 1; i < 3; i = i + 1) begin : pdms_gen_pose
       cic_decimator #(
           .PDM_CLOCK_FREQ(PDM_CLOCK_FREQ),
           .DATA_WIDTH(CIC_DATA_WIDTH),
@@ -139,7 +139,7 @@ module sesenta (
     end
   endgenerate
   generate
-    for (j = 0; j < 6; j = j + 1) begin : pdms_gen_nege
+    for (j = 0; j < 3; j = j + 1) begin : pdms_gen_nege
       cic_decimator #(
           .PDM_CLOCK_FREQ(PDM_CLOCK_FREQ),
           .DATA_WIDTH(CIC_DATA_WIDTH),
@@ -149,7 +149,7 @@ module sesenta (
           .clk(clk),
           .rst(~rst),
           .pdm_clk(~pdm_clk),
-          .pdm_data(M_DATA[j]),
+          .pdm_data(M_DATA[j + 3]),
           .pcm_valid(),
           .pcm_data(mics_data2[j*16+:16]),
           .overflow(cic_overflow2[j]),

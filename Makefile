@@ -56,7 +56,7 @@ NAME := $(shell $(MAKE_PY) --name $(CONFIG) $(TMP_PROJECT_PATH)/name && cat $(TM
 # - Bash configuration script
 # - Web files (HTML, CSS, Javascript)
 
-BITSTREAM := $(TMP_PROJECT_PATH)/$(NAME).bit # FPGA bitstream
+BITSTREAM := $(TMP_PROJECT_PATH)/$(NAME).bit
 SERVER := $(TMP_PROJECT_PATH)/serverd # TCP / Websocket server executable that communicates with the FPGA
 
 VERSION_FILE := $(TMP_PROJECT_PATH)/version

@@ -37,10 +37,10 @@ class DmaS2MM
 
     void wait_for_transfer(float dma_transfer_duration_seconds) {
         float t = dma_transfer_duration_seconds;
-        const auto dma_duration = std::chrono::milliseconds(uint32_t(2000 * t));
+        const auto dma_duration = std::chrono::milliseconds(uint32_t(3000 * t));
         // Total sleep duration
         auto total_sleep_duration = dma_duration;
-        auto sleep_interval = std::chrono::milliseconds(100); // Sleep interval in milliseconds
+        auto sleep_interval = std::chrono::milliseconds(500); // Sleep interval in milliseconds
 
         ctx.print<INFO>("dma_transfer_duration_seconds: %f\n", (double)dma_transfer_duration_seconds);
         while (total_sleep_duration.count() > 0) {
