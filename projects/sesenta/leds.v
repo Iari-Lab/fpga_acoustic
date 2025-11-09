@@ -3,8 +3,8 @@ module leds (
     input  wire clk,
     output wire ws_data,
     input  wire reset, 
-    output wire [7:0] led_count,
-    input wire [7:0] led_sel
+    output wire [7:0] led_count
+    // input wire [7:0] led_sel
 );
   assign led_count = led_num;
 
@@ -16,15 +16,20 @@ module leds (
   always @(posedge clk) begin
     count <= count + 1;
     if (&count) begin
-      if (led_num == led_sel) begin
-          led_rgb_data <= 24'h00_0f_00;
-          led_num   <= led_num + 1;
-      end
-      else if (led_num == NUM_LEDS) begin
+      if (led_num == NUM_LEDS) begin
         led_num   <= 0;
       end else begin
+        // shine the geometry of mics, 31, 28, 25, 19, 34, 22. for recording
+        case (led_num)
+            8'd28,
+            8'd31,
+            8'd34,
+            8'd40,
+            8'd25,
+            8'd37: led_rgb_data <= 24'h00_0f_00;  // same statement for all
+            default: led_rgb_data <= 24'h00_00_0f; // default (off8
+        endcase
         led_num <= led_num + 1;
-        led_rgb_data <= 24'h00_00_0f;
       end
     end
   end

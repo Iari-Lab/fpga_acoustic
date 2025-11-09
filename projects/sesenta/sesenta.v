@@ -84,8 +84,7 @@ module sesenta (
       .clk(clk_leds),
       .reset(~rst),
       .ws_data(LEDS),
-      .led_count(led_count),
-      .led_sel(led_sel)
+      .led_count(led_count)
   );
 
   // Clock generator instance
@@ -97,7 +96,6 @@ module sesenta (
       .rst  (~rst),
       .m_clk(pdm_clk)
   );
-  // assign SYNC_IN = pdm_clk;
 
   assign SYNC_OUT = pdm_clk;
   assign SYNC_IN  = pcm_valid;
@@ -107,7 +105,6 @@ module sesenta (
   always @(posedge clk) begin
     reg_mics_data <= mics_data;
     reg_mics_data2 <= mics_data2;
-    led_s <= mic_sel;
     pcm_valid <= mics_data_valid;
   end
   assign mics_data_dbg  = reg_mics_data;
@@ -117,7 +114,7 @@ module sesenta (
   cic_decimator #(
       .DATA_WIDTH(CIC_DATA_WIDTH),
       .CIC_STAGES(4),
-      .CIC_DECIMATION(64)
+      .CIC_DECIMATION(50)
   ) cic_stage (
       .clk(clk),
       .rst(~rst),
@@ -136,7 +133,7 @@ module sesenta (
       cic_decimator #(
           .DATA_WIDTH(CIC_DATA_WIDTH),
           .CIC_STAGES(4),
-          .CIC_DECIMATION(64)
+          .CIC_DECIMATION(50)
       ) cic_stage (
           .clk(clk),
           .rst(~rst),
@@ -154,7 +151,7 @@ module sesenta (
       cic_decimator #(
           .DATA_WIDTH(CIC_DATA_WIDTH),
           .CIC_STAGES(4),
-          .CIC_DECIMATION(64)
+          .CIC_DECIMATION(50)
       ) cic_stage (
           .clk(clk),
           .rst(~rst),
@@ -175,9 +172,7 @@ module sesenta (
       .probe2(mic_dbg),
       .probe3(mic_sel)
   );
-  wire [7:0] mic_sel, led_sel;
-  reg [7:0] led_s;
-  assign led_sel = led_s;
+  wire [7:0] mic_sel;
   wire [15:0] mic_dbg;
   assign mic_dbg = (mic_sel < 30) ? mics_data[16*mic_sel+:16] : mics_data2[16*(mic_sel-30)+:16];
   //   assign mic_valid = (mic_sel < 30)? mics_data[16*mic_sel+:16]: mics_data2[16*(mic_sel)+:16];
