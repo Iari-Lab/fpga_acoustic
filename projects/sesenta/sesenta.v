@@ -44,21 +44,26 @@ module sesenta (
     output M1_CLK,
     output M2_CLK,
     input [5:0] M_DATA,
-    output LEDS
+    output LEDS,
+    output SYNC_IN,
+    output SYNC_OUT
 
 );
 
-  localparam integer INPUT_FREQ = 125000000;
-  localparam integer PDM_FREQ = 2400000;
+  localparam integer INPUT_FREQ = 120_000_000;
+  localparam integer PDM_FREQ = 2_400_000;
   localparam integer LED_FREQ = 12000000;
   localparam integer DATA_WIDTH = 256;
+  localparam CIC_DATA_WIDTH = 16;
   wire clk, clk_leds, rst, pdm_clk;
   wire clk_rising_mics;
   wire mics_data_valid;
   wire [DATA_WIDTH-1:0] mics_data, mics_data2, mics_data_dbg, mics_data_dbg2;
+  // Manual LED control signals
+  reg pcm_valid;
   initial begin
-    reg_mics_data = 512'b0;
-    reg_mics_data2 = 512'b0;
+    reg_mics_data  = 256'b0;
+    reg_mics_data2 = 256'b0;
   end
 
   reg [DATA_WIDTH-1:0] reg_mics_data, reg_mics_data2;
@@ -66,43 +71,50 @@ module sesenta (
   assign M2_CLK = pdm_clk;
   assign M1_CLK = pdm_clk;
 
-    clk_gen #(
-        .INPUT_FREQ (INPUT_FREQ),
-        .OUTPUT_FREQ(LED_FREQ)
-    ) led_clk_gen_i (
-        .clk(clk),
-        .rst(~rst),
-        .m_clk(clk_leds)
-    );
-
-    leds #() led_i (
-        .clk(clk_leds),
-        .ws_data(LEDS),
-        .reset(~rst)
-    );
-
-  localparam PDM_CLOCK_FREQ = 3072000;
-  localparam CIC_DATA_WIDTH = 16;
-  clk_divider #() clk_div (
-      .clk(clk),
-      .rst(~rst),
-      .clock_enable_in(1'b1),  // Always enabled
-      .clock_out(pdm_clk)
+  clk_gen #(
+      .INPUT_FREQ (INPUT_FREQ),
+      .OUTPUT_FREQ(LED_FREQ)
+  ) led_clk_gen_i (
+      .clk  (clk),
+      .rst  (~rst),
+      .m_clk(clk_leds)
   );
+  wire [7:0] led_count;
+  leds led_controller (
+      .clk(clk_leds),
+      .reset(~rst),
+      .ws_data(LEDS),
+      .led_count(led_count),
+      .led_sel(led_sel)
+  );
+
+  // Clock generator instance
+  clk_gen #(
+      .INPUT_FREQ (INPUT_FREQ),
+      .OUTPUT_FREQ(PDM_FREQ)
+  ) pdm_clk_gen_i (
+      .clk  (clk),
+      .rst  (~rst),
+      .m_clk(pdm_clk)
+  );
+  // assign SYNC_IN = pdm_clk;
+
+  assign SYNC_OUT = pdm_clk;
+  assign SYNC_IN  = pcm_valid;
 
   wire [29:0] cic_overflow, cic_overflow2;
 
-
   always @(posedge clk) begin
-    reg_mics_data  <= mics_data;
+    reg_mics_data <= mics_data;
     reg_mics_data2 <= mics_data2;
+    led_s <= mic_sel;
+    pcm_valid <= mics_data_valid;
   end
   assign mics_data_dbg  = reg_mics_data;
   assign mics_data_dbg2 = reg_mics_data2;
-  
+
 
   cic_decimator #(
-      .PDM_CLOCK_FREQ(PDM_CLOCK_FREQ),
       .DATA_WIDTH(CIC_DATA_WIDTH),
       .CIC_STAGES(4),
       .CIC_DECIMATION(64)
@@ -122,7 +134,6 @@ module sesenta (
   generate
     for (i = 1; i < 3; i = i + 1) begin : pdms_gen_pose
       cic_decimator #(
-          .PDM_CLOCK_FREQ(PDM_CLOCK_FREQ),
           .DATA_WIDTH(CIC_DATA_WIDTH),
           .CIC_STAGES(4),
           .CIC_DECIMATION(64)
@@ -141,7 +152,6 @@ module sesenta (
   generate
     for (j = 0; j < 3; j = j + 1) begin : pdms_gen_nege
       cic_decimator #(
-          .PDM_CLOCK_FREQ(PDM_CLOCK_FREQ),
           .DATA_WIDTH(CIC_DATA_WIDTH),
           .CIC_STAGES(4),
           .CIC_DECIMATION(64)
@@ -149,7 +159,7 @@ module sesenta (
           .clk(clk),
           .rst(~rst),
           .pdm_clk(~pdm_clk),
-          .pdm_data(M_DATA[j + 3]),
+          .pdm_data(M_DATA[j+3]),
           .pcm_valid(),
           .pcm_data(mics_data2[j*16+:16]),
           .overflow(cic_overflow2[j]),
@@ -160,14 +170,15 @@ module sesenta (
 
   ila_0 ila_bram (
       .clk(clk),  // input wire clk
-      .probe0(pdm_clk),
+      .probe0(led_count),
       .probe1(mics_data_valid),
       .probe2(mic_dbg),
       .probe3(mic_sel)
   );
-  wire [7:0] mic_sel;
+  wire [7:0] mic_sel, led_sel;
+  reg [7:0] led_s;
+  assign led_sel = led_s;
   wire [15:0] mic_dbg;
-  wire mic_valid;
   assign mic_dbg = (mic_sel < 30) ? mics_data[16*mic_sel+:16] : mics_data2[16*(mic_sel-30)+:16];
   //   assign mic_valid = (mic_sel < 30)? mics_data[16*mic_sel+:16]: mics_data2[16*(mic_sel)+:16];
 

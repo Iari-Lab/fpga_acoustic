@@ -8,6 +8,14 @@
 # M59 M58 ------------D58
 
 # MCLK0 - IO_B13_LP21 (BANK 13)
+set_property IOSTANDARD LVCMOS33 [get_ports SYNC_IN]
+set_property PACKAGE_PIN U12 [get_ports SYNC_IN]
+# MCLK1 - IO_B34_LP14 (BANK 34)
+set_property IOSTANDARD LVCMOS33 [get_ports SYNC_OUT]
+set_property PACKAGE_PIN T12 [get_ports SYNC_OUT]
+
+# MCLK2 - IO_B34_LP11 (BANK 34)
+# MCLK0 - IO_B13_LP21 (BANK 13)
 set_property IOSTANDARD LVCMOS33 [get_ports M0_CLK]
 set_property PACKAGE_PIN V11 [get_ports M0_CLK]
 # MCLK1 - IO_B34_LP14 (BANK 34)

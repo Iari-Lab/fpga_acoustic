@@ -44,8 +44,11 @@ control_registers:
 status_registers:
   - mode
 
+# parameters:
+#   fclk0: 115200000 # FPGA clock speed in Hz
+
 parameters:
-  fclk0: 125000000 # FPGA clock speed in Hz
+  fclk0: 100000000 # FPGA clock speed in Hz
 
 xdc:
   - boards/myir/config/ports.xdc

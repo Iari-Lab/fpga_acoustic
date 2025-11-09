@@ -4,7 +4,6 @@
  */
 
 module cic_decimator #(
-    parameter PDM_CLOCK_FREQ = 3072000,
     parameter DATA_WIDTH = 18,
     parameter CIC_STAGES = 4,
     parameter CIC_DECIMATION = 16

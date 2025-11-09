@@ -80,7 +80,10 @@ block_design: $(CONFIG_TCL) $(XDC) $(PROJECT_PATH)/*.tcl $(CORES_COMPONENT_XML)
 open_project: $(TMP_FPGA_PATH)/$(NAME).xpr
 	$(VIVADO) -source $(FPGA_PATH)/vivado/open_project.tcl -tclargs $(TMP_FPGA_PATH)/$(NAME).xpr
 
-
+.PHONY: synth
+synth: $(TMP_FPGA_PATH)/$(NAME).xpr | $(TMP_FPGA_PATH)
+	$(VIVADO_BATCH) -source $(FPGA_PATH)/vivado/synth.tcl -tclargs $(TMP_FPGA_PATH)/$(NAME).xpr $(N_CPUS)
+	@echo [$@] OK
 .PHONY: bits
 bits: $(TMP_FPGA_PATH)/$(NAME).xpr | $(TMP_FPGA_PATH)
 	$(VIVADO_BATCH) -source $(FPGA_PATH)/vivado/bits.tcl -tclargs $< QRP.bit $(N_CPUS)
