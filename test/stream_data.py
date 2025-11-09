@@ -58,9 +58,12 @@ class Acoustic():
         print("Data split:", dma2, len(dma2))
         mics_posedge = np.vstack([dma1[i::channels] for i in range(channels)]) # dma1
         print("Mics posedge shape:", mics_posedge.shape)
-        self.plot_all(mics_posedge[:3], "{}_dma1".format(name), filedir=filedir)
         mics_negedge = np.vstack([dma2[i::channels] for i in range(channels)]) #dma2
-        self.plot_all(mics_negedge[:3], "{}_dma2".format(name), filedir=filedir)
+        combined = np.vstack((
+            mics_posedge[:3],   # channels 0–2 posedge
+            mics_negedge[:3]    # channels 0–2 negedge
+        )) 
+        self.plot_all(combined, "{}_dma1_2".format(name), filedir=filedir)
 
     def data_stream_pro(self, samples, channels, name):
         mics = self.driver.get_mics(samples)
