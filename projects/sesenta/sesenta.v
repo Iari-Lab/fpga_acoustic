@@ -103,8 +103,17 @@ module sesenta (
   wire [29:0] cic_overflow, cic_overflow2;
 
   always @(posedge clk) begin
-    reg_mics_data <= mics_data;
-    reg_mics_data2 <= mics_data2;
+
+    // Assign delayed PCM data to first 6 positions (M31, M28, M25, M22, M19, M34)
+    reg_mics_data[0*16+:16] <= delayed_pcm_data_0;  // M31
+    reg_mics_data[1*16+:16] <= delayed_pcm_data_1;  // M28
+    reg_mics_data[2*16+:16] <= delayed_pcm_data_2;  // M25
+    reg_mics_data2[0*16+:16] <= delayed_pcm_data_3; // M22
+    reg_mics_data2[1*16+:16] <= delayed_pcm_data_4; // M19
+    reg_mics_data2[2*16+:16] <= delayed_pcm_data_5; // M34
+    // Keep remaining microphone data unchanged
+    reg_mics_data[255:48] <= mics_data[255:48];
+    reg_mics_data2[255:48] <= mics_data2[255:48];
     pcm_valid <= mics_data_valid;
   end
   assign mics_data_dbg  = reg_mics_data;
@@ -151,7 +160,7 @@ module sesenta (
       cic_decimator #(
           .DATA_WIDTH(CIC_DATA_WIDTH),
           .CIC_STAGES(4),
-          .CIC_DECIMATION(50)
+          .CIC_DECIMATION(64)
       ) cic_stage (
           .clk(clk),
           .rst(~rst),
@@ -174,9 +183,35 @@ module sesenta (
   );
   wire [7:0] mic_sel;
   wire [15:0] mic_dbg;
-  assign mic_dbg = (mic_sel < 30) ? mics_data[16*mic_sel+:16] : mics_data2[16*(mic_sel-30)+:16];
-  //   assign mic_valid = (mic_sel < 30)? mics_data[16*mic_sel+:16]: mics_data2[16*(mic_sel)+:16];
+  assign mic_dbg = (mic_sel < 30) ? mics_data_dbg[16*mic_sel+:16] : mics_data_dbg2[16*(mic_sel-30)+:16];
 
+  // Delay module outputs
+  wire [15:0] delayed_pcm_data_0;
+  wire [15:0] delayed_pcm_data_1;
+  wire [15:0] delayed_pcm_data_2;
+  wire [15:0] delayed_pcm_data_3;
+  wire [15:0] delayed_pcm_data_4;
+  wire [15:0] delayed_pcm_data_5;
+
+  // Delay module instance
+  // Maps to microphones: M31, M28, M25, M22, M19, M34
+  delay_module u_delay_module (
+    .clk(clk),
+    .rst(~rst),
+    .delay_select(mic_sel[2:0]),  // Use lower 3 bits of mic_sel to select source mic (0-5)
+    .pcm_data_0(mics_data[0*16+:16]),   // M31
+    .pcm_data_1(mics_data[1*16+:16]),   // M28
+    .pcm_data_2(mics_data[2*16+:16]),   // M25
+    .pcm_data_3(mics_data2[0*16+:16]),  // M22
+    .pcm_data_4(mics_data2[1*16+:16]),  // M19
+    .pcm_data_5(mics_data2[2*16+:16]),  // M34
+    .delayed_pcm_data_0(delayed_pcm_data_0),
+    .delayed_pcm_data_1(delayed_pcm_data_1),
+    .delayed_pcm_data_2(delayed_pcm_data_2),
+    .delayed_pcm_data_3(delayed_pcm_data_3),
+    .delayed_pcm_data_4(delayed_pcm_data_4),
+    .delayed_pcm_data_5(delayed_pcm_data_5)
+  );
 
   system system_i (
       .mic_sel(mic_sel),
