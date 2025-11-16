@@ -6,6 +6,7 @@ module delay_module (
   input wire clk,
   input wire rst,
   input wire [2:0] delay_select,
+	input wire pcm_valid,
   input wire [15:0] pcm_data_0,
   input wire [15:0] pcm_data_1,
   input wire [15:0] pcm_data_2,
@@ -120,6 +121,7 @@ module delay_module (
         .clk(clk),
         .rst(rst),
         .delay(mic_delays[j]),
+        .pcm_valid(pcm_valid),
         .pcm_data(pcm_data[j]),
         .delayed_pcm_data(delayed_pcm_data[j])
       );

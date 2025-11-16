@@ -1,21 +1,33 @@
 /// (c) Koheron
 
-#ifndef __DRIVERS_ADC_DAC_BRAM_HPP__
-#define __DRIVERS_ADC_DAC_BRAM_HPP__
+#ifndef __DRIVERS_SESENTA_HPP__
+#define __DRIVERS_SESENTA_HPP__
 
 #include <array>
 #include <cmath>
 #include <context.hpp>
 #include <server/drivers/dma-s2mm.hpp>
-constexpr uint32_t mic_size = 512;
-// constexpr uint32_t mic_size = mem::mic1_range/sizeof(uint32_t);
+// constexpr uint32_t mic_size = 512;
+constexpr uint32_t mic_size = mem::mic0_range / sizeof(uint32_t);
 
 class Sesenta {
 public:
   Sesenta(Context &ctx_)
       : ctx(ctx_), dma(ctx.get<DmaS2MM>()), ctl(ctx.mm.get<mem::control>()),
         sts(ctx.mm.get<mem::status>()), ram(ctx.mm.get<mem::ram>()),
-        ram2(ctx.mm.get<mem::ram2>()) {}
+        ram2(ctx.mm.get<mem::ram2>()), mic0_br(ctx.mm.get<mem::mic0>()),
+        mic1_br(ctx.mm.get<mem::mic1>()), mic2_br(ctx.mm.get<mem::mic2>()),
+        mic3_br(ctx.mm.get<mem::mic3>()), mic4_br(ctx.mm.get<mem::mic4>()),
+        mic5_br(ctx.mm.get<mem::mic5>())
+
+  {
+
+    start_beamforming();
+  }
+  ~Sesenta() {
+    beamforming_started = false;
+    beamforming_thread.join();
+  }
   uint32_t i_rst_clk_mics = 0;
   uint32_t i_rst_leds = 1;
   unsigned int i_dma_gate = 2;
@@ -76,7 +88,7 @@ public:
       ctx.print<INFO>("-\n");
     }
     for (int i = 1; i < (int)samples + 1; i++) {
-      offset = (i *num_mics); // s
+      offset = (i * num_mics); // s
       ctx.print<INFO>("MICS2 ");
       for (int mic_idx = 0; mic_idx < total_mics; mic_idx++) {
         mic2 = ram2.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
@@ -122,7 +134,7 @@ public:
       ctx.print<INFO>("-\n");
     }
     for (int i = 1; i < (int)samples + 1; i++) {
-      offset = (i *num_mics); // s
+      offset = (i * num_mics); // s
       ctx.print<INFO>("MICS2 ");
       for (int mic_idx = 0; mic_idx < total_mics; mic_idx++) {
         mic2 = ram2.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
@@ -220,9 +232,31 @@ public:
     return data_ret;
   }
 
+  std::array<uint32_t, mic_size> get_mic_ith(uint32_t mic_idx) {
+    switch (mic_idx) {
+    case 0:
+      return mic0_br.read_array<uint32_t, mic_size>();
+    case 1:
+      return mic1_br.read_array<uint32_t, mic_size>();
+    case 2:
+      return mic2_br.read_array<uint32_t, mic_size>();
+    case 3:
+      return mic3_br.read_array<uint32_t, mic_size>();
+    case 4:
+      return mic4_br.read_array<uint32_t, mic_size>();
+    case 5:
+      return mic5_br.read_array<uint32_t, mic_size>();
+    default:
+      return std::array<uint32_t, mic_size>{0};
+    }
+  }
+
   void set_mic_sel(uint32_t sel) { ctl.write_reg(reg::mic_select, sel); }
 
+  void set_led_sel(uint32_t sel) { ctl.write_reg(reg::led_select, sel); }
+
   uint32_t get_mic_size() { return mic_size; }
+  void start_beamforming();
 
 private:
   // one minute of data
@@ -241,7 +275,69 @@ private:
   float fs;
   Memory<mem::ram> &ram;
   Memory<mem::ram2> &ram2;
+  Memory<mem::mic0> &mic0_br;
+  Memory<mem::mic1> &mic1_br;
+  Memory<mem::mic2> &mic2_br;
+  Memory<mem::mic3> &mic3_br;
+  Memory<mem::mic4> &mic4_br;
+  Memory<mem::mic5> &mic5_br;
 
-}; // class AdcDacBram
+  std::atomic<bool> beamforming_started{false};
+  std::thread beamforming_thread;
+  static constexpr std::array<uint8_t, 6> M_DATA_TO_MIC = {
+      31, // M_DATA[0] → MIC31 (from M28: 59-28=31)
+      37, // M_DATA[1] → MIC37 (from M22: 59-22=37)
+      25, // M_DATA[2] → MIC25 (from M34: 59-34=25)
+      28, // M_DATA[3] → MIC28 (from M31: 59-31=28)
+      34, // M_DATA[4] → MIC34 (from M25: 59-25=34)
+      40  // M_DATA[5] → MIC40 (from M19: 59-19=40)
+  };
+  void beamf_thread();
 
-#endif // __DRIVERS_ADC_DAC_BRAM_HPP__
+}; // class Sesenta
+
+inline void Sesenta::start_beamforming() {
+  if (!beamforming_started) {
+    beamforming_thread = std::thread{&Sesenta::beamforming_thread, this};
+    beamforming_thread.detach();
+  }
+}
+inline void Sesenta::beamf_thread() {
+  const int num_mics = 6;
+  const int num_directions = 6;
+  beamforming_started = true;
+  std::array<double, num_directions> beam_powers = {0};
+  for (int dir = 0; dir < num_directions; dir++) {
+    set_mic_sel(dir);
+    std::array<double, mic_size> beamformed_signal = {0};
+    // 3. Sum the (already delayed) signals
+    for (int mic = 0; mic < num_mics; mic++) {
+      auto mic_data = get_mic_ith(mic);
+      // Add each sample
+      for (uint32_t sample = 0; sample < mic_size; sample++) {
+        beamformed_signal[sample] += static_cast<double>(mic_data[sample]);
+      }
+    }
+    // Calculate the power (energy) of the beamformed
+    double power = 0.0;
+    for (uint32_t sample = 0; sample < mic_size; sample++) {
+      power += beamformed_signal[sample] * beamformed_signal[sample];
+    }
+    beam_powers[dir] = power;
+  }
+  // direction with maximum power
+  int max_direction = 0;
+  double max_power = beam_powers[0];
+  for (int dir = 1; dir < num_directions; dir++) {
+    if (beam_powers[dir] > max_power) {
+      max_power = beam_powers[dir];
+      max_direction = dir;
+    }
+  }
+  ctx.print<INFO>(
+      "Maximum sound energy detected from direction: %d (Power: %f)\n",
+      max_direction, max_power);
+  set_led_sel(M_DATA_TO_MIC[max_direction]);
+}
+
+#endif // __SESENTA_HPP__

@@ -79,9 +79,11 @@ module sesenta (
       .rst  (~rst),
       .m_clk(clk_leds)
   );
-  wire [7:0] led_count;
+  wire [7:0] led_count, led_sel;
+
   leds led_controller (
       .clk(clk_leds),
+      .led_sel(led_sel),
       .reset(~rst),
       .ws_data(LEDS),
       .led_count(led_count)
@@ -156,7 +158,7 @@ module sesenta (
     end
   endgenerate
   generate
-    for (j = 0; j < 3; j = j + 1) begin : pdms_gen_nege
+    for (j = 3; j < 5; j = j + 1) begin : pdms_gen_nege
       cic_decimator #(
           .DATA_WIDTH(CIC_DATA_WIDTH),
           .CIC_STAGES(4),
@@ -165,9 +167,9 @@ module sesenta (
           .clk(clk),
           .rst(~rst),
           .pdm_clk(~pdm_clk),
-          .pdm_data(M_DATA[j+3]),
+          .pdm_data(M_DATA[j]),
           .pcm_valid(),
-          .pcm_data(mics_data2[j*16+:16]),
+          .pcm_data(mics_data[j*16+:16]),
           .overflow(cic_overflow2[j]),
           .sample_count()
       );
@@ -183,7 +185,8 @@ module sesenta (
   );
   wire [7:0] mic_sel;
   wire [15:0] mic_dbg;
-  assign mic_dbg = (mic_sel < 30) ? mics_data_dbg[16*mic_sel+:16] : mics_data_dbg2[16*(mic_sel-30)+:16];
+  assign mic_dbg = mics_data_dbg[16*mic_sel+:16];
+  // assign mic_dbg = (mic_sel < 30) ? mics_data_dbg[16*mic_sel+:16] : mics_data_dbg2[16*(mic_sel-30)+:16];
 
   // Delay module outputs
   wire [15:0] delayed_pcm_data_0;
@@ -198,6 +201,7 @@ module sesenta (
   delay_module u_delay_module (
     .clk(clk),
     .rst(~rst),
+    .pcm_valid(mics_data_valid),
     .delay_select(mic_sel[2:0]),  // Use lower 3 bits of mic_sel to select source mic (0-5)
     .pcm_data_0(mics_data[0*16+:16]),   // M31
     .pcm_data_1(mics_data[1*16+:16]),   // M28
@@ -215,6 +219,7 @@ module sesenta (
 
   system system_i (
       .mic_sel(mic_sel),
+      .led_sel(led_sel),
       .mics(mics_data_dbg),
       .mics2(mics_data_dbg2),
       .mics_data_valid(mics_data_valid),

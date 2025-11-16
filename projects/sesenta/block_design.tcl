@@ -1,6 +1,7 @@
 # required TCL dependencies
 source $board_path/config/ports.tcl
 source $board_path/base_system.tcl
+source $sdk_path/fpga/lib/bram.tcl
 # Add PS and AXI Interconnect
 # set board_preset $board_path/config/board_preset.tcl
 # set board_preset $board_path/config/board_preset_old_current_commit.tcl
@@ -17,14 +18,13 @@ source $sdk_path/projects/sesenta/amd.tcl
 connect_pins FCLK_CLK0 $mics_clk
 connect_port_pin reset proc_sys_reset_adc_clk/peripheral_aresetn
 
-
-
 # Add control and status registers
 # source $sdk_path/fpga/lib/ctl_sts.tcl
 # add_ctl_sts $mics_clk proc_sys_reset_adc_clk/peripheral_aresetn
 
 # source $sdk_path/projects/sesenta/amd.tcl
 connect_pins mic_sel [get_slice_pin [ctl_pin mic_select] 6 0 mic_sel_pin]
+connect_pins led_sel [get_slice_pin [ctl_pin led_select] 6 0 led_sel_pin]
 
 connect_pins ps_0/S_AXI_HP0_ACLK $mics_clk
 connect_pins ps_0/S_AXI_HP1_ACLK $mics_clk
@@ -160,6 +160,28 @@ delete_bd_objs [get_bd_addr_segs ps_0/Data/SEG_ps_0_HP0_DDR_LOWOCM]
 delete_bd_objs [get_bd_addr_segs -excluded axi_dma_1/Data_S2MM/SEG_axi_dma_1_Reg]
 delete_bd_objs [get_bd_addr_segs ps_0/Data/SEG_ps_0_HP1_DDR_LOWOCM]
 
+set mic_width 16
+for {set i 0} {$i < 6} {incr i} {
+  add_bram mic$i
+}
 
+for {set i 0} {$i < 6} {incr i} {
+  set from  [expr ($i + 1) * $mic_width - 1]
+  set to    [expr $i * $mic_width]
+  cell koheron:user:address_counter:1.0 addrc_$i {
+    COUNT_WIDTH 20
+  } {
+    clk $mics_clk
+    clken mics_data_valid
+  }
+  connect_cell blk_mem_gen_mic$i {
+    addrb addrc_$i/address
+    clkb $mics_clk
+    dinb [get_concat_pin [list [get_slice_pin mics $from $to] [get_constant_pin 0 $mic_width] ] mic_cc_$i]
+    enb [get_constant_pin 1 1]
+    rstb [get_constant_pin 0 1]
+    web addrc_$i/wen
+  }
+}
 set obj [get_filesets sources_1]
 set_property -name "top" -value "sesenta" -objects $obj

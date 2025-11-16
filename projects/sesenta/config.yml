@@ -7,6 +7,7 @@ cores:
   - fpga/cores/axis_variable_v1_0
   - fpga/cores/axis_tlast_v1_0
   - fpga/cores/axi_sts_register_v1_0
+  - fpga/cores/address_counter_v1_0
 
 memory:
   - name: control
@@ -33,6 +34,24 @@ memory:
   - name: axi_hp1
     offset: '0xF800F000'
     range: 4K
+  - name: mic0
+    range: 2K
+    offset: '0x40040000'
+  - name: mic1
+    range: 2K
+    offset: '0x40060000'
+  - name: mic2
+    range: 2K
+    offset: '0x40080000'
+  - name: mic3
+    range: 2K
+    offset: '0x40100000'
+  - name: mic4
+    range: 2K
+    offset: '0x40120000'
+  - name: mic5
+    range: 2K
+    offset: '0x40160000'
 
 control_registers:
   - rst_regs
@@ -40,6 +59,7 @@ control_registers:
   - dma_gate1
   - n_samples
   - mic_select
+  - led_select
 
 status_registers:
   - mode
