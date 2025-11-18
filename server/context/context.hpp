@@ -13,6 +13,7 @@
 
 #include "memory.hpp"
 
+
 class Context : public ContextBase
 {
   public:
@@ -20,16 +21,16 @@ class Context : public ContextBase
     : mm()
     , spi(*this)
     , i2c(*this)
-    // , fclk(*this)
+    , fclk(*this)
     , fpga(*this)
     {
-        if (fpga.load_bitstream(instrument_name) < 0) {
-            log<PANIC>("Failed to load bitstream. Exiting server...\n");
-            exit(EXIT_FAILURE);
+        if (load_bitstream) {
+            if (fpga.load_bitstream(instrument_name) < 0) {
+                log<PANIC>("Failed to load bitstream. Exiting server...\n");
+                exit(EXIT_FAILURE);
+            }
         }
 
-        // // We set all the Zynq clocks before starting the drivers
-        // zynq_clocks::set_clocks(fclk);
     }
 
     int init() {
@@ -44,8 +45,10 @@ class Context : public ContextBase
     MemoryManager mm;
     SpiManager spi;
     I2cManager i2c;
-    // ZynqFclk fclk;
+    ZynqFclk fclk;
     FpgaManager fpga;
+    private:
+        static constexpr bool load_bitstream = false;
 };
 
 #endif // __CONTEXT_HPP__

@@ -178,7 +178,7 @@ module sesenta (
 
   ila_0 ila_bram (
       .clk(clk),  // input wire clk
-      .probe0(led_count),
+      .probe0(led_sel),
       .probe1(mics_data_valid),
       .probe2(mic_dbg),
       .probe3(mic_sel)

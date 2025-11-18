@@ -21,7 +21,7 @@ public:
         mic5_br(ctx.mm.get<mem::mic5>())
 
   {
-
+    ctx.print<INFO>("BEAm------------------------------------------>-\n");
     start_beamforming();
   }
   ~Sesenta() {
@@ -297,47 +297,57 @@ private:
 }; // class Sesenta
 
 inline void Sesenta::start_beamforming() {
-  if (!beamforming_started) {
-    beamforming_thread = std::thread{&Sesenta::beamforming_thread, this};
-    beamforming_thread.detach();
-  }
+
+      ctx.print<INFO>(" enter thread\n");
+  // if (!beamforming_started) {
+    // beamforming_thread = std::thread{&Sesenta::beamforming_thread, this};
+    // start_beamforming.
+    // beamforming_thread.detach();
+    beamf_thread();
+  // }
 }
 inline void Sesenta::beamf_thread() {
   const int num_mics = 6;
   const int num_directions = 6;
   beamforming_started = true;
-  std::array<double, num_directions> beam_powers = {0};
-  for (int dir = 0; dir < num_directions; dir++) {
-    set_mic_sel(dir);
-    std::array<double, mic_size> beamformed_signal = {0};
-    // 3. Sum the (already delayed) signals
-    for (int mic = 0; mic < num_mics; mic++) {
-      auto mic_data = get_mic_ith(mic);
-      // Add each sample
+
+      ctx.print<INFO>(" enter thread Hansem\n");
+  while (beamforming_started) {
+
+      ctx.print<INFO>(" infinit\n");
+    std::array<double, num_directions> beam_powers = {0};
+    for (int dir = 0; dir < num_directions; dir++) {
+      set_mic_sel(dir);
+      std::array<double, mic_size> beamformed_signal = {0};
+      // Sum signals delayed from all microphones
+      for (int mic = 0; mic < num_mics; mic++) {
+        auto mic_data = get_mic_ith(mic);
+        // Add each sample
+        for (uint32_t sample = 0; sample < mic_size; sample++) {
+          beamformed_signal[sample] += static_cast<double>(mic_data[sample]);
+        }
+      }
+      // Calculate the power (energy) of the beamformed
+      double power = 0.0;
       for (uint32_t sample = 0; sample < mic_size; sample++) {
-        beamformed_signal[sample] += static_cast<double>(mic_data[sample]);
+        power += beamformed_signal[sample] * beamformed_signal[sample];
+      }
+      beam_powers[dir] = power;
+    }
+    // direction with maximum power
+    int max_direction = 0;
+    double max_power = beam_powers[0];
+    for (int dir = 1; dir < num_directions; dir++) {
+      if (beam_powers[dir] > max_power) {
+        max_power = beam_powers[dir];
+        max_direction = dir;
       }
     }
-    // Calculate the power (energy) of the beamformed
-    double power = 0.0;
-    for (uint32_t sample = 0; sample < mic_size; sample++) {
-      power += beamformed_signal[sample] * beamformed_signal[sample];
-    }
-    beam_powers[dir] = power;
+    ctx.print<INFO>(
+        "Maximum sound energy detected from direction: %d (Power: %f)\n",
+        max_direction, max_power);
+    set_led_sel(M_DATA_TO_MIC[max_direction]);
   }
-  // direction with maximum power
-  int max_direction = 0;
-  double max_power = beam_powers[0];
-  for (int dir = 1; dir < num_directions; dir++) {
-    if (beam_powers[dir] > max_power) {
-      max_power = beam_powers[dir];
-      max_direction = dir;
-    }
-  }
-  ctx.print<INFO>(
-      "Maximum sound energy detected from direction: %d (Power: %f)\n",
-      max_direction, max_power);
-  set_led_sel(M_DATA_TO_MIC[max_direction]);
 }
 
 #endif // __SESENTA_HPP__

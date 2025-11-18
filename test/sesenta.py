@@ -23,6 +23,11 @@ class Sesenta(object):
     def set_mic_sel(self, sel):
         pass
 
+
+    @command()
+    def set_led_sel(self, sel):
+        pass
+
     @command()
     def set_nsamples(self, samples):
         pass
