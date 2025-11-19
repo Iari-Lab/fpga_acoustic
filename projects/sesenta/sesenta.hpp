@@ -299,12 +299,12 @@ private:
 inline void Sesenta::start_beamforming() {
 
       ctx.print<INFO>(" enter thread\n");
-  // if (!beamforming_started) {
-    // beamforming_thread = std::thread{&Sesenta::beamforming_thread, this};
+  if (!beamforming_started) {
+    beamforming_thread = std::thread{&Sesenta::beamf_thread, this};
     // start_beamforming.
     // beamforming_thread.detach();
-    beamf_thread();
-  // }
+    // beamf_thread();
+  }
 }
 inline void Sesenta::beamf_thread() {
   const int num_mics = 6;

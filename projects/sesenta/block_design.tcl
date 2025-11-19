@@ -163,13 +163,13 @@ delete_bd_objs [get_bd_addr_segs ps_0/Data/SEG_ps_0_HP1_DDR_LOWOCM]
 
 set mic_width 16
 for {set i 0} {$i < 6} {incr i} {
-  add_bram mic$i
+  amics_data_validdd_bram mic$i
 }
-cell koheron:user:address_counter:1.0 addr_counter_0 {
+cell koheron:user:addr_counter:1.0 addr_counter_0 {
     COUNT_WIDTH 11
   } {
     clk $mics_clk
-    clken mics_data_valid
+    enable mics_data_valid
   }
 
 cell xilinx.com:ip:system_ila:1.1 sila_3 {
@@ -185,19 +185,19 @@ cell xilinx.com:ip:system_ila:1.1 sila_3 {
 } {
     clk $mics_clk
     probe0 mics_data_valid
-    probe1 addr_counter_0/address_dbg
+    probe1 addr_counter_0/addr_debug
 }
 for {set i 0} {$i < 6} {incr i} {
   set from  [expr ($i + 1) * $mic_width - 1]
   set to    [expr $i * $mic_width]
   
   connect_cell blk_mem_gen_mic$i {
-    addrb addr_counter_0/address
+    addrb addr_counter_0/addr
     clkb $mics_clk
     dinb [get_concat_pin [list [get_slice_pin mics $from $to] [get_constant_pin 0 $mic_width] ] mic_cc_$i]
     enb [get_constant_pin 1 1]
     rstb [get_constant_pin 0 1]
-    web addr_counter_0/wen
+    web addr_counter_0/write_en
   }
 }
 set obj [get_filesets sources_1]
