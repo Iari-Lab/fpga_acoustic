@@ -163,20 +163,24 @@ delete_bd_objs [get_bd_addr_segs ps_0/Data/SEG_ps_0_HP1_DDR_LOWOCM]
 
 set mic_width 16
 for {set i 0} {$i < 6} {incr i} {
-  amics_data_validdd_bram mic$i
+  add_bram mic$i
 }
-cell koheron:user:addr_counter:1.0 addr_counter_0 {
-    COUNT_WIDTH 11
+cell iari:user:addr_counter:1.0 addr_counter_0 {
+    ADDR_WIDTH 11
   } {
     clk $mics_clk
     enable mics_data_valid
+    start [get_slice_pin [ctl_pin start_capture] 0 0 start]
+    done [sts_pin done_capture]
   }
 
 cell xilinx.com:ip:system_ila:1.1 sila_3 {
     C_PROBE0_WIDTH 1
     C_PROBE1_WIDTH 32
+    C_PROBE2_WIDTH 1
+    C_PROBE3_WIDTH 1
     C_DATA_DEPTH 16384
-    C_NUM_OF_PROBES 2
+    C_NUM_OF_PROBES 4
     C_EN_STRG_QUAL 1 
     C_ADV_TRIGGER false
     ALL_PROBE_SAME_MU_CNT 2
@@ -184,8 +188,11 @@ cell xilinx.com:ip:system_ila:1.1 sila_3 {
     C_PROBE_WIDTH_PROPAGATION MANUAL 
 } {
     clk $mics_clk
-    probe0 mics_data_valid
+    probe0 [get_slice_pin [ctl_pin start_capture] 0 0 start_dbg]
     probe1 addr_counter_0/addr_debug
+    probe2 addr_counter_0/done
+    probe3 mics_data_valid
+
 }
 for {set i 0} {$i < 6} {incr i} {
   set from  [expr ($i + 1) * $mic_width - 1]

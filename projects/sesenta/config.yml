@@ -7,7 +7,7 @@ cores:
   - fpga/cores/axis_variable_v1_0
   - fpga/cores/axis_tlast_v1_0
   - fpga/cores/axi_sts_register_v1_0
-  - fpga/cores/address_counter_v1_0
+  - fpga/cores/addr_counter_v1_0
 
 memory:
   - name: control
@@ -60,9 +60,11 @@ control_registers:
   - n_samples
   - mic_select
   - led_select
+  - start_capture
 
 status_registers:
   - mode
+  - done_capture
 
 # parameters:
 #   fclk0: 115200000 # FPGA clock speed in Hz

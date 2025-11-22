@@ -231,27 +231,52 @@ public:
     }
     return data_ret;
   }
-
-  std::array<uint32_t, mic_size> get_mic_ith(uint32_t mic_idx) {
+  std::array<int16_t, mic_size> get_mic_ith(uint32_t mic_idx) {
+    std::array<uint32_t, mic_size> raw_data;
+    std::array<int16_t, mic_size> signed_data;
+    
     switch (mic_idx) {
-    case 0:
-      return mic0_br.read_array<uint32_t, mic_size>();
-    case 1:
-      return mic1_br.read_array<uint32_t, mic_size>();
-    case 2:
-      return mic2_br.read_array<uint32_t, mic_size>();
-    case 3:
-      return mic3_br.read_array<uint32_t, mic_size>();
-    case 4:
-      return mic4_br.read_array<uint32_t, mic_size>();
-    case 5:
-      return mic5_br.read_array<uint32_t, mic_size>();
-    default:
-      return std::array<uint32_t, mic_size>{0};
+      case 0: raw_data = mic0_br.read_array<uint32_t, mic_size>(); break;
+      case 1: raw_data = mic1_br.read_array<uint32_t, mic_size>(); break;
+      case 2: raw_data = mic2_br.read_array<uint32_t, mic_size>(); break;
+      case 3: raw_data = mic3_br.read_array<uint32_t, mic_size>(); break;
+      case 4: raw_data = mic4_br.read_array<uint32_t, mic_size>(); break;
+      case 5: raw_data = mic5_br.read_array<uint32_t, mic_size>(); break;
+      default: return std::array<int16_t, mic_size>{0};
     }
+    
+    for (uint32_t i = 0; i < mic_size; i++) {
+      // Extract lower 16 bits and cast to signed 16-bit integer
+      signed_data[i] = static_cast<int16_t>(raw_data[i] & 0xFFFF);
+    }
+    
+    return signed_data;
   }
+  // std::array<uint32_t, mic_size> get_mic_ith(uint32_t mic_idx) {
+  //   switch (mic_idx) {
+  //   case 0:
+  //     return mic0_br.read_array<uint32_t, mic_size>();
+  //   case 1:
+  //     return mic1_br.read_array<uint32_t, mic_size>();
+  //   case 2:
+  //     return mic2_br.read_array<uint32_t, mic_size>();
+  //   case 3:
+  //     return mic3_br.read_array<uint32_t, mic_size>();
+  //   case 4:
+  //     return mic4_br.read_array<uint32_t, mic_size>();
+  //   case 5:
+  //     return mic5_br.read_array<uint32_t, mic_size>();
+  //   default:
+  //     return std::array<uint32_t, mic_size>{0};
+  //   }
+  // }
 
-  void set_mic_sel(uint32_t sel) { ctl.write_reg(reg::mic_select, sel); }
+  void set_mic_sel(uint32_t sel) { 
+    ctl.write_reg(reg::mic_select, sel);
+    ctl.set_bit<reg::start_capture, 0>(); 
+    std::this_thread::sleep_for(std::chrono::microseconds(1));
+    ctl.clear_bit<reg::start_capture, 0>(); 
+   }
 
   void set_led_sel(uint32_t sel) { ctl.write_reg(reg::led_select, sel); }
 
@@ -302,52 +327,117 @@ inline void Sesenta::start_beamforming() {
   if (!beamforming_started) {
     beamforming_thread = std::thread{&Sesenta::beamf_thread, this};
     // start_beamforming.
-    // beamforming_thread.detach();
+    beamforming_thread.detach();
     // beamf_thread();
   }
 }
 inline void Sesenta::beamf_thread() {
   const int num_mics = 6;
   const int num_directions = 6;
+  
   beamforming_started = true;
-
-      ctx.print<INFO>(" enter thread Hansem\n");
+  ctx.print<INFO>("Beamforming thread started for 6 mics.\n");
+  
+  const double pcm_sample_rate = 48000.0; // 48 kHz
+  const double buffer_fill_time_ms = (1 / pcm_sample_rate) * 1000.0;
+  
+  ctx.print<INFO>("BRAM buffer size: %u samples\n", mic_size);
+  ctx.print<INFO>("Required wait time per direction: %.2f ms\n", buffer_fill_time_ms);
+  
   while (beamforming_started) {
-
-      ctx.print<INFO>(" infinit\n");
-    std::array<double, num_directions> beam_powers = {0};
+    std::array<double, num_directions> beam_powers = {0.0};
+    
+    // Iterate through each of the 6 possible sound source directions
     for (int dir = 0; dir < num_directions; dir++) {
-      set_mic_sel(dir);
-      std::array<double, mic_size> beamformed_signal = {0};
-      // Sum signals delayed from all microphones
+        set_mic_sel(dir);
+        while ((sts.read_reg(reg::done_capture) & 0x1)) {
+          std::this_thread::sleep_for(
+            std::chrono::milliseconds(25) // Add 5ms margin
+          );
+        }      
+
+
+      
+      std::array<double, mic_size> beamformed_signal = {0.0};
+      
       for (int mic = 0; mic < num_mics; mic++) {
         auto mic_data = get_mic_ith(mic);
-        // Add each sample
-        for (uint32_t sample = 0; sample < mic_size; sample++) {
-          beamformed_signal[sample] += static_cast<double>(mic_data[sample]);
+        
+        for (uint32_t sample_idx = 0; sample_idx < mic_size; sample_idx++) {
+          beamformed_signal[sample_idx] += static_cast<double>(mic_data[sample_idx]);
         }
       }
-      // Calculate the power (energy) of the beamformed
+      
       double power = 0.0;
-      for (uint32_t sample = 0; sample < mic_size; sample++) {
-        power += beamformed_signal[sample] * beamformed_signal[sample];
+      for (uint32_t sample_idx = 0; sample_idx < mic_size; sample_idx++) {
+        power += beamformed_signal[sample_idx] * beamformed_signal[sample_idx];
       }
+      
       beam_powers[dir] = power;
+      ctx.print<DEBUG>("Direction %d: Power = %e\n", dir, power);
     }
-    // direction with maximum power
+    
     int max_direction = 0;
-    double max_power = beam_powers[0];
-    for (int dir = 1; dir < num_directions; dir++) {
+    double max_power = 0.0;
+    for (int dir = 0; dir < num_directions; dir++) {
       if (beam_powers[dir] > max_power) {
         max_power = beam_powers[dir];
         max_direction = dir;
       }
     }
+    
     ctx.print<INFO>(
-        "Maximum sound energy detected from direction: %d (Power: %f)\n",
+        "Maximum sound energy detected from direction: %d (Power: %e)\n",
         max_direction, max_power);
+    
     set_led_sel(M_DATA_TO_MIC[max_direction]);
+    
+    // Optional delay to control the update rate of the LEDs
+    // std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 }
+// inline void Sesenta::beamf_thread() {
+//   const int num_mics = 6;
+//   const int num_directions = 6;
+//   beamforming_started = true;
+
+//       ctx.print<INFO>(" enter thread Hansem\n");
+//   while (beamforming_started) {
+
+//       ctx.print<INFO>(" infinit\n");
+//     std::array<double, num_directions> beam_powers = {0};
+//     for (int dir = 0; dir < num_directions; dir++) {
+//       set_mic_sel(dir);
+//       std::array<double, mic_size> beamformed_signal = {0};
+//       // Sum signals delayed from all microphones
+//       for (int mic = 0; mic < num_mics; mic++) {
+//         auto mic_data = get_mic_ith(mic);
+//         // Add each sample
+//         for (uint32_t sample = 0; sample < mic_size; sample++) {
+//           beamformed_signal[sample] += static_cast<double>(mic_data[sample]);
+//         }
+//       }
+//       // Calculate the power (energy) of the beamformed
+//       double power = 0.0;
+//       for (uint32_t sample = 0; sample < mic_size; sample++) {
+//         power += beamformed_signal[sample] * beamformed_signal[sample];
+//       }
+//       beam_powers[dir] = power;
+//     }
+//     // direction with maximum power
+//     int max_direction = 0;
+//     double max_power = beam_powers[0];
+//     for (int dir = 1; dir < num_directions; dir++) {
+//       if (beam_powers[dir] > max_power) {
+//         max_power = beam_powers[dir];
+//         max_direction = dir;
+//       }
+//     }
+//     ctx.print<INFO>(
+//         "Maximum sound energy detected from direction: %d (Power: %f)\n",
+//         max_direction, max_power);
+//     set_led_sel(M_DATA_TO_MIC[max_direction]);
+//   }
+// }
 
 #endif // __SESENTA_HPP__
