@@ -161,8 +161,8 @@ delete_bd_objs [get_bd_addr_segs -excluded axi_dma_1/Data_S2MM/SEG_axi_dma_1_Reg
 delete_bd_objs [get_bd_addr_segs ps_0/Data/SEG_ps_0_HP1_DDR_LOWOCM]
 
 
-set mic_width 16
-for {set i 0} {$i < 6} {incr i} {
+set mic_width 32
+for {set i 0} {$i < 4} {incr i} {
   add_bram mic$i
 }
 cell iari:user:addr_counter:1.0 addr_counter_0 {
@@ -194,14 +194,14 @@ cell xilinx.com:ip:system_ila:1.1 sila_3 {
     probe3 mics_data_valid
 
 }
-for {set i 0} {$i < 6} {incr i} {
+for {set i 0} {$i < 4} {incr i} {
   set from  [expr ($i + 1) * $mic_width - 1]
   set to    [expr $i * $mic_width]
   
   connect_cell blk_mem_gen_mic$i {
     addrb addr_counter_0/addr
     clkb $mics_clk
-    dinb [get_concat_pin [list [get_slice_pin mics $from $to] [get_constant_pin 0 $mic_width] ] mic_cc_$i]
+    dinb [get_slice_pin mics $from $to] 
     enb [get_constant_pin 1 1]
     rstb [get_constant_pin 0 1]
     web addr_counter_0/write_en

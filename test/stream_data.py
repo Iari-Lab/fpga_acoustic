@@ -49,6 +49,14 @@ class Acoustic():
         print(reshaped_array)
         self.plot_all(reshaped_array, "{}".format(name), test= test)
 
+    def data_stream_pro4(self, samples, channels, name, filedir):
+        # mics = self.driver.read_mics6(samples)
+        mics = self.driver.get_mics4(samples)
+        print("Data received:", len(mics))
+        mics_posedge = np.vstack([mics[i::channels] for i in range(channels)]) # dma1
+        print("Mics posedge shape:", mics_posedge.shape)
+        self.plot_all(mics_posedge, "{}_dma1_2".format(name), filedir=filedir)
+
     def data_stream_pro6(self, samples, channels, name, filedir):
         # mics = self.driver.read_mics6(samples)
         mics = self.driver.get_mics6(samples)

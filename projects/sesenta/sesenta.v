@@ -43,7 +43,7 @@ module sesenta (
     output M0_CLK,
     output M1_CLK,
     output M2_CLK,
-    input [5:0] M_DATA,
+    input [3:0] M_DATA,
     output LEDS,
     output SYNC_IN,
     output SYNC_OUT
@@ -103,25 +103,50 @@ module sesenta (
   assign SYNC_IN  = pcm_valid;
 
   wire [29:0] cic_overflow, cic_overflow2;
-
+  
   always @(posedge clk) begin
-
+    // Assign delayed PCM data for 4-mic array (M39, M51, M57, M45)
     // Assign delayed PCM data to first 6 positions (M31, M28, M25, M22, M19, M34)
-    reg_mics_data[0*16+:16] <= delayed_pcm_data_0;  // M31
-    reg_mics_data[1*16+:16] <= delayed_pcm_data_1;  // M28
-    reg_mics_data[2*16+:16] <= delayed_pcm_data_2;  // M25
-    reg_mics_data2[0*16+:16] <= delayed_pcm_data_3; // M22
-    reg_mics_data2[1*16+:16] <= delayed_pcm_data_4; // M19
-    reg_mics_data2[2*16+:16] <= delayed_pcm_data_5; // M34
-    // Keep remaining microphone data unchanged
-    reg_mics_data[255:48] <= mics_data[255:48];
-    reg_mics_data2[255:48] <= mics_data2[255:48];
+    reg_mics_data[0*32+:32] <= mic0;  // M39
+    reg_mics_data[1*32+:32] <= mic1;  // M51
+    reg_mics_data[2*32+:32] <= mic2;  // M57
+    reg_mics_data[3*32+:32] <= mic3; // M58
+    reg_mics_data[255:128] <= mics_data[255:128];
+    reg_mics_data2 <= mics_data2;
     pcm_valid <= mics_data_valid;
   end
   assign mics_data_dbg  = reg_mics_data;
   assign mics_data_dbg2 = reg_mics_data2;
 
-
+ wire [31:0] mic0, mic1, mic2, mic3;
+ ext2sc #(
+       .IN_WIDTH (CIC_DATA_WIDTH),
+       .OUT_WIDTH(32)
+   ) mic_2_ext2sc (
+       .in_1 (delayed_pcm_data_0),
+       .out_1(mic0)
+   );
+  ext2sc #(
+       .IN_WIDTH (CIC_DATA_WIDTH),
+       .OUT_WIDTH(32)
+   ) mic_2_ext2sc_1 (
+       .in_1 (delayed_pcm_data_1),
+       .out_1(mic1)
+   );
+  ext2sc #(
+       .IN_WIDTH (CIC_DATA_WIDTH),
+       .OUT_WIDTH(32)
+   ) mic_2_ext2sc_2 (
+       .in_1 (delayed_pcm_data_2),
+       .out_1(mic2)
+   );
+  ext2sc #(
+       .IN_WIDTH (CIC_DATA_WIDTH),
+       .OUT_WIDTH(32)
+   ) mic_2_ext2sc_3 (
+       .in_1 (delayed_pcm_data_3),
+       .out_1(mic3)
+   );
   cic_decimator #(
       .DATA_WIDTH(CIC_DATA_WIDTH),
       .CIC_STAGES(4),
@@ -129,7 +154,7 @@ module sesenta (
   ) cic_stage (
       .clk(clk),
       .rst(~rst),
-      .pdm_clk(pdm_clk),
+      .pdm_clk(~pdm_clk),
       .pdm_data(M_DATA[0]),
       .pcm_valid(mics_data_valid),
       .pcm_data(mics_data[0*16+:16]),
@@ -139,8 +164,9 @@ module sesenta (
 
   genvar i;
   genvar j, idx;
+  
   generate
-    for (i = 1; i < 3; i = i + 1) begin : pdms_gen_pose
+    for (j = 1; j < 4; j = j + 1) begin : pdms_gen_nege
       cic_decimator #(
           .DATA_WIDTH(CIC_DATA_WIDTH),
           .CIC_STAGES(4),
@@ -148,34 +174,15 @@ module sesenta (
       ) cic_stage (
           .clk(clk),
           .rst(~rst),
-          .pdm_clk(pdm_clk),
-          .pdm_data(M_DATA[i]),
-          .pcm_valid(),
-          .pcm_data(mics_data[i*16+:16]),
-          .overflow(cic_overflow[i]),
-          .sample_count()
-      );
-    end
-  endgenerate
-  generate
-    for (j = 3; j < 5; j = j + 1) begin : pdms_gen_nege
-      cic_decimator #(
-          .DATA_WIDTH(CIC_DATA_WIDTH),
-          .CIC_STAGES(4),
-          .CIC_DECIMATION(64)
-      ) cic_stage (
-          .clk(clk),
-          .rst(~rst),
           .pdm_clk(~pdm_clk),
           .pdm_data(M_DATA[j]),
           .pcm_valid(),
           .pcm_data(mics_data[j*16+:16]),
-          .overflow(cic_overflow2[j]),
+          .overflow(cic_overflow[j]),
           .sample_count()
       );
     end
   endgenerate
-
   ila_0 ila_bram (
       .clk(clk),  // input wire clk
       .probe0(led_sel),
@@ -183,38 +190,32 @@ module sesenta (
       .probe2(mic_dbg),
       .probe3(mic_sel)
   );
-  wire [7:0] mic_sel;
+  wire [2:0] mic_sel;
   wire [15:0] mic_dbg;
   assign mic_dbg = mics_data_dbg[16*mic_sel+:16];
   // assign mic_dbg = (mic_sel < 30) ? mics_data_dbg[16*mic_sel+:16] : mics_data_dbg2[16*(mic_sel-30)+:16];
 
-  // Delay module outputs
+  // Delay module outputs for 4-mic array (M39, M51, M57, M45)
   wire [15:0] delayed_pcm_data_0;
   wire [15:0] delayed_pcm_data_1;
   wire [15:0] delayed_pcm_data_2;
   wire [15:0] delayed_pcm_data_3;
-  wire [15:0] delayed_pcm_data_4;
-  wire [15:0] delayed_pcm_data_5;
 
-  // Delay module instance
-  // Maps to microphones: M31, M28, M25, M22, M19, M34
+  // Delay module instance for 4-mic array
+  // Maps to microphones: M39, M51, M57, M45
   delay_module u_delay_module (
     .clk(clk),
     .rst(~rst),
-    .pcm_valid(mics_data_valid),
-    .delay_select(mic_sel[2:0]),  // Use lower 3 bits of mic_sel to select source mic (0-5)
-    .pcm_data_0(mics_data[0*16+:16]),   // M31
-    .pcm_data_1(mics_data[1*16+:16]),   // M28
-    .pcm_data_2(mics_data[2*16+:16]),   // M25
-    .pcm_data_3(mics_data2[0*16+:16]),  // M22
-    .pcm_data_4(mics_data2[1*16+:16]),  // M19
-    .pcm_data_5(mics_data2[2*16+:16]),  // M34
+    .delay_select(mic_sel),  // Use lower 2 bits of mic_sel to select source mic (0-3)
+    .pcm_data_0(mics_data[0*16+:16]),   // M39
+    .pcm_data_1(mics_data[1*16+:16]),  // M51
+    .pcm_data_2(mics_data[2*16+:16]),  // M57
+    .pcm_data_3(mics_data[3*16+:16]),   // M45
     .delayed_pcm_data_0(delayed_pcm_data_0),
     .delayed_pcm_data_1(delayed_pcm_data_1),
     .delayed_pcm_data_2(delayed_pcm_data_2),
     .delayed_pcm_data_3(delayed_pcm_data_3),
-    .delayed_pcm_data_4(delayed_pcm_data_4),
-    .delayed_pcm_data_5(delayed_pcm_data_5)
+    .pcm_valid(mics_data_valid)
   );
 
   system system_i (
@@ -247,7 +248,6 @@ module sesenta (
       .reset(rst),
       .FIXED_IO_ps_srstb(FIXED_IO_ps_srstb)
   );
-
 
 
 

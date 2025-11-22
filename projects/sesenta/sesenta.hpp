@@ -17,12 +17,11 @@ public:
         sts(ctx.mm.get<mem::status>()), ram(ctx.mm.get<mem::ram>()),
         ram2(ctx.mm.get<mem::ram2>()), mic0_br(ctx.mm.get<mem::mic0>()),
         mic1_br(ctx.mm.get<mem::mic1>()), mic2_br(ctx.mm.get<mem::mic2>()),
-        mic3_br(ctx.mm.get<mem::mic3>()), mic4_br(ctx.mm.get<mem::mic4>()),
-        mic5_br(ctx.mm.get<mem::mic5>())
+        mic3_br(ctx.mm.get<mem::mic3>()) 
 
   {
     ctx.print<INFO>("BEAm------------------------------------------>-\n");
-    start_beamforming();
+    // start_beamforming();
   }
   ~Sesenta() {
     beamforming_started = false;
@@ -151,6 +150,29 @@ public:
     }
     return data_ret;
   }
+
+  auto get_mics4(uint32_t samples) {
+    const int num_mics = 8;
+    const int total_mics = 4;
+    start_dma_transfer(samples);
+    ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
+    uint32_t mic = 0;
+    std::vector<int32_t> data_ret = {};
+    int32_t offset = 0;
+    dma_off();
+    dma1_off();
+    for (int i = 1; i < (int)samples + 1; i++) {
+      offset = (i * num_mics); // s
+      ctx.print<INFO>("MICS1 ");
+      for (int mic_idx = 0; mic_idx < total_mics; mic_idx++) {
+        mic = ram.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
+        data_ret.push_back(mic);
+        ctx.print<INFO>(" %d", mic);
+      }
+      ctx.print<INFO>("-\n");
+    }
+    return data_ret;
+  }
   auto get_mics(uint32_t samples) {
     const int num_mics = 16;
     start_dma_transfer(samples);
@@ -231,45 +253,41 @@ public:
     }
     return data_ret;
   }
-  std::array<int16_t, mic_size> get_mic_ith(uint32_t mic_idx) {
-    std::array<uint32_t, mic_size> raw_data;
-    std::array<int16_t, mic_size> signed_data;
+  // std::array<int16_t, mic_size> get_mic_ith(uint32_t mic_idx) {
+  //   std::array<uint32_t, mic_size> raw_data;
+  //   std::array<int16_t, mic_size> signed_data;
     
-    switch (mic_idx) {
-      case 0: raw_data = mic0_br.read_array<uint32_t, mic_size>(); break;
-      case 1: raw_data = mic1_br.read_array<uint32_t, mic_size>(); break;
-      case 2: raw_data = mic2_br.read_array<uint32_t, mic_size>(); break;
-      case 3: raw_data = mic3_br.read_array<uint32_t, mic_size>(); break;
-      case 4: raw_data = mic4_br.read_array<uint32_t, mic_size>(); break;
-      case 5: raw_data = mic5_br.read_array<uint32_t, mic_size>(); break;
-      default: return std::array<int16_t, mic_size>{0};
-    }
-    
-    for (uint32_t i = 0; i < mic_size; i++) {
-      // Extract lower 16 bits and cast to signed 16-bit integer
-      signed_data[i] = static_cast<int16_t>(raw_data[i] & 0xFFFF);
-    }
-    
-    return signed_data;
-  }
-  // std::array<uint32_t, mic_size> get_mic_ith(uint32_t mic_idx) {
   //   switch (mic_idx) {
-  //   case 0:
-  //     return mic0_br.read_array<uint32_t, mic_size>();
-  //   case 1:
-  //     return mic1_br.read_array<uint32_t, mic_size>();
-  //   case 2:
-  //     return mic2_br.read_array<uint32_t, mic_size>();
-  //   case 3:
-  //     return mic3_br.read_array<uint32_t, mic_size>();
-  //   case 4:
-  //     return mic4_br.read_array<uint32_t, mic_size>();
-  //   case 5:
-  //     return mic5_br.read_array<uint32_t, mic_size>();
-  //   default:
-  //     return std::array<uint32_t, mic_size>{0};
+  //     case 0: raw_data = mic0_br.read_array<uint32_t, mic_size>(); break;
+  //     case 1: raw_data = mic1_br.read_array<uint32_t, mic_size>(); break;
+  //     case 2: raw_data = mic2_br.read_array<uint32_t, mic_size>(); break;
+  //     case 3: raw_data = mic3_br.read_array<uint32_t, mic_size>(); break;
+  //     case 4: raw_data = mic4_br.read_array<uint32_t, mic_size>(); break;
+  //     case 5: raw_data = mic5_br.read_array<uint32_t, mic_size>(); break;
+  //     default: return std::array<int16_t, mic_size>{0};
   //   }
+    
+  //   for (uint32_t i = 0; i < mic_size; i++) {
+  //     // Extract lower 16 bits and cast to signed 16-bit integer
+  //     signed_data[i] = static_cast<int16_t>(raw_data[i] & 0xFFFF);
+  //   }
+    
+  //   return signed_data;
   // }
+  std::array<uint32_t, mic_size> get_mic_ith(uint32_t mic_idx) {
+    switch (mic_idx) {
+    case 0:
+      return mic0_br.read_array<uint32_t, mic_size>();
+    case 1:
+      return mic1_br.read_array<uint32_t, mic_size>();
+    case 2:
+      return mic2_br.read_array<uint32_t, mic_size>();
+    case 3:
+      return mic3_br.read_array<uint32_t, mic_size>();
+    default:
+      return std::array<uint32_t, mic_size>{0};
+    }
+  }
 
   void set_mic_sel(uint32_t sel) { 
     ctl.write_reg(reg::mic_select, sel);
@@ -304,18 +322,25 @@ private:
   Memory<mem::mic1> &mic1_br;
   Memory<mem::mic2> &mic2_br;
   Memory<mem::mic3> &mic3_br;
-  Memory<mem::mic4> &mic4_br;
-  Memory<mem::mic5> &mic5_br;
+  // Memory<mem::mic4> &mic4_br;
+  // Memory<mem::mic5> &mic5_br;
 
   std::atomic<bool> beamforming_started{false};
   std::thread beamforming_thread;
-  static constexpr std::array<uint8_t, 6> M_DATA_TO_MIC = {
-      31, // M_DATA[0] → MIC31 (from M28: 59-28=31)
-      37, // M_DATA[1] → MIC37 (from M22: 59-22=37)
-      25, // M_DATA[2] → MIC25 (from M34: 59-34=25)
-      28, // M_DATA[3] → MIC28 (from M31: 59-31=28)
-      34, // M_DATA[4] → MIC34 (from M25: 59-25=34)
-      40  // M_DATA[5] → MIC40 (from M19: 59-19=40)
+  // static constexpr std::array<uint8_t, 7> M_DATA_TO_MIC = {
+  //     31, // M_DATA[0] → MIC31 (from M28: 59-28=31)
+  //     37, // M_DATA[1] → MIC37 (from M22: 59-22=37)
+  //     25, // M_DATA[2] → MIC25 (from M34: 59-34=25)
+  //     28, // M_DATA[3] → MIC28 (from M31: 59-31=28)
+  //     34, // M_DATA[4] → MIC34 (from M25: 59-25=34)
+  //     40  // M_DATA[5] → MIC40 (from M19: 59-19=40)
+  // };
+
+  static constexpr std::array<uint8_t, 4> M_DATA_TO_MIC = {
+      20, // M_DATA[0] → MIC39 
+      8, // M_DATA[1] → MIC51 
+      2, // M_DATA[2] → MIC57 
+      14  // M_DATA[3] → MIC45 
   };
   void beamf_thread();
 
@@ -332,8 +357,8 @@ inline void Sesenta::start_beamforming() {
   }
 }
 inline void Sesenta::beamf_thread() {
-  const int num_mics = 6;
-  const int num_directions = 6;
+  const int num_mics = 4;
+  const int num_directions = 4;
   
   beamforming_started = true;
   ctx.print<INFO>("Beamforming thread started for 6 mics.\n");

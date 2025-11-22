@@ -77,31 +77,49 @@ set_property IOSTANDARD LVCMOS33 [get_ports {M_DATA[*]}]
 # set_property PACKAGE_PIN P15 [get_ports M_DATA[5]]
 
 
-# 31,  D30
-# MIC M31, D30 - IO_B34_LN15 (BANK 34)
-set_property PACKAGE_PIN U20 [get_ports M_DATA[3]]
+# # 31,  D30
+# # MIC M31, D30 - IO_B34_LN15 (BANK 34)
+# set_property PACKAGE_PIN U20 [get_ports M_DATA[3]]
 
-# 28,  D28
-# MIC M28, D28 - IO_B13_LN16 (BANK 13)
-set_property PACKAGE_PIN W9  [get_ports M_DATA[0]]
+# # 28,  D28
+# # MIC M28, D28 - IO_B13_LN16 (BANK 13)
+# set_property PACKAGE_PIN W9  [get_ports M_DATA[0]]
 
-# 25, D24
-# MIC M25, D24 - IO_B13_LP13 (BANK 13)
-set_property PACKAGE_PIN Y7 [get_ports M_DATA[4]]
+# # 25, D24
+# # MIC M25, D24 - IO_B13_LP13 (BANK 13)
+# set_property PACKAGE_PIN Y7 [get_ports M_DATA[4]]
 
-# 22, D22
-# MIC M22, D22 - IO_B13_LN13 (BANK 13)
-set_property PACKAGE_PIN Y6  [get_ports M_DATA[1]]
+# # 22, D22
+# # MIC M22, D22 - IO_B13_LN13 (BANK 13)
+# set_property PACKAGE_PIN Y6  [get_ports M_DATA[1]]
 
-# 19, D18
-# MIC M19, D18 - IO_B34_LP21 (BANK 34)
-set_property PACKAGE_PIN V17 [get_ports M_DATA[5]]
+# # 19, D18
+# # MIC M19, D18 - IO_B34_LP21 (BANK 34)
+# set_property PACKAGE_PIN V17 [get_ports M_DATA[5]]
 
-# 34. D34
-# MIC M34, D34 - IO_B34_LP24 (BANK 34)
-set_property PACKAGE_PIN P15 [get_ports M_DATA[2]]
+# # 34. D34
+# # MIC M34, D34 - IO_B34_LP24 (BANK 34)
+# set_property PACKAGE_PIN P15 [get_ports M_DATA[2]]
 
+# M39 - D38 → P16
+# IO Pin: IO_B34_LN24
+# Sequential M_DATA[0] for selected mic #0
+set_property PACKAGE_PIN P16 [get_ports M_DATA[0]]
 
+# M45 - D44 → W8
+# IO Pin: IO_B13_LN15
+# Sequential M_DATA[1] for selected mic #1
+set_property PACKAGE_PIN W8 [get_ports M_DATA[1]]
+
+# M51 - D50 → W10
+# IO Pin: IO_B13_LP16
+# Sequential M_DATA[2] for selected mic #2
+set_property PACKAGE_PIN W10 [get_ports M_DATA[2]]
+
+# M57 - D56 → V18
+# IO Pin: IO_B34_LN21
+# Sequential M_DATA[3] for selected mic #3
+set_property PACKAGE_PIN V18 [get_ports M_DATA[3]]
 
 # # MIC M20, D20 - IO_B34_LP20 (BANK 34) VDD
 # set_property PACKAGE_PIN T17 [get_ports M_DATA[0]]

@@ -37,7 +37,15 @@ class Sesenta(object):
         return self.client.recv_vector(dtype='int32')
 
     @command()
+    def get_mics4(self, samples):
+        return self.client.recv_vector(dtype='int32')
+
+    @command()
     def read_mics6(self, samples):
+        return self.client.recv_vector(dtype='int32')
+
+    @command()
+    def read_mics4(self, samples):
         return self.client.recv_vector(dtype='int32')
 
     @command()
