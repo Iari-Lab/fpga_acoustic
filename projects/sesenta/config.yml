@@ -38,13 +38,13 @@ memory:
     range: 2K
     offset: '0x40040000'
   - name: mic1
-    range: 2K
+    range: 4K
     offset: '0x40060000'
   - name: mic2
-    range: 2K
+    range: 4K
     offset: '0x40080000'
   - name: mic3
-    range: 2K
+    range: 4K
     offset: '0x40100000'
 
 control_registers:

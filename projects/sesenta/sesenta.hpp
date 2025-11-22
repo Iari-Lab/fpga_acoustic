@@ -8,6 +8,7 @@
 #include <context.hpp>
 #include <server/drivers/dma-s2mm.hpp>
 // constexpr uint32_t mic_size = 512;
+// constexpr uint32_t mic_size = 2048;
 constexpr uint32_t mic_size = mem::mic0_range / sizeof(uint32_t);
 
 class Sesenta {
@@ -21,7 +22,7 @@ public:
 
   {
     ctx.print<INFO>("BEAm------------------------------------------>-\n");
-    // start_beamforming();
+    start_beamforming();
   }
   ~Sesenta() {
     beamforming_started = false;
@@ -253,41 +254,39 @@ public:
     }
     return data_ret;
   }
-  // std::array<int16_t, mic_size> get_mic_ith(uint32_t mic_idx) {
-  //   std::array<uint32_t, mic_size> raw_data;
-  //   std::array<int16_t, mic_size> signed_data;
-    
-  //   switch (mic_idx) {
-  //     case 0: raw_data = mic0_br.read_array<uint32_t, mic_size>(); break;
-  //     case 1: raw_data = mic1_br.read_array<uint32_t, mic_size>(); break;
-  //     case 2: raw_data = mic2_br.read_array<uint32_t, mic_size>(); break;
-  //     case 3: raw_data = mic3_br.read_array<uint32_t, mic_size>(); break;
-  //     case 4: raw_data = mic4_br.read_array<uint32_t, mic_size>(); break;
-  //     case 5: raw_data = mic5_br.read_array<uint32_t, mic_size>(); break;
-  //     default: return std::array<int16_t, mic_size>{0};
-  //   }
-    
-  //   for (uint32_t i = 0; i < mic_size; i++) {
-  //     // Extract lower 16 bits and cast to signed 16-bit integer
-  //     signed_data[i] = static_cast<int16_t>(raw_data[i] & 0xFFFF);
-  //   }
-    
-  //   return signed_data;
-  // }
   std::array<uint32_t, mic_size> get_mic_ith(uint32_t mic_idx) {
+    std::array<uint32_t, mic_size> raw_data;
+    
     switch (mic_idx) {
-    case 0:
-      return mic0_br.read_array<uint32_t, mic_size>();
-    case 1:
-      return mic1_br.read_array<uint32_t, mic_size>();
-    case 2:
-      return mic2_br.read_array<uint32_t, mic_size>();
-    case 3:
-      return mic3_br.read_array<uint32_t, mic_size>();
-    default:
-      return std::array<uint32_t, mic_size>{0};
+      case 0: raw_data = mic0_br.read_array<uint32_t, mic_size>(); break;
+      case 1: raw_data = mic1_br.read_array<uint32_t, mic_size>(); break;
+      case 2: raw_data = mic2_br.read_array<uint32_t, mic_size>(); break;
+      case 3: raw_data = mic3_br.read_array<uint32_t, mic_size>(); break;
+      default:
+        ctx.print<ERROR>("Invalid microphone index: %d\n", mic_idx);
+        return std::array<uint32_t, mic_size>{0};
     }
+    
+    for (uint32_t i = 0; i < mic_size; i++) {
+      ctx.print<DEBUG>(" Raw data[%d]: 0x%08X\n", i, raw_data[i]);
+    }
+    
+    return raw_data;
   }
+  // std::array<uint32_t, mic_size> get_mic_ith(uint32_t mic_idx) {
+  //   switch (mic_idx) {
+  //   case 0:
+  //     return mic0_br.read_array<uint32_t, mic_size>();
+  //   case 1:
+  //     return mic1_br.read_array<uint32_t, mic_size>();
+  //   case 2:
+  //     return mic2_br.read_array<uint32_t, mic_size>();
+  //   case 3:
+  //     return mic3_br.read_array<uint32_t, mic_size>();
+  //   default:
+  //     return std::array<uint32_t, mic_size>{0};
+  //   }
+  // }
 
   void set_mic_sel(uint32_t sel) { 
     ctl.write_reg(reg::mic_select, sel);

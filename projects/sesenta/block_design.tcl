@@ -166,7 +166,7 @@ for {set i 0} {$i < 4} {incr i} {
   add_bram mic$i
 }
 cell iari:user:addr_counter:1.0 addr_counter_0 {
-    ADDR_WIDTH 11
+    ADDR_WIDTH 10
   } {
     clk $mics_clk
     enable mics_data_valid
