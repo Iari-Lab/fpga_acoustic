@@ -284,32 +284,6 @@ public:
 
     return raw_data;
   }
-  // std::array<uint32_t, mic_size> get_mic_ith(uint32_t mic_idx) {
-  //   switch (mic_idx) {
-  //   case 0:
-  //     return mic0_br.read_array<uint32_t, mic_size>();
-  //   case 1:
-  //     return mic1_br.read_array<uint32_t, mic_size>();
-  //   case 2:
-  //     return mic2_br.read_array<uint32_t, mic_size>();
-  //   case 3:
-  //     return mic3_br.read_array<uint32_t, mic_size>();
-  //   default:
-  //     return std::array<uint32_t, mic_size>{0};
-  //   }
-  // }
-
-  // void set_mic_sel(uint32_t sel) {
-
-  //   // set_led_sel(M_DATA_TO_MIC[sel]);
-  //   ctl.write_reg(reg::mic_select, sel);
-  //   ctl.set_bit<reg::start_capture, 0>();
-  //   std::this_thread::sleep_for(std::chrono::microseconds(1));
-  //   ctl.clear_bit<reg::start_capture, 0>();
-  //   while (!(sts.read_reg(reg::done_capture) & 0x1)) {
-  //   }
-
-  //  }
 
   void set_mic_sel(uint32_t sel) {
     ctl.write_reg(reg::mic_select, sel);

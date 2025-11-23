@@ -40,32 +40,32 @@ module delay_module (
 
     always @(delay_select) begin
         case (delay_select)
-          // M39 as source
+          // M40 as source
           1 : begin
                 mic_delays[0] = 0;   // M39
-                mic_delays[1] = 10;  // M51
-                mic_delays[2] = 5;   // M57
-                mic_delays[3] = 5;   // M45
+                mic_delays[1] = 5;  // M51
+                mic_delays[2] = 8;   // M57
+                mic_delays[3] = 4;   // M45
             end
-          // M51 as source
+          // M46 as source
           2 : begin
-                mic_delays[0] = 10;  // M39
+                mic_delays[0] = 5;  // M39
                 mic_delays[1] = 0;   // M51
-                mic_delays[2] = 5;   // M57
-                mic_delays[3] = 5;   // M45
-            end
-          // M57 as source
-          3 : begin
-                mic_delays[0] = 5;   // M39
-                mic_delays[1] = 5;   // M51
-                mic_delays[2] = 0;   // M57
+                mic_delays[2] = 4;   // M57
                 mic_delays[3] = 8;   // M45
             end
-          // M45 as source
+          // M52 as source
+          3 : begin
+                mic_delays[0] = 8;   // M39
+                mic_delays[1] = 4;   // M51
+                mic_delays[2] = 0;   // M57
+                mic_delays[3] = 5;   // M45
+            end
+          // M58 as source
           4 : begin
-                mic_delays[0] = 5;   // M39
-                mic_delays[1] = 5;   // M51
-                mic_delays[2] = 8;   // M57
+                mic_delays[0] = 4;   // M39
+                mic_delays[1] = 8;   // M51
+                mic_delays[2] = 5;   // M57
                 mic_delays[3] = 0;   // M45
             end
           default : begin

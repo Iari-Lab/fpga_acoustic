@@ -154,7 +154,7 @@ module sesenta (
   ) cic_stage (
       .clk(clk),
       .rst(~rst),
-      .pdm_clk(pdm_clk),
+      .pdm_clk(~pdm_clk),
       .pdm_data(M_DATA[0]),
       .pcm_valid(mics_data_valid),
       .pcm_data(mics_data[0*16+:16]),
@@ -174,7 +174,7 @@ module sesenta (
       ) cic_stage (
           .clk(clk),
           .rst(~rst),
-          .pdm_clk(pdm_clk),
+          .pdm_clk(~pdm_clk),
           .pdm_data(M_DATA[j]),
           .pcm_valid(),
           .pcm_data(mics_data[j*16+:16]),

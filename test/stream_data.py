@@ -57,7 +57,7 @@ class Acoustic():
         print("Mics posedge shape:", mics_posedge.shape)
         self.plot_all(mics_posedge, "{}_dma1_2".format(name), filedir=filedir)
 
-    def data_brams4(self, dir, lenght, name, filedir):
+    def data_brams4(self, lenght, filedir, name, dir):
         mics = self.driver.get_mics_bram(dir)
         print("Data received:", len(mics))
         mics = np.split(mics,4)
