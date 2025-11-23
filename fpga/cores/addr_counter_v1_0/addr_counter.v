@@ -29,7 +29,7 @@ module addr_counter #
       started <= 1;
       done_count <= 0;
       write_enable_reg <= 0;
-    end else if (enable) begin
+    end else if (enable && started) begin
       addr_count <= addr_count + 1;
       write_enable_reg <= 1;
     end else if (addr_count == max_count) begin

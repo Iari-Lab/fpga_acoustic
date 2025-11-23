@@ -9,4 +9,5 @@ if __name__ == "__main__":
 '''
 ipy mics.py -i
 fpga.data_stream_pro6(1<<10, 4, "test", "mini")
+fpga.data_brams4(9, 1<<11, "test_1", "mini")
 '''
