@@ -24,7 +24,7 @@ public:
 
   {
     ctx.print<INFO>("BEAm------------------------------------------>-\n");
-    // start_beamforming();
+    start_beamforming();
   }
   ~Sesenta() {
     beamforming_started = false;
@@ -355,10 +355,10 @@ private:
   // };
 
   static constexpr std::array<uint8_t, 4> M_DATA_TO_MIC = {
-      21, // M_DATA[0] → MIC39
-      9,  // M_DATA[1] → MIC51
-      3,  // M_DATA[2] → MIC57
-      15  // M_DATA[3] → MIC45
+      14, // M_DATA[0] → MIC39
+      8,  // M_DATA[1] → MIC51
+      2,  // M_DATA[2] → MIC57
+      20  // M_DATA[3] → MIC45
   };
   void beamf_thread();
 
@@ -406,7 +406,7 @@ inline void Sesenta::beamf_thread() {
 
       double power = 0.0;
       for (uint32_t sample_idx = 0; sample_idx < mic_size; sample_idx++) {
-        power += beamformed_signal[sample_idx];
+        power += (beamformed_signal[sample_idx] * beamformed_signal[sample_idx]);
       }
 
       beam_powers[dir] = power;
