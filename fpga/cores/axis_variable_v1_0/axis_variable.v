@@ -8,6 +8,7 @@ module axis_variable #
 (
   // System signals
   input  wire                        aclk,
+  input  wire                        ctrl,
   input  wire                        aresetn,
 
   input  wire [AXIS_TDATA_WIDTH-1:0] cfg_data,
@@ -35,11 +36,11 @@ module axis_variable #
     end
   end
 
-  always @*
+  always @(*)
   begin
     int_tvalid_next = int_tvalid_reg;
 
-    if(int_tdata_reg != cfg_data)
+    if(ctrl)
     begin
       int_tvalid_next = 1'b1;
     end

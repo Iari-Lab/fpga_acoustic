@@ -43,106 +43,187 @@ module sesenta (
     output M0_CLK,
     output M1_CLK,
     output M2_CLK,
-    input [7:0] M_DATA,
-    output LEDS
+    input [3:0] M_DATA,
+    output LEDS,
+    output SYNC_IN,
+    output SYNC_OUT
 
 );
 
-  localparam integer INPUT_FREQ = 125000000;
-  localparam integer PDM_FREQ = 2400000;
+  localparam integer INPUT_FREQ = 120_000_000;
+  localparam integer PDM_FREQ = 2_400_000;
   localparam integer LED_FREQ = 12000000;
-  wire rst_clk_mics, rst_leds, rst_clk_leds;
-  wire [31:0] rst_regs;
-  wire [ 7:0] rst_mics;
-  // Clocks for mics and leds
-  wire clk_mics, clk_leds, clk_led;
+  localparam integer DATA_WIDTH = 256;
+  localparam CIC_DATA_WIDTH = 16;
+  wire clk, clk_leds, rst, pdm_clk;
   wire clk_rising_mics;
-  wire [7:0] mics_data_valid;
-  // Flattened 32x8 mic data to 256 bits
-  reg [255:0] reg_mics_data;
-  wire [255:0] mics_data, mics_data_dbg;
-  //Reset signals
-  assign rst_clk_mics = rst_regs[0:0];
-  assign rst_clk_leds = rst_regs[1:1];
-  assign rst_leds = rst_regs[2:2];
-  assign rst_mics = rst_regs[10:3];
-  assign M0_CLK = clk_mics;
-  assign M2_CLK = clk_mics;
-  assign M1_CLK = clk_mics;
+  wire mics_data_valid;
+  wire [DATA_WIDTH-1:0] mics_data, mics_data2, mics_data_dbg, mics_data_dbg2;
+  // Manual LED control signals
+  reg pcm_valid;
+  initial begin
+    reg_mics_data  = 256'b0;
+    reg_mics_data2 = 256'b0;
+  end
+
+  reg [DATA_WIDTH-1:0] reg_mics_data, reg_mics_data2;
+  assign M0_CLK = pdm_clk;
+  assign M2_CLK = pdm_clk;
+  assign M1_CLK = pdm_clk;
+
+  clk_gen #(
+      .INPUT_FREQ (INPUT_FREQ),
+      .OUTPUT_FREQ(LED_FREQ)
+  ) led_clk_gen_i (
+      .clk  (clk),
+      .rst  (~rst),
+      .m_clk(clk_leds)
+  );
+  wire [7:0] led_count, led_sel;
+
+  leds led_controller (
+      .clk(clk_leds),
+      .led_sel(led_sel),
+      .reset(~rst),
+      .ws_data(LEDS),
+      .led_count(led_count)
+  );
 
   // Clock generator instance
   clk_gen #(
       .INPUT_FREQ (INPUT_FREQ),
       .OUTPUT_FREQ(PDM_FREQ)
   ) pdm_clk_gen_i (
+      .clk  (clk),
+      .rst  (~rst),
+      .m_clk(pdm_clk)
+  );
+
+  assign SYNC_OUT = pdm_clk;
+  assign SYNC_IN  = pcm_valid;
+
+  wire [29:0] cic_overflow, cic_overflow2;
+  
+  always @(posedge clk) begin
+    // Assign delayed PCM data for 4-mic array (M39, M51, M57, M45)
+    // Assign delayed PCM data to first 6 positions (M31, M28, M25, M22, M19, M34)
+    reg_mics_data[0*32+:32] <= mic0;  // M39
+    reg_mics_data[1*32+:32] <= mic1;  // M51
+    reg_mics_data[2*32+:32] <= mic2;  // M57
+    reg_mics_data[3*32+:32] <= mic3; // M58
+    reg_mics_data[255:128] <= mics_data[255:128];
+    reg_mics_data2 <= mics_data2;
+    pcm_valid <= mics_data_valid;
+  end
+  assign mics_data_dbg  = reg_mics_data;
+  assign mics_data_dbg2 = reg_mics_data2;
+
+ wire [31:0] mic0, mic1, mic2, mic3;
+ ext2sc #(
+       .IN_WIDTH (CIC_DATA_WIDTH),
+       .OUT_WIDTH(32)
+   ) mic_2_ext2sc (
+       .in_1 (delayed_pcm_data_0),
+       .out_1(mic0)
+   );
+  ext2sc #(
+       .IN_WIDTH (CIC_DATA_WIDTH),
+       .OUT_WIDTH(32)
+   ) mic_2_ext2sc_1 (
+       .in_1 (delayed_pcm_data_1),
+       .out_1(mic1)
+   );
+  ext2sc #(
+       .IN_WIDTH (CIC_DATA_WIDTH),
+       .OUT_WIDTH(32)
+   ) mic_2_ext2sc_2 (
+       .in_1 (delayed_pcm_data_2),
+       .out_1(mic2)
+   );
+  ext2sc #(
+       .IN_WIDTH (CIC_DATA_WIDTH),
+       .OUT_WIDTH(32)
+   ) mic_2_ext2sc_3 (
+       .in_1 (delayed_pcm_data_3),
+       .out_1(mic3)
+   );
+  cic_decimator #(
+      .DATA_WIDTH(CIC_DATA_WIDTH),
+      .CIC_STAGES(4),
+      .CIC_DECIMATION(50)
+  ) cic_stage (
       .clk(clk),
-      .rst(rst_clk_mics),
-      .m_clk(clk_mics),
-      .m_clk_rising(clk_rising_mics)
+      .rst(~rst),
+      .pdm_clk(~pdm_clk),
+      .pdm_data(M_DATA[0]),
+      .pcm_valid(mics_data_valid),
+      .pcm_data(mics_data[0*16+:16]),
+      .overflow(cic_overflow[0]),
+      .sample_count()
   );
 
-  clk_gen #(
-      .INPUT_FREQ (INPUT_FREQ),
-      .OUTPUT_FREQ(LED_FREQ)
-  ) led_clk_gen_i (
-      .clk(clk_led),
-      .rst(rst_clk_leds),
-      .m_clk(clk_leds)
-  );
-
-  leds #() led_i (
-      .clk(clk_leds),
-      .ws_data(LEDS),
-      .reset(rst_leds)
-  );
   genvar i;
+  genvar j, idx;
+  
   generate
-    for (i = 0; i < 8; i = i + 1) begin : safe_gen
-      always @(posedge clk) begin
-        if (mics_data_valid[i]) begin
-          reg_mics_data[i*32+:32] <= mics_data[i*32+:32];
-        end
-      end
-      assign mics_data_dbg[i*32+:32] = reg_mics_data[i*32+:32];
-    end
-  endgenerate
-  generate
-    for (i = 0; i < 8; i = i + 1) begin : pdms_gen
-      pdm_mic #() mic (
+    for (j = 1; j < 4; j = j + 1) begin : pdms_gen_nege
+      cic_decimator #(
+          .DATA_WIDTH(CIC_DATA_WIDTH),
+          .CIC_STAGES(4),
+          .CIC_DECIMATION(50)
+      ) cic_stage (
           .clk(clk),
-          .rst(rst_mics[i]),
-          .mic_data(mics_data[i*32+:32]),
-          .m_clk_rising(clk_rising_mics),
-          .mic_data_valid(mics_data_valid[i]),
-          .m_data(M_DATA[i])
+          .rst(~rst),
+          .pdm_clk(~pdm_clk),
+          .pdm_data(M_DATA[j]),
+          .pcm_valid(),
+          .pcm_data(mics_data[j*16+:16]),
+          .overflow(cic_overflow[j]),
+          .sample_count()
       );
     end
   endgenerate
-
-
-  // ila_0 ila_bram (
-  //     .clk(clk),  // input wire clk
-  //     .probe0(clk_mics),
-  //     .probe1(mics_data_dbg[32*0+:32]),
-  //     .probe2(mics_data_dbg[32*1+:32]),
-  //     .probe3(mics_data_dbg[32*2+:32]),
-  //     .probe4(mics_data_dbg[32*3+:32]),
-  //     .probe5(mics_data_dbg[32*4+:32]),
-  //     .probe6(mics_data_dbg[32*5+:32]),
-  //     .probe7(mics_data_dbg[32*6+:32]),
-  //     .probe8(mics_data_dbg[32*7+:32]),
-  //     .probe9(mics_data_valid)
-  // );
-
   ila_0 ila_bram (
       .clk(clk),  // input wire clk
-      .probe0(clk_mics),
-      .probe1(mics_data_dbg[32*0+:32])
+      .probe0(led_sel),
+      .probe1(mics_data_valid),
+      .probe2(mic_dbg),
+      .probe3(mic_sel)
+  );
+  wire [2:0] mic_sel;
+  wire [15:0] mic_dbg;
+  assign mic_dbg = mics_data_dbg[16*mic_sel+:16];
+  // assign mic_dbg = (mic_sel < 30) ? mics_data_dbg[16*mic_sel+:16] : mics_data_dbg2[16*(mic_sel-30)+:16];
+
+  // Delay module outputs for 4-mic array (M39, M51, M57, M45)
+  wire [15:0] delayed_pcm_data_0;
+  wire [15:0] delayed_pcm_data_1;
+  wire [15:0] delayed_pcm_data_2;
+  wire [15:0] delayed_pcm_data_3;
+
+  // Delay module instance for 4-mic array
+  // Maps to microphones: M39, M51, M57, M45
+  delay_module u_delay_module (
+    .clk(clk),
+    .rst(~rst),
+    .delay_select(mic_sel),  // Use lower 2 bits of mic_sel to select source mic (0-3)
+    .pcm_data_0(mics_data[0*16+:16]),   // M39
+    .pcm_data_1(mics_data[1*16+:16]),  // M51
+    .pcm_data_2(mics_data[2*16+:16]),  // M57
+    .pcm_data_3(mics_data[3*16+:16]),   // M45
+    .delayed_pcm_data_0(delayed_pcm_data_0),
+    .delayed_pcm_data_1(delayed_pcm_data_1),
+    .delayed_pcm_data_2(delayed_pcm_data_2),
+    .delayed_pcm_data_3(delayed_pcm_data_3),
+    .pcm_valid(mics_data_valid)
   );
 
   system system_i (
-      .rst_regs(rst_regs),
+      .mic_sel(mic_sel),
+      .led_sel(led_sel),
       .mics(mics_data_dbg),
+      .mics2(mics_data_dbg2),
+      .mics_data_valid(mics_data_valid),
       .DDR_addr(DDR_addr),
       .DDR_ba(DDR_ba),
       .DDR_cas_n(DDR_cas_n),
@@ -163,12 +244,10 @@ module sesenta (
       .FIXED_IO_mio(FIXED_IO_mio),
       .FIXED_IO_ps_clk(FIXED_IO_ps_clk),
       .FIXED_IO_ps_porb(FIXED_IO_ps_porb),
-      .peripheral_aresetn(rstn),
       .FCLK_CLK0(clk),
-      .FCLK_CLK1(clk_led),
+      .reset(rst),
       .FIXED_IO_ps_srstb(FIXED_IO_ps_srstb)
   );
-
 
 
 

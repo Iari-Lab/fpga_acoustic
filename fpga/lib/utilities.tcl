@@ -164,9 +164,27 @@ proc get_Q_pin {pin_name {depth 1} {ce_pin_name "noce"} {clk clk} {cell_name ""}
   }
   return $cell_name/Q
 }
+proc get_slice_pin {pin_name from to {cell_name ""}} {
+  if {$cell_name eq ""} {
+    set cell_name slice_${from}_${to}_[underscore $pin_name]
+  }
+  if {[get_bd_cells $cell_name] eq ""} {
+    cell xilinx.com:ip:xlslice:1.0 $cell_name {
+      DIN_WIDTH [get_pin_width $pin_name]
+      DIN_FROM $from
+      DIN_TO $to
+    } {
+      Din $pin_name
+    }
+  }
+  return $cell_name/Dout
+}
 
-proc get_constant_pin {value width} {
-  set cell_name const_v${value}_w${width}
+
+proc get_constant_pin {value width {cell_name ""}} {
+  if {$cell_name eq ""} {
+     set cell_name const_v${value}_w${width}
+  }
   if {[get_bd_cells $cell_name] eq ""} {
     cell xilinx.com:ip:xlconstant:1.1 $cell_name {
       CONST_VAL $value

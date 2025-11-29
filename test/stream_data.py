@@ -2,21 +2,20 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import matplotlib.pyplot as plt
+from scipy.signal import dlti, dstep
+from scipy.fftpack import fft
+from scipy.signal import step, lti
+import numpy as np
 import os
 import time
 from sesenta import Sesenta
 from koheron import connect
 import matplotlib
-matplotlib.use('TKAgg')
+from scipy.io.wavfile import write
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
-from multiprocessing import Process, Queue
-from multiprocessing.managers import BaseManager
 
-class QueueManager(BaseManager):
-    pass
-
-QueueManager.register('get_queue')
 class Acoustic():
 
     def __init__(self, *args, **kwargs):
@@ -25,53 +24,110 @@ class Acoustic():
 
     def initialize_driver(self, host):
         self.host = os.getenv('MYIR_HOST', host)
-        client = connect(host, 'sesenta', restart=False)
+        client = connect(host, 'Sesenta', restart=False)
         self.driver = Sesenta(client)
-        self.driver.reset_clk_leds() 
-        self.driver.reset_clk_mics()
-        self.driver.reset_led()
+
+    def data_stream_diga2(self, samples, name, test):
+        mics = self.driver.get_mics_ad(samples)
+        reshaped_array = np.vstack([mics[i::3] for i in range(3)])
+        # analog_mic = reshaped_array[1]
+        analog_mic = reshaped_array[1].astype(np.int32)
+        dig_mic = reshaped_array[0].astype(np.int32)
+        dig_mic_fir = reshaped_array[2].astype(np.int32)
+        self.plot_step_response(analog_mic, "{}_{}_{}".format(name, "analog", test))
+        self.gen_audio(analog_mic,"{}_{}_{}".format(name, "analog", test))
+        self.plot_step_response(dig_mic, "{}_{}_{}".format(name, "digital_cic", test))
+        self.gen_audio(dig_mic,"{}_{}_{}".format(name, "digital_cic", test))
+        self.plot_step_response(dig_mic_fir, "{}_{}_{}".format(name, "digital_fir", test))
+        self.gen_audio(dig_mic_fir,"{}_{}_{}".format(name, "digital_fir", test))
 
 
-    def data_stream(self, samples):
-        manager = QueueManager(address=('localhost', 50000), authkey=b'abc')
-        manager.connect()
-        data_queue = manager.get_queue()
+    def data_flow_ith(self, samples, name, test):
+        print("Collecting data for mic index:", test)
+        mics = self.driver.get_mics_ith(samples, test)
+        reshaped_array = np.vstack([mics[i::4] for i in range(4)])
+        print(reshaped_array)
+        self.plot_all(reshaped_array, "{}".format(name), test= test)
+
+    def data_stream_pro4(self, samples, channels, name, filedir):
+        # mics = self.driver.read_mics6(samples)
+        mics = self.driver.get_mics4(samples)
+        print("Data received:", len(mics))
+        mics_posedge = np.vstack([mics[i::channels] for i in range(channels)]) # dma1
+        print("Mics posedge shape:", mics_posedge.shape)
+        self.plot_all(mics_posedge, "{}_dma1_2".format(name), filedir=filedir)
+
+    def data_brams4(self, lenght, filedir, name, dir):
+        mics = self.driver.get_mics_bram(dir)
+        print("Data received:", len(mics))
+        mics = np.split(mics,4)
+        self.plot_all(mics, "{}_brams".format(name), filedir=filedir)
+
+    def data_stream_pro6(self, samples, channels, name, filedir):
+        # mics = self.driver.read_mics6(samples)
+        mics = self.driver.get_mics6(samples)
+        print("Data received:", len(mics))
+        dma1, dma2 = np.split(mics,2)
+        print("Data split:", dma1, len(dma1))
+        print("Data split:", dma2, len(dma2))
+        mics_posedge = np.vstack([dma1[i::channels] for i in range(channels)]) # dma1
+        print("Mics posedge shape:", mics_posedge.shape)
+        mics_negedge = np.vstack([dma2[i::channels] for i in range(channels)]) #dma2
+        combined = np.vstack((
+            mics_posedge[:3],   # channels 0–2 posedge
+            mics_negedge[:3]    # channels 0–2 negedge
+        )) 
+        self.plot_all(combined, "{}_dma1_2".format(name), filedir=filedir)
+
+    def data_stream_pro(self, samples, channels, name):
         mics = self.driver.get_mics(samples)
-        grouped = mics.reshape(-1, 8)
-        print(grouped)
-        for i in range(samples):
-            sample = grouped[i].tolist()
-            data_point = sample, i
-            print(data_point)
-            data_queue.put(data_point)
+        print("Data received:", len(mics))
+        dma1, dma2 = np.split(mics,2)
+        print("Data split:", dma1, len(dma1))
+        # _channels = 6
+        # NOTE: we are not using the last 2 values from the 512 buffers from the dmas, so those mics are 0
+        # mics_posedge = np.vstack([dma1[i::_channels] for i in range(_channels)]) # dma1
+        mics_posedge = np.vstack([dma1[i::channels] for i in range(channels)]) # dma1
+        # for i in range(channels):
+        #     self.gen_audio(mics_posedge[i],"{}{}".format(name, i))
+        self.plot_all(mics_posedge[:6], "{}_dma1".format(name))
+        mics_negedge = np.vstack([dma2[i::channels] for i in range(channels)]) #dma2
+        # mics_negedge = np.vstack([dma2[i::_channels] for i in range(_channels)]) #dma2
+        # for i in range(channels):
+        #     self.gen_audio(mics_negedge[i],"{}{}".format(name, i))
+        self.plot_all(mics_negedge[:6], "{}_dma2".format(name))
 
-    def data_stream_live(self, samples=1, enable_transfer=False, isv2=False):
-        chunks = 24
-        n = samples // chunks
-        manager = QueueManager(address=('localhost', 50000), authkey=b'abc')
-        manager.connect()
-        data_queue = manager.get_queue()
-        for i in range(n):
-            try:
-                mics = self.driver.get_mics(chunks)
-                grouped = mics.reshape(-1, 8)
-                print(grouped)
-                for j in range(chunks):
-                    sample = grouped[j].tolist()
-                    data_point = sample, j
-                    print(data_point)
-                    data_queue.put(data_point)
-            except KeyboardInterrupt:
-                break  
+    def plot_all(self, data_arrays, name, filedir="mini", test=0):
+        """
+        Plots multiple arrays same plot
+    
+        """
+        # plt.subplots(figsize=(10, 6))
+        plt.figure(figsize=(12, 8))
+        # plt.figure(figsize=(10, 6))
+        
+        for idx, data in enumerate(data_arrays):
+            time_axis = np.arange(len(data))
+            np.save(f"../{filedir}/{name}{idx}.npy", data)
+            plt.plot(time_axis, data, label="{} {}".format(name, idx))  
+    
+        plt.title("{}".format(name))
+        plt.xlabel("Time (s)")
+        plt.ylabel("Amplitude")
+        plt.grid(True)
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(f"../{filedir}/{name}_{test}.png", dpi=300, bbox_inches='tight')
+        plt.show(block= False)
 
 
-    def clear(self):
-        manager = QueueManager(address=('localhost', 50000), authkey=b'abc')
-        manager.connect()
-        data_queue = manager.get_queue()
-        data_point = [[]], -1
-        data_queue.put(data_point)
-
+    def gen_audio(self, data, name):
+        data_centered = data - np.mean(data)
+        data_normalized = data_centered / np.max(np.abs(data_centered))
+        data_int16 = np.int16(data_normalized * 32767)
+        sample_rate = 48000  # For example, if your decimated audio is 48 kHz
+        write("{}.wav".format(name), sample_rate, data_int16)
+        print("Saving data to data.npy", data)
 
 def main(trigger_addr_count=False):
     fpga = Acoustic() 
@@ -88,53 +144,3 @@ if __name__ == '__main__':
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# def main():
-#     """Main function to run the dynamic plot."""
-#     # host = os.getenv('HOST', '192.168.8.139')
-#     host = os.getenv('HOST', '192.168.0.208')
-#     # host = os.getenv('HOST', 'rp-f0ab56.local')
-#     sampling_frequency = 125e6 # Hz
-    
-#     driver = initialize_driver(host)
-#     # print(f'ADC size = {driver.quad_size}')
-    
-#     fig, line1, t_us = initialize_plot(driver, sampling_frequency)
-#     driver.trigger_addr_count_rst() 
-#     # driver.trigger_mic_rst()
-#     iteration_count = 0
-#     try:
-#         while True:
-#             iteration_count += 1
-#             print(iteration_count)
-            
-#             li=driver.get_mic()
-#             print(li)
-#             # line1.set_data(t_us, li)
-#             # fig.canvas.draw()
-#             plt.pause(0.001)
-            
-#     except KeyboardInterrupt:
-#         print("Interrupted by user. Exiting.")
-#         exit(0)
-
-# if __name__ == '__main__':
-#     main()

@@ -18,7 +18,23 @@ class FpgaManager {
     : ctx(ctx_)
     {}
 
-    int load_bitstream(const char* name) {
+     int load_bitstream(const char* name) {
+        const auto bitfile_str = live_instrument_dirname + name + ".bit.bin";
+        ctx.log<ERROR>("loading %s...\n", bitfile_str.c_str());
+        const char* argv[] = {"fpgautil", "-b", bitfile_str.c_str(), nullptr};
+
+        pid_t pid = fork();
+        if (pid < 0) {
+            ctx.log<ERROR>("fork() failed: %s\n", std::strerror(errno));
+            return -1;
+        }
+        if (pid == 0) {
+            execvp(argv[0], const_cast<char* const*>(argv));
+        }
+        return 1;
+    }
+
+    int load_bitstream_deprecated(const char* name) {
         FILE *xdevcfg = fopen("/dev/xdevcfg", "w");
 
         if (xdevcfg != nullptr) {

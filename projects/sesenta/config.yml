@@ -4,10 +4,10 @@ board: boards/myir
 
 cores:
   - fpga/cores/axi_ctl_register_v1_0
-  - fpga/cores/axi_sts_register_v1_0
   - fpga/cores/axis_variable_v1_0
   - fpga/cores/axis_tlast_v1_0
-
+  - fpga/cores/axi_sts_register_v1_0
+  - fpga/cores/addr_counter_v1_0
 
 memory:
   - name: control
@@ -18,24 +18,53 @@ memory:
     offset: '0x50000000'
   - name: ram
     offset: '0x1E000000'
-    range: 32M
+    range: 16M
+  - name: ram2
+    offset: '0x1F000000'
+    range: 16M
   - name: dma
     offset: '0x40400000'
+    range: 64K
+  - name: dma1
+    offset: '0x40480000'
     range: 64K
   - name: axi_hp0
     offset: '0xF8008000'
     range: 4K
-
+  - name: axi_hp1
+    offset: '0xF800F000'
+    range: 8K
+  - name: mic0
+    range: 8K
+    offset: '0x40040000'
+  - name: mic1
+    range: 8K
+    offset: '0x40060000'
+  - name: mic2
+    range: 8K
+    offset: '0x40080000'
+  - name: mic3
+    range: 8K
+    offset: '0x40100000'
 
 control_registers:
   - rst_regs
+  - dma_gate
+  - dma_gate1
   - n_samples
+  - mic_select
+  - led_select
+  - start_capture
 
 status_registers:
   - mode
+  - done_capture
+
+# parameters:
+#   fclk0: 115200000 # FPGA clock speed in Hz
 
 parameters:
-  fclk0: 125000000 # FPGA clock speed in Hz
+  fclk0: 100000000 # FPGA clock speed in Hz
 
 xdc:
   - boards/myir/config/ports.xdc
