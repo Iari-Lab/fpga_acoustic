@@ -55,16 +55,28 @@ module sesenta (
   localparam integer INPUT_FREQ = 120_000_000;
   localparam integer PDM_FREQ = 2_400_000;
   localparam integer LED_FREQ = 12000000;
-  localparam integer DATA_WIDTH = 480;  // 30 mics * 16 bits
+  localparam integer DATA_WIDTH = 960;  // 30 mics * 16 bits
+  localparam integer MICS_DATA_WIDTH = 480;  // 30 mics * 16 bits
   localparam CIC_DATA_WIDTH = 16;
-  wire clk, clk_leds, rst, pdm_clk;
+  wire clk, clk_leds, rst, pdm_clk, start;
+  reg [2:0] rstart;
+  wire start_pulse;
+  always @(posedge clk) begin
+    rstart <= {rstart[1:0], start};
+  end
+
+  assign start_pulse = rstart[2] & ~rstart[1];
+
+
+
   wire clk_rising_mics;
   wire mics_data_valid;
-  wire [DATA_WIDTH-1:0] mics_data, mics_data_dbg;
+  wire [MICS_DATA_WIDTH-1:0] mics_data;
+  wire [DATA_WIDTH-1:0] beam_data;
   // Manual LED control signals
   reg pcm_valid;
   initial begin
-    reg_mics_data  = 480'b0;
+    reg_mics_data = 960'b0;
   end
 
   reg [DATA_WIDTH-1:0] reg_mics_data;
@@ -106,162 +118,46 @@ module sesenta (
   wire [29:0] cic_overflow, cic_overflow2;
 
   always @(posedge clk) begin
-    // Assign delayed PCM data for 30-mic array (M0-M29)
-    reg_mics_data[0*32+:32] <= mic01;   // M0, M1
-    reg_mics_data[1*32+:32] <= mic23;   // M2, M3
-    reg_mics_data[2*32+:32] <= mic45;   // M4, M5
-    reg_mics_data[3*32+:32] <= mic67;   // M6, M7
-    reg_mics_data[4*32+:32] <= mic89;   // M8, M9
-    reg_mics_data[5*32+:32] <= mic1011; // M10, M11
-    reg_mics_data[6*32+:32] <= mic1213; // M12, M13
-    reg_mics_data[7*32+:32] <= mic1415; // M14, M15
-    reg_mics_data[8*32+:32] <= mic1617; // M16, M17
-    reg_mics_data[9*32+:32] <= mic1819; // M18, M19
-    reg_mics_data[10*32+:32] <= mic2021; // M20, M21
-    reg_mics_data[11*32+:32] <= mic2223; // M22, M23
-    reg_mics_data[12*32+:32] <= mic2425; // M24, M25
-    reg_mics_data[13*32+:32] <= mic2627; // M26, M27
-    reg_mics_data[14*32+:32] <= mic2829; // M28, M29
+    reg_mics_data[0*32+:32] <= beamformed_sum_0;
+    reg_mics_data[1*32+:32] <= beamformed_sum_1;
+    reg_mics_data[2*32+:32] <= beamformed_sum_2;
+    reg_mics_data[3*32+:32] <= beamformed_sum_3;
+    reg_mics_data[4*32+:32] <= beamformed_sum_4;
+    reg_mics_data[5*32+:32] <= beamformed_sum_5;
+    reg_mics_data[6*32+:32] <= beamformed_sum_6;
+    reg_mics_data[7*32+:32] <= beamformed_sum_7;
+    reg_mics_data[8*32+:32] <= beamformed_sum_8;
+    reg_mics_data[9*32+:32] <= beamformed_sum_9;
+    reg_mics_data[10*32+:32] <= beamformed_sum_10;
+    reg_mics_data[11*32+:32] <= beamformed_sum_11;
+    reg_mics_data[12*32+:32] <= beamformed_sum_12;
+    reg_mics_data[13*32+:32] <= beamformed_sum_13;
+    reg_mics_data[14*32+:32] <= beamformed_sum_14;
+    reg_mics_data[15*32+:32] <= beamformed_sum_15;
+    reg_mics_data[16*32+:32] <= beamformed_sum_16;
+    reg_mics_data[17*32+:32] <= beamformed_sum_17;
+    reg_mics_data[18*32+:32] <= beamformed_sum_18;
+    reg_mics_data[19*32+:32] <= beamformed_sum_19;
+    reg_mics_data[20*32+:32] <= beamformed_sum_20;
+    reg_mics_data[21*32+:32] <= beamformed_sum_21;
+    reg_mics_data[22*32+:32] <= beamformed_sum_22;
+    reg_mics_data[23*32+:32] <= beamformed_sum_23;
+    reg_mics_data[24*32+:32] <= beamformed_sum_24;
+    reg_mics_data[25*32+:32] <= beamformed_sum_25;
+    reg_mics_data[26*32+:32] <= beamformed_sum_26;
+    reg_mics_data[27*32+:32] <= beamformed_sum_27;
+    reg_mics_data[28*32+:32] <= beamformed_sum_28;
+    reg_mics_data[29*32+:32] <= beamformed_sum_29;
     pcm_valid <= mics_data_valid;
   end
-  assign mics_data_dbg  = reg_mics_data;
+  assign beam_data = reg_mics_data;
 
-  wire [31:0] mic01, mic23, mic45, mic67, mic89, mic1011, mic1213, mic1415, mic1617, mic1819, mic2021, mic2223, mic2425, mic2627, mic2829;
-  
-  p16_32 #(
-      .IN_WIDTH (CIC_DATA_WIDTH),
-      .OUT_WIDTH(32)
-  ) mic_01_packed (
-      .in_1 (delayed_pcm_data_0),
-      .in_2(delayed_pcm_data_1),
-      .out_1(mic01)
-  );
-
-  p16_32 #(
-      .IN_WIDTH (CIC_DATA_WIDTH),
-      .OUT_WIDTH(32)
-  ) mic_23_packed (
-      .in_1 (delayed_pcm_data_2),
-      .in_2(delayed_pcm_data_3),
-      .out_1(mic23)
-  );
-
-  p16_32 #(
-      .IN_WIDTH (CIC_DATA_WIDTH),
-      .OUT_WIDTH(32)
-  ) mic_45_packed (
-      .in_1 (delayed_pcm_data_4),
-      .in_2(delayed_pcm_data_5),
-      .out_1(mic45)
-  );
-
-  p16_32 #(
-      .IN_WIDTH (CIC_DATA_WIDTH),
-      .OUT_WIDTH(32)
-  ) mic_67_packed (
-      .in_1 (delayed_pcm_data_6),
-      .in_2(delayed_pcm_data_7),
-      .out_1(mic67)
-  );
-
-  p16_32 #(
-      .IN_WIDTH (CIC_DATA_WIDTH),
-      .OUT_WIDTH(32)
-  ) mic_89_packed (
-      .in_1 (delayed_pcm_data_8),
-      .in_2(delayed_pcm_data_9),
-      .out_1(mic89)
-  );
-
-  p16_32 #(
-      .IN_WIDTH (CIC_DATA_WIDTH),
-      .OUT_WIDTH(32)
-  ) mic_1011_packed (
-      .in_1 (delayed_pcm_data_10),
-      .in_2(delayed_pcm_data_11),
-      .out_1(mic1011)
-  );
-
-  p16_32 #(
-      .IN_WIDTH (CIC_DATA_WIDTH),
-      .OUT_WIDTH(32)
-  ) mic_1213_packed (
-      .in_1 (delayed_pcm_data_12),
-      .in_2(delayed_pcm_data_13),
-      .out_1(mic1213)
-  );
-
-  p16_32 #(
-      .IN_WIDTH (CIC_DATA_WIDTH),
-      .OUT_WIDTH(32)
-  ) mic_1415_packed (
-      .in_1 (delayed_pcm_data_14),
-      .in_2(delayed_pcm_data_15),
-      .out_1(mic1415)
-  );
-
-  p16_32 #(
-      .IN_WIDTH (CIC_DATA_WIDTH),
-      .OUT_WIDTH(32)
-  ) mic_1617_packed (
-      .in_1 (delayed_pcm_data_16),
-      .in_2(delayed_pcm_data_17),
-      .out_1(mic1617)
-  );
-
-  p16_32 #(
-      .IN_WIDTH (CIC_DATA_WIDTH),
-      .OUT_WIDTH(32)
-  ) mic_1819_packed (
-      .in_1 (delayed_pcm_data_18),
-      .in_2(delayed_pcm_data_19),
-      .out_1(mic1819)
-  );
-
-  p16_32 #(
-      .IN_WIDTH (CIC_DATA_WIDTH),
-      .OUT_WIDTH(32)
-  ) mic_2021_packed (
-      .in_1 (delayed_pcm_data_20),
-      .in_2(delayed_pcm_data_21),
-      .out_1(mic2021)
-  );
-
-  p16_32 #(
-      .IN_WIDTH (CIC_DATA_WIDTH),
-      .OUT_WIDTH(32)
-  ) mic_2223_packed (
-      .in_1 (delayed_pcm_data_22),
-      .in_2(delayed_pcm_data_23),
-      .out_1(mic2223)
-  );
-
-  p16_32 #(
-      .IN_WIDTH (CIC_DATA_WIDTH),
-      .OUT_WIDTH(32)
-  ) mic_2425_packed (
-      .in_1 (delayed_pcm_data_24),
-      .in_2(delayed_pcm_data_25),
-      .out_1(mic2425)
-  );
-
-  p16_32 #(
-      .IN_WIDTH (CIC_DATA_WIDTH),
-      .OUT_WIDTH(32)
-  ) mic_2627_packed (
-      .in_1 (delayed_pcm_data_26),
-      .in_2(delayed_pcm_data_27),
-      .out_1(mic2627)
-  );
-
-  p16_32 #(
-      .IN_WIDTH (CIC_DATA_WIDTH),
-      .OUT_WIDTH(32)
-  ) mic_2829_packed (
-      .in_1 (delayed_pcm_data_28),
-      .in_2(delayed_pcm_data_29),
-      .out_1(mic2829)
-  );
+  wire [31:0] beamformed_sum_0, beamformed_sum_1, beamformed_sum_2, beamformed_sum_3, beamformed_sum_4;
+  wire [31:0] beamformed_sum_5, beamformed_sum_6, beamformed_sum_7, beamformed_sum_8, beamformed_sum_9;
+  wire [31:0] beamformed_sum_10, beamformed_sum_11, beamformed_sum_12, beamformed_sum_13, beamformed_sum_14;
+  wire [31:0] beamformed_sum_15, beamformed_sum_16, beamformed_sum_17, beamformed_sum_18, beamformed_sum_19;
+  wire [31:0] beamformed_sum_20, beamformed_sum_21, beamformed_sum_22, beamformed_sum_23, beamformed_sum_24;
+  wire [31:0] beamformed_sum_25, beamformed_sum_26, beamformed_sum_27, beamformed_sum_28, beamformed_sum_29;
 
   cic_decimator #(
       .DATA_WIDTH(CIC_DATA_WIDTH),
@@ -299,122 +195,57 @@ module sesenta (
       );
     end
   endgenerate
-  
-//   ila_0 ila_bram (
-//       .clk(clk),  // input wire clk
-//       .probe0(led_sel),
-//       .probe1(mics_data_valid),
-//       .probe2(mic_dbg),
-//       .probe3(mic_sel)
-//   );
-  
-  wire [ 4:0] mic_sel;  // 5 bits to select from 30 cases
-//   wire [15:0] mic_dbg;
-//   assign mic_dbg = mics_data_dbg[16*mic_sel+:16];
 
-  // Delay module outputs for 30-mic array
-  wire [15:0] delayed_pcm_data_0;
-  wire [15:0] delayed_pcm_data_1;
-  wire [15:0] delayed_pcm_data_2;
-  wire [15:0] delayed_pcm_data_3;
-  wire [15:0] delayed_pcm_data_4;
-  wire [15:0] delayed_pcm_data_5;
-  wire [15:0] delayed_pcm_data_6;
-  wire [15:0] delayed_pcm_data_7;
-  wire [15:0] delayed_pcm_data_8;
-  wire [15:0] delayed_pcm_data_9;
-  wire [15:0] delayed_pcm_data_10;
-  wire [15:0] delayed_pcm_data_11;
-  wire [15:0] delayed_pcm_data_12;
-  wire [15:0] delayed_pcm_data_13;
-  wire [15:0] delayed_pcm_data_14;
-  wire [15:0] delayed_pcm_data_15;
-  wire [15:0] delayed_pcm_data_16;
-  wire [15:0] delayed_pcm_data_17;
-  wire [15:0] delayed_pcm_data_18;
-  wire [15:0] delayed_pcm_data_19;
-  wire [15:0] delayed_pcm_data_20;
-  wire [15:0] delayed_pcm_data_21;
-  wire [15:0] delayed_pcm_data_22;
-  wire [15:0] delayed_pcm_data_23;
-  wire [15:0] delayed_pcm_data_24;
-  wire [15:0] delayed_pcm_data_25;
-  wire [15:0] delayed_pcm_data_26;
-  wire [15:0] delayed_pcm_data_27;
-  wire [15:0] delayed_pcm_data_28;
-  wire [15:0] delayed_pcm_data_29;
+  //   ila_0 ila_bram (
+  //       .clk(clk),  // input wire clk
+  //       .probe0(led_sel),
+  //       .probe1(mics_data_valid),
+  //       .probe2(mic_dbg),
+  //       .probe3(mic_sel)
+  //   );
 
-  delay_module u_delay_module (
+  beamforming_module u_beamforming_module (
       .clk(clk),
       .rst(~rst),
-      .delay_select(mic_sel),  // Use 5 bits of mic_sel to select source mic (1-30)
-      .pcm_data_0(mics_data[0*16+:16]),
-      .pcm_data_1(mics_data[1*16+:16]),
-      .pcm_data_2(mics_data[2*16+:16]),
-      .pcm_data_3(mics_data[3*16+:16]),
-      .pcm_data_4(mics_data[4*16+:16]),
-      .pcm_data_5(mics_data[5*16+:16]),
-      .pcm_data_6(mics_data[6*16+:16]),
-      .pcm_data_7(mics_data[7*16+:16]),
-      .pcm_data_8(mics_data[8*16+:16]),
-      .pcm_data_9(mics_data[9*16+:16]),
-      .pcm_data_10(mics_data[10*16+:16]),
-      .pcm_data_11(mics_data[11*16+:16]),
-      .pcm_data_12(mics_data[12*16+:16]),
-      .pcm_data_13(mics_data[13*16+:16]),
-      .pcm_data_14(mics_data[14*16+:16]),
-      .pcm_data_15(mics_data[15*16+:16]),
-      .pcm_data_16(mics_data[16*16+:16]),
-      .pcm_data_17(mics_data[17*16+:16]),
-      .pcm_data_18(mics_data[18*16+:16]),
-      .pcm_data_19(mics_data[19*16+:16]),
-      .pcm_data_20(mics_data[20*16+:16]),
-      .pcm_data_21(mics_data[21*16+:16]),
-      .pcm_data_22(mics_data[22*16+:16]),
-      .pcm_data_23(mics_data[23*16+:16]),
-      .pcm_data_24(mics_data[24*16+:16]),
-      .pcm_data_25(mics_data[25*16+:16]),
-      .pcm_data_26(mics_data[26*16+:16]),
-      .pcm_data_27(mics_data[27*16+:16]),
-      .pcm_data_28(mics_data[28*16+:16]),
-      .pcm_data_29(mics_data[29*16+:16]),
-      .delayed_pcm_data_0(delayed_pcm_data_0),
-      .delayed_pcm_data_1(delayed_pcm_data_1),
-      .delayed_pcm_data_2(delayed_pcm_data_2),
-      .delayed_pcm_data_3(delayed_pcm_data_3),
-      .delayed_pcm_data_4(delayed_pcm_data_4),
-      .delayed_pcm_data_5(delayed_pcm_data_5),
-      .delayed_pcm_data_6(delayed_pcm_data_6),
-      .delayed_pcm_data_7(delayed_pcm_data_7),
-      .delayed_pcm_data_8(delayed_pcm_data_8),
-      .delayed_pcm_data_9(delayed_pcm_data_9),
-      .delayed_pcm_data_10(delayed_pcm_data_10),
-      .delayed_pcm_data_11(delayed_pcm_data_11),
-      .delayed_pcm_data_12(delayed_pcm_data_12),
-      .delayed_pcm_data_13(delayed_pcm_data_13),
-      .delayed_pcm_data_14(delayed_pcm_data_14),
-      .delayed_pcm_data_15(delayed_pcm_data_15),
-      .delayed_pcm_data_16(delayed_pcm_data_16),
-      .delayed_pcm_data_17(delayed_pcm_data_17),
-      .delayed_pcm_data_18(delayed_pcm_data_18),
-      .delayed_pcm_data_19(delayed_pcm_data_19),
-      .delayed_pcm_data_20(delayed_pcm_data_20),
-      .delayed_pcm_data_21(delayed_pcm_data_21),
-      .delayed_pcm_data_22(delayed_pcm_data_22),
-      .delayed_pcm_data_23(delayed_pcm_data_23),
-      .delayed_pcm_data_24(delayed_pcm_data_24),
-      .delayed_pcm_data_25(delayed_pcm_data_25),
-      .delayed_pcm_data_26(delayed_pcm_data_26),
-      .delayed_pcm_data_27(delayed_pcm_data_27),
-      .delayed_pcm_data_28(delayed_pcm_data_28),
-      .delayed_pcm_data_29(delayed_pcm_data_29),
-      .pcm_valid(mics_data_valid)
+      .start(start_pulse),
+      .mics_data(mics_data),
+      .mics_data_valid(mics_data_valid),
+      .beamformed_sum_0(beamformed_sum_0),
+      .beamformed_sum_1(beamformed_sum_1),
+      .beamformed_sum_2(beamformed_sum_2),
+      .beamformed_sum_3(beamformed_sum_3),
+      .beamformed_sum_4(beamformed_sum_4),
+      .beamformed_sum_5(beamformed_sum_5),
+      .beamformed_sum_6(beamformed_sum_6),
+      .beamformed_sum_7(beamformed_sum_7),
+      .beamformed_sum_8(beamformed_sum_8),
+      .beamformed_sum_9(beamformed_sum_9),
+      .beamformed_sum_10(beamformed_sum_10),
+      .beamformed_sum_11(beamformed_sum_11),
+      .beamformed_sum_12(beamformed_sum_12),
+      .beamformed_sum_13(beamformed_sum_13),
+      .beamformed_sum_14(beamformed_sum_14),
+      .beamformed_sum_15(beamformed_sum_15),
+      .beamformed_sum_16(beamformed_sum_16),
+      .beamformed_sum_17(beamformed_sum_17),
+      .beamformed_sum_18(beamformed_sum_18),
+      .beamformed_sum_19(beamformed_sum_19),
+      .beamformed_sum_20(beamformed_sum_20),
+      .beamformed_sum_21(beamformed_sum_21),
+      .beamformed_sum_22(beamformed_sum_22),
+      .beamformed_sum_23(beamformed_sum_23),
+      .beamformed_sum_24(beamformed_sum_24),
+      .beamformed_sum_25(beamformed_sum_25),
+      .beamformed_sum_26(beamformed_sum_26),
+      .beamformed_sum_27(beamformed_sum_27),
+      .beamformed_sum_28(beamformed_sum_28),
+      .beamformed_sum_29(beamformed_sum_29)
   );
 
   system system_i (
       .mic_sel(mic_sel),
       .led_sel(led_sel),
-      .mics(mics_data_dbg),
+      .mics(beam_data),
       .mics_data_valid(mics_data_valid),
       .DDR_addr(DDR_addr),
       .DDR_ba(DDR_ba),
@@ -437,6 +268,7 @@ module sesenta (
       .FIXED_IO_ps_clk(FIXED_IO_ps_clk),
       .FIXED_IO_ps_porb(FIXED_IO_ps_porb),
       .FCLK_CLK0(clk),
+      .start(start),
       .reset(rst),
       .FIXED_IO_ps_srstb(FIXED_IO_ps_srstb)
   );

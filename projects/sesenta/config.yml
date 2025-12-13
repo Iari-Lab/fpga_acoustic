@@ -61,6 +61,51 @@ memory:
   - name: mic14
     range: 8K
     offset: '0x4005C000'
+  - name: mic15
+    range: 8K
+    offset: '0x4005E000'
+  - name: mic16
+    range: 8K
+    offset: '0x40060000'
+  - name: mic17
+    range: 8K
+    offset: '0x40062000'
+  - name: mic18
+    range: 8K
+    offset: '0x40064000'
+  - name: mic19
+    range: 8K
+    offset: '0x40066000'
+  - name: mic20
+    range: 8K
+    offset: '0x40068000'
+  - name: mic21
+    range: 8K
+    offset: '0x4006A000'
+  - name: mic22
+    range: 8K
+    offset: '0x4006C000'
+  - name: mic23
+    range: 8K
+    offset: '0x4006E000'
+  - name: mic24
+    range: 8K
+    offset: '0x40070000'
+  - name: mic25
+    range: 8K
+    offset: '0x40072000'
+  - name: mic26
+    range: 8K
+    offset: '0x40074000'
+  - name: mic27
+    range: 8K
+    offset: '0x40076000'
+  - name: mic28
+    range: 8K
+    offset: '0x40078000'
+  - name: mic29
+    range: 8K
+    offset: '0x4007A000'
 
 control_registers:
   - rst_regs

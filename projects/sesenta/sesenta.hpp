@@ -23,7 +23,15 @@ public:
         mic7_br(ctx.mm.get<mem::mic7>()), mic8_br(ctx.mm.get<mem::mic8>()),
         mic9_br(ctx.mm.get<mem::mic9>()), mic10_br(ctx.mm.get<mem::mic10>()),
         mic11_br(ctx.mm.get<mem::mic11>()), mic12_br(ctx.mm.get<mem::mic12>()),
-        mic13_br(ctx.mm.get<mem::mic13>()), mic14_br(ctx.mm.get<mem::mic14>())
+        mic13_br(ctx.mm.get<mem::mic13>()), mic14_br(ctx.mm.get<mem::mic14>()),
+        mic15_br(ctx.mm.get<mem::mic15>()), mic16_br(ctx.mm.get<mem::mic16>()),
+        mic17_br(ctx.mm.get<mem::mic17>()), mic18_br(ctx.mm.get<mem::mic18>()),
+        mic19_br(ctx.mm.get<mem::mic19>()), mic20_br(ctx.mm.get<mem::mic20>()),
+        mic21_br(ctx.mm.get<mem::mic21>()), mic22_br(ctx.mm.get<mem::mic22>()),
+        mic23_br(ctx.mm.get<mem::mic23>()), mic24_br(ctx.mm.get<mem::mic24>()),
+        mic25_br(ctx.mm.get<mem::mic25>()), mic26_br(ctx.mm.get<mem::mic26>()),
+        mic27_br(ctx.mm.get<mem::mic27>()), mic28_br(ctx.mm.get<mem::mic28>()),
+        mic29_br(ctx.mm.get<mem::mic29>())
   {
     ctx.print<INFO>("BEAm------------------------------------------>");
     start_beamforming();
@@ -37,93 +45,103 @@ public:
   unsigned int i_dma_gate = 2;
 
   
-  std::array<int16_t, mic_size> get_mic_ith(uint32_t mic_idx) {
-    std::array<int16_t, mic_size> mic_data;
+  std::array<int32_t, mic_size> get_mic_ith(uint32_t mic_idx) {
+    std::array<int32_t, mic_size> mic_data;
     
-    // Determine which buffer to read from based on the microphone pair
-    std::array<uint32_t, mic_size> raw_data;
-    
-    // Support all 30 microphone pairs (30 microphones)
     switch (mic_idx) {
     case 0:
+        mic_data = mic0_br.read_array<int32_t, mic_size>();
+        break;
     case 1:
-        raw_data = mic0_br.read_array<uint32_t, mic_size>();
+        mic_data = mic1_br.read_array<int32_t, mic_size>();
         break;
     case 2:
+        mic_data = mic2_br.read_array<int32_t, mic_size>();
+        break;
     case 3:
-        raw_data = mic1_br.read_array<uint32_t, mic_size>();
+        mic_data = mic3_br.read_array<int32_t, mic_size>();
         break;
     case 4:
+        mic_data = mic4_br.read_array<int32_t, mic_size>();
+        break;
     case 5:
-        raw_data = mic2_br.read_array<uint32_t, mic_size>();
+        mic_data = mic5_br.read_array<int32_t, mic_size>();
         break;
     case 6:
+        mic_data = mic6_br.read_array<int32_t, mic_size>();
+        break;
     case 7:
-        raw_data = mic3_br.read_array<uint32_t, mic_size>();
+        mic_data = mic7_br.read_array<int32_t, mic_size>();
         break;
     case 8:
+        mic_data = mic8_br.read_array<int32_t, mic_size>();
+        break;
     case 9:
-        raw_data = mic4_br.read_array<uint32_t, mic_size>();
+        mic_data = mic9_br.read_array<int32_t, mic_size>();
         break;
     case 10:
+        mic_data = mic10_br.read_array<int32_t, mic_size>();
+        break;
     case 11:
-        raw_data = mic5_br.read_array<uint32_t, mic_size>();
+        mic_data = mic11_br.read_array<int32_t, mic_size>();
         break;
     case 12:
+        mic_data = mic12_br.read_array<int32_t, mic_size>();
+        break;
     case 13:
-        raw_data = mic6_br.read_array<uint32_t, mic_size>();
+        mic_data = mic13_br.read_array<int32_t, mic_size>();
         break;
     case 14:
+        mic_data = mic14_br.read_array<int32_t, mic_size>();
+        break;
     case 15:
-        raw_data = mic7_br.read_array<uint32_t, mic_size>();
+        mic_data = mic15_br.read_array<int32_t, mic_size>();
         break;
     case 16:
+        mic_data = mic16_br.read_array<int32_t, mic_size>();
+        break;
     case 17:
-        raw_data = mic8_br.read_array<uint32_t, mic_size>();
+        mic_data = mic17_br.read_array<int32_t, mic_size>();
         break;
     case 18:
+        mic_data = mic18_br.read_array<int32_t, mic_size>();
+        break;
     case 19:
-        raw_data = mic9_br.read_array<uint32_t, mic_size>();
+        mic_data = mic19_br.read_array<int32_t, mic_size>();
         break;
     case 20:
+        mic_data = mic20_br.read_array<int32_t, mic_size>();
+        break;
     case 21:
-        raw_data = mic10_br.read_array<uint32_t, mic_size>();
+        mic_data = mic21_br.read_array<int32_t, mic_size>();
         break;
     case 22:
+        mic_data = mic22_br.read_array<int32_t, mic_size>();
+        break;
     case 23:
-        raw_data = mic11_br.read_array<uint32_t, mic_size>();
+        mic_data = mic23_br.read_array<int32_t, mic_size>();
         break;
     case 24:
+        mic_data = mic24_br.read_array<int32_t, mic_size>();
+        break;
     case 25:
-        raw_data = mic12_br.read_array<uint32_t, mic_size>();
+        mic_data = mic25_br.read_array<int32_t, mic_size>();
         break;
     case 26:
+        mic_data = mic26_br.read_array<int32_t, mic_size>();
+        break;
     case 27:
-        raw_data = mic13_br.read_array<uint32_t, mic_size>();
+        mic_data = mic27_br.read_array<int32_t, mic_size>();
         break;
     case 28:
+        mic_data = mic28_br.read_array<int32_t, mic_size>();
+        break;
     case 29:
-        raw_data = mic14_br.read_array<uint32_t, mic_size>();
+        mic_data = mic29_br.read_array<int32_t, mic_size>();
         break;
     default:
         ctx.print<ERROR>("Invalid microphone index: %d\n", mic_idx);
-        return std::array<int16_t, mic_size>{0};
-    }
-
-    // Process each 32-bit value to extract the appropriate 16-bit sample
-    for (uint32_t i = 0; i < mic_size; i++) {
-        uint32_t combined_value = raw_data[i];
-        uint16_t mic_lower = combined_value & 0xFFFF;
-        uint16_t mic_upper = (combined_value >> 16) & 0xFFFF;
-        
-        // Convert to signed 16-bit
-        if (mic_idx % 2 == 0) {
-            // Lower 16 bits for even mic indices (0, 2, 4, ..., 28)
-            mic_data[i] = static_cast<int16_t>(mic_lower);
-        } else {
-            // Upper 16 bits for odd mic indices (1, 3, 5, ..., 29)
-            mic_data[i] = static_cast<int16_t>(mic_upper);
-        }
+        return std::array<int32_t, mic_size>{0};
     }
 
     return mic_data;
@@ -192,6 +210,21 @@ private:
   Memory<mem::mic12> &mic12_br;
   Memory<mem::mic13> &mic13_br;
   Memory<mem::mic14> &mic14_br;
+  Memory<mem::mic15> &mic15_br;
+  Memory<mem::mic16> &mic16_br;
+  Memory<mem::mic17> &mic17_br;
+  Memory<mem::mic18> &mic18_br;
+  Memory<mem::mic19> &mic19_br;
+  Memory<mem::mic20> &mic20_br;
+  Memory<mem::mic21> &mic21_br;
+  Memory<mem::mic22> &mic22_br;
+  Memory<mem::mic23> &mic23_br;
+  Memory<mem::mic24> &mic24_br;
+  Memory<mem::mic25> &mic25_br;
+  Memory<mem::mic26> &mic26_br;
+  Memory<mem::mic27> &mic27_br;
+  Memory<mem::mic28> &mic28_br;
+  Memory<mem::mic29> &mic29_br;
 
   std::atomic<bool> beamforming_started{false};
   std::thread beamforming_thread;
@@ -220,38 +253,23 @@ inline void Sesenta::start_beamforming() {
 }
 
 inline void Sesenta::beamf_thread() {
-  const int num_mics = 30;  // 30 microphones
-  const int num_directions = 30;  // 30 beamforming directions
+  const int num_directions = 30;
 
   beamforming_started = true;
-  ctx.print<INFO>("Beamforming thread started for 30 microphones (M0-M29).\n");
-
-  const double pcm_sample_rate = 48000.0; // 48 kHz
-  const double buffer_fill_time_ms = (1 / pcm_sample_rate) * 1000.0;
+  ctx.print<INFO>("Beamforming thread started for 30 directions.\n");
 
   ctx.print<INFO>("BRAM buffer size: %u samples\n", mic_size);
-  ctx.print<INFO>("Required wait time per direction: %.2f ms\n",
-                  buffer_fill_time_ms);
 
   while (beamforming_started) {
     std::array<double, num_directions> beam_powers = {0.0};
 
     for (int dir = 0; dir < num_directions; dir++) {
-      set_mic_sel(dir);
-      std::array<double, mic_size> beamformed_signal = {0.0};
-
-      for (int mic = 0; mic < num_mics; mic++) {
-        auto mic_data = get_mic_ith(mic);
-
-        for (uint32_t sample_idx = 0; sample_idx < mic_size; sample_idx++) {
-          beamformed_signal[sample_idx] +=
-              static_cast<double>(mic_data[sample_idx]);
-        }
-      }
+      auto beamformed_sum = get_mic_ith(dir);
 
       double power = 0.0;
       for (uint32_t sample_idx = 0; sample_idx < mic_size; sample_idx++) {
-        power += (beamformed_signal[sample_idx] * beamformed_signal[sample_idx]);
+        double sample = static_cast<double>(beamformed_sum[sample_idx]);
+        power += (sample * sample);
       }
 
       beam_powers[dir] = power;

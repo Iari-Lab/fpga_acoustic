@@ -2,14 +2,6 @@
 source $board_path/config/ports.tcl
 source $board_path/base_system.tcl
 source $sdk_path/fpga/lib/bram.tcl
-# Add PS and AXI Interconnect
-# set board_preset $board_path/config/board_preset.tcl
-# set board_preset $board_path/config/board_preset_old_current_commit.tcl
-# set board_preset $board_path/config/board_preset_rp2.tcl
-# set board_preset $board_path/config/board_preset_orig_60.tcl
-# set board_preset $board_path/config/board_preset_orig.tcl
-# set board_preset $board_path/config/board_preset.tcl
-# source $sdk_path/fpga/lib/starting_point.tcl
 # source $sdk_path/projects/sesenta/amd.tcl
 # connect_pins FCLK_CLK0 $mics_clk
 # connect_pins FCLK_CLK1 $mics_clk
@@ -27,7 +19,7 @@ connect_pins mic_sel [get_slice_pin [ctl_pin mic_select] 6 0 mic_sel_pin]
 connect_pins led_sel [get_slice_pin [ctl_pin led_select] 6 0 led_sel_pin]
 
 set mic_width 32
-for {set i 0} {$i < 15} {incr i} {
+for {set i 0} {$i < 30} {incr i} {
   add_bram mic$i
 }
 cell iari:user:addr_counter:1.0 addr_counter_0 {
@@ -59,7 +51,7 @@ cell iari:user:addr_counter:1.0 addr_counter_0 {
 #     probe3 mics_data_valid
 
 # }
-for {set i 0} {$i < 15} {incr i} {
+for {set i 0} {$i < 30} {incr i} {
   set from  [expr ($i + 1) * $mic_width - 1]
   set to    [expr $i * $mic_width]
   
@@ -72,5 +64,6 @@ for {set i 0} {$i < 15} {incr i} {
     web addr_counter_0/write_en
   }
 }
+connect_pins start start/Dout
 set obj [get_filesets sources_1]
 set_property -name "top" -value "sesenta" -objects $obj
