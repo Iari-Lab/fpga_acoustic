@@ -10,7 +10,7 @@ source $sdk_path/fpga/lib/bram.tcl
 # set board_preset $board_path/config/board_preset_orig.tcl
 # set board_preset $board_path/config/board_preset.tcl
 # source $sdk_path/fpga/lib/starting_point.tcl
-source $sdk_path/projects/sesenta/amd.tcl
+# source $sdk_path/projects/sesenta/amd.tcl
 # connect_pins FCLK_CLK0 $mics_clk
 # connect_pins FCLK_CLK1 $mics_clk
 # connect_pins peripheral_aresetn proc_sys_reset_adc_clk/peripheral_aresetn
@@ -27,7 +27,7 @@ connect_pins mic_sel [get_slice_pin [ctl_pin mic_select] 6 0 mic_sel_pin]
 connect_pins led_sel [get_slice_pin [ctl_pin led_select] 6 0 led_sel_pin]
 
 set mic_width 32
-for {set i 0} {$i < 2} {incr i} {
+for {set i 0} {$i < 15} {incr i} {
   add_bram mic$i
 }
 cell iari:user:addr_counter:1.0 addr_counter_0 {
@@ -39,27 +39,27 @@ cell iari:user:addr_counter:1.0 addr_counter_0 {
     done [sts_pin done_capture]
   }
 
-cell xilinx.com:ip:system_ila:1.1 sila_3 {
-    C_PROBE0_WIDTH 1
-    C_PROBE1_WIDTH 32
-    C_PROBE2_WIDTH 1
-    C_PROBE3_WIDTH 1
-    C_DATA_DEPTH 16384
-    C_NUM_OF_PROBES 4
-    C_EN_STRG_QUAL 1 
-    C_ADV_TRIGGER false
-    ALL_PROBE_SAME_MU_CNT 2
-    C_MON_TYPE NATIVE 
-    C_PROBE_WIDTH_PROPAGATION MANUAL 
-} {
-    clk $mics_clk
-    probe0 [get_slice_pin [ctl_pin start_capture] 0 0 start_dbg]
-    probe1 addr_counter_0/addr_debug
-    probe2 addr_counter_0/done
-    probe3 mics_data_valid
+# cell xilinx.com:ip:system_ila:1.1 sila_3 {
+#     C_PROBE0_WIDTH 1
+#     C_PROBE1_WIDTH 32
+#     C_PROBE2_WIDTH 1
+#     C_PROBE3_WIDTH 1
+#     C_DATA_DEPTH 16384
+#     C_NUM_OF_PROBES 4
+#     C_EN_STRG_QUAL 1 
+#     C_ADV_TRIGGER false
+#     ALL_PROBE_SAME_MU_CNT 2
+#     C_MON_TYPE NATIVE 
+#     C_PROBE_WIDTH_PROPAGATION MANUAL 
+# } {
+#     clk $mics_clk
+#     probe0 [get_slice_pin [ctl_pin start_capture] 0 0 start_dbg]
+#     probe1 addr_counter_0/addr_debug
+#     probe2 addr_counter_0/done
+#     probe3 mics_data_valid
 
-}
-for {set i 0} {$i < 2} {incr i} {
+# }
+for {set i 0} {$i < 15} {incr i} {
   set from  [expr ($i + 1) * $mic_width - 1]
   set to    [expr $i * $mic_width]
   

@@ -8,7 +8,6 @@
 #include <cmath>
 #include <context.hpp>
 #include <iostream>
-#include <server/drivers/dma-s2mm.hpp>
 // constexpr uint32_t mic_size = 512;
 // constexpr uint32_t mic_size = 2048;
 constexpr uint32_t mic_size = mem::mic0_range / sizeof(uint32_t);
@@ -16,14 +15,17 @@ constexpr uint32_t mic_size = mem::mic0_range / sizeof(uint32_t);
 class Sesenta {
 public:
   Sesenta(Context &ctx_)
-      : ctx(ctx_), dma(ctx.get<DmaS2MM>()), ctl(ctx.mm.get<mem::control>()),
-        sts(ctx.mm.get<mem::status>()), ram(ctx.mm.get<mem::ram>()),
-        ram2(ctx.mm.get<mem::ram2>()), mic0_br(ctx.mm.get<mem::mic0>()),
+      : ctx(ctx_), ctl(ctx.mm.get<mem::control>()),
+        sts(ctx.mm.get<mem::status>()), mic0_br(ctx.mm.get<mem::mic0>()),
         mic1_br(ctx.mm.get<mem::mic1>()), mic2_br(ctx.mm.get<mem::mic2>()),
-        mic3_br(ctx.mm.get<mem::mic3>())
-
+        mic3_br(ctx.mm.get<mem::mic3>()), mic4_br(ctx.mm.get<mem::mic4>()),
+        mic5_br(ctx.mm.get<mem::mic5>()), mic6_br(ctx.mm.get<mem::mic6>()),
+        mic7_br(ctx.mm.get<mem::mic7>()), mic8_br(ctx.mm.get<mem::mic8>()),
+        mic9_br(ctx.mm.get<mem::mic9>()), mic10_br(ctx.mm.get<mem::mic10>()),
+        mic11_br(ctx.mm.get<mem::mic11>()), mic12_br(ctx.mm.get<mem::mic12>()),
+        mic13_br(ctx.mm.get<mem::mic13>()), mic14_br(ctx.mm.get<mem::mic14>())
   {
-    ctx.print<INFO>("BEAm------------------------------------------>-\n");
+    ctx.print<INFO>("BEAm------------------------------------------>");
     start_beamforming();
   }
   ~Sesenta() {
@@ -34,244 +36,74 @@ public:
   uint32_t i_rst_leds = 1;
   unsigned int i_dma_gate = 2;
 
-  void dma_on() { ctl.set_bit<reg::dma_gate, 0>(); }
-  void dma_off() { ctl.clear_bit<reg::dma_gate, 0>(); }
-  void dma1_on() { ctl.set_bit<reg::dma_gate1, 0>(); }
-  void dma1_off() { ctl.clear_bit<reg::dma_gate1, 0>(); }
-
-  void set_nsamples(uint32_t samples) {
-    ctx.print<DEBUG>(" set SAMPLES %d ::\n", samples);
-    ctl.write_reg(reg::n_samples, samples);
-  }
-
-  auto get_nsamples() {
-    uint32_t samples = ctl.read_reg(reg::n_samples);
-    ctx.print<DEBUG>(" GET SAMPLES %d ::\n", samples);
-    return samples;
-  }
-
-  void start_dma_transfer(uint32_t samples) {
-    set_nsamples(samples + read_offset);
-    uint32_t npoints = get_nsamples();
-    dma.setup_transfer(mem::ram_addr, mem::ram2_addr, 256 * npoints);
-    dma_on();
-    dma1_on();
-    double pdm_f = 3072.0;
-    dma_transfer_duration = float(npoints / pdm_f);
-    dma.wait_for_transfer(dma_transfer_duration); // so far this works
-  }
-
-  void split_mic_value(uint32_t mic_value, uint16_t &mic1, uint16_t &mic2) {
-    mic1 = mic_value & 0xFFFF;
-    mic2 = (mic_value >> 16) & 0xFFFF;
-  }
-  auto read_mics6(uint32_t samples) {
-    const int num_mics = 8;
-    const int total_mics = 2;
-    ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
-    uint32_t mic = 0;
-    uint32_t mic2 = 0;
-    std::vector<int32_t> data_ret = {};
-    int32_t offset = 0;
-    for (int i = 1; i < (int)samples + 1; i++) {
-      offset = (i * num_mics); // s
-      ctx.print<INFO>("MICS1 ");
-      for (int mic_idx = 0; mic_idx < total_mics; mic_idx++) {
-        mic = ram.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
-        uint16_t _mic1 = 0;
-        uint16_t _mic2 = 0;
-        split_mic_value(mic, _mic1, _mic2);
-        int32_t mic1_signed = static_cast<int32_t>(static_cast<int16_t>(_mic1));
-        int32_t mic2_signed = static_cast<int32_t>(static_cast<int16_t>(_mic2));
-        data_ret.push_back(mic1_signed);
-        data_ret.push_back(mic2_signed);
-        ctx.print<INFO>(" %d %d", mic1_signed, mic2_signed);
-      }
-      ctx.print<INFO>("-\n");
-    }
-    for (int i = 1; i < (int)samples + 1; i++) {
-      offset = (i * num_mics); // s
-      ctx.print<INFO>("MICS2 ");
-      for (int mic_idx = 0; mic_idx < total_mics; mic_idx++) {
-        mic2 = ram2.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
-        uint16_t _mic1 = 0;
-        uint16_t _mic2 = 0;
-        split_mic_value(mic2, _mic1, _mic2);
-        int32_t mic1_signed = static_cast<int32_t>(static_cast<int16_t>(_mic1));
-        int32_t mic2_signed = static_cast<int32_t>(static_cast<int16_t>(_mic2));
-        data_ret.push_back(mic1_signed);
-        data_ret.push_back(mic2_signed);
-        ctx.print<INFO>(" %d %d", mic1_signed, mic2_signed);
-      }
-      ctx.print<INFO>("-\n");
-    }
-    return data_ret;
-  }
-
-  auto get_mics6(uint32_t samples) {
-    const int num_mics = 8;
-    const int total_mics = 2;
-    start_dma_transfer(samples);
-    ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
-    uint32_t mic = 0;
-    uint32_t mic2 = 0;
-    std::vector<int32_t> data_ret = {};
-    int32_t offset = 0;
-    dma_off();
-    dma1_off();
-    for (int i = 1; i < (int)samples + 1; i++) {
-      offset = (i * num_mics); // s
-      ctx.print<INFO>("MICS1 ");
-      for (int mic_idx = 0; mic_idx < total_mics; mic_idx++) {
-        mic = ram.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
-        uint16_t _mic1 = 0;
-        uint16_t _mic2 = 0;
-        split_mic_value(mic, _mic1, _mic2);
-        int32_t mic1_signed = static_cast<int32_t>(static_cast<int16_t>(_mic1));
-        int32_t mic2_signed = static_cast<int32_t>(static_cast<int16_t>(_mic2));
-        data_ret.push_back(mic1_signed);
-        data_ret.push_back(mic2_signed);
-        ctx.print<INFO>(" %d %d", mic1_signed, mic2_signed);
-      }
-      ctx.print<INFO>("-\n");
-    }
-    for (int i = 1; i < (int)samples + 1; i++) {
-      offset = (i * num_mics); // s
-      ctx.print<INFO>("MICS2 ");
-      for (int mic_idx = 0; mic_idx < total_mics; mic_idx++) {
-        mic2 = ram2.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
-        uint16_t _mic1 = 0;
-        uint16_t _mic2 = 0;
-        split_mic_value(mic2, _mic1, _mic2);
-        int32_t mic1_signed = static_cast<int32_t>(static_cast<int16_t>(_mic1));
-        int32_t mic2_signed = static_cast<int32_t>(static_cast<int16_t>(_mic2));
-        data_ret.push_back(mic1_signed);
-        data_ret.push_back(mic2_signed);
-        ctx.print<INFO>(" %d %d", mic1_signed, mic2_signed);
-      }
-      ctx.print<INFO>("-\n");
-    }
-    return data_ret;
-  }
-
-  auto get_mics4(uint32_t samples) {
-    const int num_mics = 8;
-    const int total_mics = 4;
-    start_dma_transfer(samples);
-    ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
-    uint32_t mic = 0;
-    std::vector<int32_t> data_ret = {};
-    int32_t offset = 0;
-    dma_off();
-    dma1_off();
-    for (int i = 1; i < (int)samples + 1; i++) {
-      offset = (i * num_mics); // s
-      ctx.print<INFO>("MICS1 ");
-      for (int mic_idx = 0; mic_idx < total_mics; mic_idx++) {
-        mic = ram.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
-        data_ret.push_back(mic);
-        ctx.print<INFO>(" %d", mic);
-      }
-      ctx.print<INFO>("-\n");
-    }
-    return data_ret;
-  }
-  auto get_mics(uint32_t samples) {
-    const int num_mics = 16;
-    start_dma_transfer(samples);
-    ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
-    uint32_t mic = 0;
-    uint32_t mic2 = 0;
-    std::vector<int32_t> data_ret = {};
-    int32_t offset = 0;
-    dma_off();
-    dma1_off();
-    for (int i = 1; i < (int)samples + 1; i++) {
-      offset = (i * num_mics); // s
-      ctx.print<INFO>("MICS1 ");
-      for (int mic_idx = 0; mic_idx < num_mics; mic_idx++) {
-        mic = ram.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
-        uint16_t _mic1 = 0;
-        uint16_t _mic2 = 0;
-        split_mic_value(mic, _mic1, _mic2);
-        int32_t mic1_signed = static_cast<int32_t>(static_cast<int16_t>(_mic1));
-        int32_t mic2_signed = static_cast<int32_t>(static_cast<int16_t>(_mic2));
-        data_ret.push_back(mic1_signed);
-        data_ret.push_back(mic2_signed);
-        ctx.print<INFO>(" %d %d", mic1_signed, mic2_signed);
-      }
-      ctx.print<INFO>("\n");
-    }
-    for (int i = 1; i < (int)samples + 1; i++) {
-      offset = (i * num_mics); // s
-      ctx.print<INFO>("MICS2 ");
-      for (int mic_idx = 0; mic_idx < num_mics; mic_idx++) {
-        mic2 = ram2.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
-        uint16_t _mic1 = 0;
-        uint16_t _mic2 = 0;
-        split_mic_value(mic2, _mic1, _mic2);
-        int32_t mic1_signed = static_cast<int32_t>(static_cast<int16_t>(_mic1));
-        int32_t mic2_signed = static_cast<int32_t>(static_cast<int16_t>(_mic2));
-        data_ret.push_back(mic1_signed);
-        data_ret.push_back(mic2_signed);
-        ctx.print<INFO>(" %d %d", mic1_signed, mic2_signed);
-      }
-      ctx.print<INFO>("\n");
-    }
-    return data_ret;
-  }
-
-  auto get_mics_ith(uint32_t samples, uint32_t mic_idx) {
-    start_dma_transfer(samples);
-    ctx.print<DEBUG>("Samples-----------------> %d\n", samples);
-    uint32_t mic = 0;
-    uint32_t mic2 = 0;
-    std::vector<int32_t> data_ret = {};
-    int32_t offset = 0;
-    dma_off();
-    dma1_off();
-    for (int i = 1; i < (int)samples + 1; i++) {
-      offset = (i * 8); // s
-      ctx.print<INFO>("MICS1 ");
-      mic = ram.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
-      uint16_t _mic1 = 0;
-      uint16_t _mic2 = 0;
-      split_mic_value(mic, _mic1, _mic2);
-      int32_t mic1_signed = static_cast<int32_t>(static_cast<int16_t>(_mic1));
-      int32_t mic2_signed = static_cast<int32_t>(static_cast<int16_t>(_mic2));
-      data_ret.push_back(mic1_signed);
-      data_ret.push_back(mic2_signed);
-      ctx.print<INFO>(" %d %d", mic1_signed, mic2_signed);
-      ctx.print<INFO>("MICS2 ");
-      mic2 = ram2.read_array_value_at_index<uint32_t, 1>(mic_idx + offset);
-      _mic1 = 0;
-      _mic2 = 0;
-      split_mic_value(mic2, _mic1, _mic2);
-      mic1_signed = static_cast<int32_t>(static_cast<int16_t>(_mic1));
-      mic2_signed = static_cast<int32_t>(static_cast<int16_t>(_mic2));
-      data_ret.push_back(mic1_signed);
-      data_ret.push_back(mic2_signed);
-      ctx.print<INFO>(" %d %d", mic1_signed, mic2_signed);
-      ctx.print<INFO>("\n");
-    }
-    return data_ret;
-  }
-std::array<int16_t, mic_size> get_mic_ith(uint32_t mic_idx) {
+  
+  std::array<int16_t, mic_size> get_mic_ith(uint32_t mic_idx) {
     std::array<int16_t, mic_size> mic_data;
     
     // Determine which buffer to read from based on the microphone pair
     std::array<uint32_t, mic_size> raw_data;
     
+    // Support all 30 microphone pairs (30 microphones)
     switch (mic_idx) {
     case 0:
     case 1:
-        // Read from first buffer for microphone pair 0 and 1
         raw_data = mic0_br.read_array<uint32_t, mic_size>();
         break;
     case 2:
     case 3:
-        // Read from second buffer for microphone pair 2 and 3  
         raw_data = mic1_br.read_array<uint32_t, mic_size>();
+        break;
+    case 4:
+    case 5:
+        raw_data = mic2_br.read_array<uint32_t, mic_size>();
+        break;
+    case 6:
+    case 7:
+        raw_data = mic3_br.read_array<uint32_t, mic_size>();
+        break;
+    case 8:
+    case 9:
+        raw_data = mic4_br.read_array<uint32_t, mic_size>();
+        break;
+    case 10:
+    case 11:
+        raw_data = mic5_br.read_array<uint32_t, mic_size>();
+        break;
+    case 12:
+    case 13:
+        raw_data = mic6_br.read_array<uint32_t, mic_size>();
+        break;
+    case 14:
+    case 15:
+        raw_data = mic7_br.read_array<uint32_t, mic_size>();
+        break;
+    case 16:
+    case 17:
+        raw_data = mic8_br.read_array<uint32_t, mic_size>();
+        break;
+    case 18:
+    case 19:
+        raw_data = mic9_br.read_array<uint32_t, mic_size>();
+        break;
+    case 20:
+    case 21:
+        raw_data = mic10_br.read_array<uint32_t, mic_size>();
+        break;
+    case 22:
+    case 23:
+        raw_data = mic11_br.read_array<uint32_t, mic_size>();
+        break;
+    case 24:
+    case 25:
+        raw_data = mic12_br.read_array<uint32_t, mic_size>();
+        break;
+    case 26:
+    case 27:
+        raw_data = mic13_br.read_array<uint32_t, mic_size>();
+        break;
+    case 28:
+    case 29:
+        raw_data = mic14_br.read_array<uint32_t, mic_size>();
         break;
     default:
         ctx.print<ERROR>("Invalid microphone index: %d\n", mic_idx);
@@ -285,50 +117,17 @@ std::array<int16_t, mic_size> get_mic_ith(uint32_t mic_idx) {
         uint16_t mic_upper = (combined_value >> 16) & 0xFFFF;
         
         // Convert to signed 16-bit
-        if (mic_idx == 0 || mic_idx == 2) {
-            // Lower 16 bits for mic0 and mic2
+        if (mic_idx % 2 == 0) {
+            // Lower 16 bits for even mic indices (0, 2, 4, ..., 28)
             mic_data[i] = static_cast<int16_t>(mic_lower);
         } else {
-            // Upper 16 bits for mic1 and mic3  
+            // Upper 16 bits for odd mic indices (1, 3, 5, ..., 29)
             mic_data[i] = static_cast<int16_t>(mic_upper);
         }
     }
 
     return mic_data;
-}
-  // std::array<uint32_t, mic_size> get_mic_ith(uint32_t mic_idx) {
-  //   std::array<uint32_t, mic_size> raw_data;
-
-  //   switch (mic_idx) {
-  //   case 0:
-  //     raw_data = mic0_br.read_array<uint32_t, mic_size>();
-  //     uint16_t _mic1 = 0;
-  //     uint16_t _mic2 = 0;
-  //     split_mic_value(mic, _mic1, _mic2);
-  //     int32_t mic1_signed = static_cast<int32_t>(static_cast<int16_t>(_mic1));
-  //     int32_t mic2_signed = static_cast<int32_t>(static_cast<int16_t>(_mic2));
-  //     break;
-  //   case 1:
-  //     raw_data = mic1_br.read_array<uint32_t, mic_size>();
-  //     break;
-  //   case 2:
-  //     raw_data = mic2_br.read_array<uint32_t, mic_size>();
-  //     break;
-  //   case 3:
-  //     raw_data = mic3_br.read_array<uint32_t, mic_size>();
-  //     break;
-  //   default:
-  //     ctx.print<ERROR>("Invalid microphone index: %d\n", mic_idx);
-  //     return std::array<uint32_t, mic_size>{0};
-  //   }
-
-  //   // for (uint32_t i = 0; i < mic_size; i++) {
-  //   //   ctx.print<DEBUG>(" Raw data[%d]: 0x%08X ", i, raw_data[i]);
-  //   // }
-  //   // ctx.print<DEBUG>("\n Finished reading microphone %d data.\n", mic_idx);
-
-  //   return raw_data;
-  // }
+  }
 
   void set_mic_sel(uint32_t sel) {
     ctl.write_reg(reg::mic_select, sel);
@@ -346,7 +145,7 @@ std::array<int16_t, mic_size> get_mic_ith(uint32_t mic_idx) {
   }
 
   auto get_mics_bram(uint32_t dir) {
-    const int num_mics = 4;
+    const int num_mics = 30;  // 30 microphones
     std::vector<int32_t> data_ret = {};
     for (int mic = 0; mic < num_mics; mic++) {
       set_mic_sel(dir);
@@ -373,38 +172,38 @@ private:
   static constexpr uint32_t n_pts = data_size;
   static constexpr uint32_t read_offset = 5;
   Context &ctx;
-  DmaS2MM &dma;
   Memory<mem::control> &ctl;
   Memory<mem::status> &sts;
   float dma_transfer_duration;
   static constexpr float fs_adc = prm::fclk0;
   float fs;
-  Memory<mem::ram> &ram;
-  Memory<mem::ram2> &ram2;
   Memory<mem::mic0> &mic0_br;
   Memory<mem::mic1> &mic1_br;
   Memory<mem::mic2> &mic2_br;
   Memory<mem::mic3> &mic3_br;
-  // Memory<mem::mic4> &mic4_br;
-  // Memory<mem::mic5> &mic5_br;
+  Memory<mem::mic4> &mic4_br;
+  Memory<mem::mic5> &mic5_br;
+  Memory<mem::mic6> &mic6_br;
+  Memory<mem::mic7> &mic7_br;
+  Memory<mem::mic8> &mic8_br;
+  Memory<mem::mic9> &mic9_br;
+  Memory<mem::mic10> &mic10_br;
+  Memory<mem::mic11> &mic11_br;
+  Memory<mem::mic12> &mic12_br;
+  Memory<mem::mic13> &mic13_br;
+  Memory<mem::mic14> &mic14_br;
 
   std::atomic<bool> beamforming_started{false};
   std::thread beamforming_thread;
-  // static constexpr std::array<uint8_t, 7> M_DATA_TO_MIC = {
-  //     31, // M_DATA[0] → MIC31 (from M28: 59-28=31)
-  //     37, // M_DATA[1] → MIC37 (from M22: 59-22=37)
-  //     25, // M_DATA[2] → MIC25 (from M34: 59-34=25)
-  //     28, // M_DATA[3] → MIC28 (from M31: 59-31=28)
-  //     34, // M_DATA[4] → MIC34 (from M25: 59-25=34)
-  //     40  // M_DATA[5] → MIC40 (from M19: 59-19=40)
-  // };
 
-  static constexpr std::array<uint8_t, 4> M_DATA_TO_MIC = {
-      14, // M_DATA[0] → MIC39
-      8,  // M_DATA[1] → MIC51
-      2,  // M_DATA[2] → MIC57
-      20  // M_DATA[3] → MIC45
+  // Mapping for 30 microphones (M0-M29)
+  // Corresponding to 30 beamforming directions
+  static constexpr std::array<uint8_t, 30> M_DATA_TO_MIC = {
+      60, 58, 56, 54, 52, 50, 48, 46, 44, 42,
+      40, 38, 36, 34, 32, 30, 28, 26, 24, 22,
+      20, 18, 16, 14, 12, 10, 8, 6, 4, 2
   };
+  
   void beamf_thread();
 
 }; // class Sesenta
@@ -419,12 +218,13 @@ inline void Sesenta::start_beamforming() {
     // beamf_thread();
   }
 }
+
 inline void Sesenta::beamf_thread() {
-  const int num_mics = 4;
-  const int num_directions = 4;
+  const int num_mics = 30;  // 30 microphones
+  const int num_directions = 30;  // 30 beamforming directions
 
   beamforming_started = true;
-  ctx.print<INFO>("Beamforming thread started for 6 mics.\n");
+  ctx.print<INFO>("Beamforming thread started for 30 microphones (M0-M29).\n");
 
   const double pcm_sample_rate = 48000.0; // 48 kHz
   const double buffer_fill_time_ms = (1 / pcm_sample_rate) * 1000.0;
@@ -468,8 +268,8 @@ inline void Sesenta::beamf_thread() {
     }
 
     ctx.print<INFO>(
-        "Maximum sound energy detected from direction: %d (Power: %e)\n",
-        max_direction, max_power);
+        "Maximum sound energy detected from direction: %d (M%d) (Power: %e)\n",
+        max_direction, M_DATA_TO_MIC[max_direction], max_power);
 
     set_led_sel(M_DATA_TO_MIC[max_direction]);
   }

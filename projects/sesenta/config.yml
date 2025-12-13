@@ -16,36 +16,51 @@ memory:
   - name: status
     range: 4K
     offset: '0x50000000'
-  - name: ram
-    offset: '0x1E000000'
-    range: 16M
-  - name: ram2
-    offset: '0x1F000000'
-    range: 16M
-  - name: dma
-    offset: '0x40400000'
-    range: 64K
-  - name: dma1
-    offset: '0x40480000'
-    range: 64K
-  - name: axi_hp0
-    offset: '0xF8008000'
-    range: 4K
-  - name: axi_hp1
-    offset: '0xF800F000'
-    range: 8K
   - name: mic0
     range: 8K
     offset: '0x40040000'
   - name: mic1
     range: 8K
-    offset: '0x40060000'
+    offset: '0x40042000'
   - name: mic2
     range: 8K
-    offset: '0x40080000'
+    offset: '0x40044000'
   - name: mic3
     range: 8K
-    offset: '0x40100000'
+    offset: '0x40046000'
+  - name: mic4
+    range: 8K
+    offset: '0x40048000'
+  - name: mic5
+    range: 8K
+    offset: '0x4004A000'
+  - name: mic6
+    range: 8K
+    offset: '0x4004C000'
+  - name: mic7
+    range: 8K
+    offset: '0x4004E000'
+  - name: mic8
+    range: 8K
+    offset: '0x40050000'
+  - name: mic9
+    range: 8K
+    offset: '0x40052000'
+  - name: mic10
+    range: 8K
+    offset: '0x40054000'
+  - name: mic11
+    range: 8K
+    offset: '0x40056000'
+  - name: mic12
+    range: 8K
+    offset: '0x40058000'
+  - name: mic13
+    range: 8K
+    offset: '0x4005A000'
+  - name: mic14
+    range: 8K
+    offset: '0x4005C000'
 
 control_registers:
   - rst_regs
@@ -60,17 +75,12 @@ status_registers:
   - mode
   - done_capture
 
-# parameters:
-#   fclk0: 115200000 # FPGA clock speed in Hz
-
 parameters:
-  fclk0: 100000000 # FPGA clock speed in Hz
+  fclk0: 100000000
 
 xdc:
   - boards/myir/config/ports.xdc
 
 drivers:
   - server/drivers/common.hpp
-  - server/drivers/dma-s2mm.hpp
   - ./sesenta.hpp
-
