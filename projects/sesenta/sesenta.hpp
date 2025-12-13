@@ -256,34 +256,79 @@ public:
     }
     return data_ret;
   }
-  std::array<uint32_t, mic_size> get_mic_ith(uint32_t mic_idx) {
+std::array<int16_t, mic_size> get_mic_ith(uint32_t mic_idx) {
+    std::array<int16_t, mic_size> mic_data;
+    
+    // Determine which buffer to read from based on the microphone pair
     std::array<uint32_t, mic_size> raw_data;
-
+    
     switch (mic_idx) {
     case 0:
-      raw_data = mic0_br.read_array<uint32_t, mic_size>();
-      break;
     case 1:
-      raw_data = mic1_br.read_array<uint32_t, mic_size>();
-      break;
+        // Read from first buffer for microphone pair 0 and 1
+        raw_data = mic0_br.read_array<uint32_t, mic_size>();
+        break;
     case 2:
-      raw_data = mic2_br.read_array<uint32_t, mic_size>();
-      break;
     case 3:
-      raw_data = mic3_br.read_array<uint32_t, mic_size>();
-      break;
+        // Read from second buffer for microphone pair 2 and 3  
+        raw_data = mic1_br.read_array<uint32_t, mic_size>();
+        break;
     default:
-      ctx.print<ERROR>("Invalid microphone index: %d\n", mic_idx);
-      return std::array<uint32_t, mic_size>{0};
+        ctx.print<ERROR>("Invalid microphone index: %d\n", mic_idx);
+        return std::array<int16_t, mic_size>{0};
     }
 
-    // for (uint32_t i = 0; i < mic_size; i++) {
-    //   ctx.print<DEBUG>(" Raw data[%d]: 0x%08X ", i, raw_data[i]);
-    // }
-    // ctx.print<DEBUG>("\n Finished reading microphone %d data.\n", mic_idx);
+    // Process each 32-bit value to extract the appropriate 16-bit sample
+    for (uint32_t i = 0; i < mic_size; i++) {
+        uint32_t combined_value = raw_data[i];
+        uint16_t mic_lower = combined_value & 0xFFFF;
+        uint16_t mic_upper = (combined_value >> 16) & 0xFFFF;
+        
+        // Convert to signed 16-bit
+        if (mic_idx == 0 || mic_idx == 2) {
+            // Lower 16 bits for mic0 and mic2
+            mic_data[i] = static_cast<int16_t>(mic_lower);
+        } else {
+            // Upper 16 bits for mic1 and mic3  
+            mic_data[i] = static_cast<int16_t>(mic_upper);
+        }
+    }
 
-    return raw_data;
-  }
+    return mic_data;
+}
+  // std::array<uint32_t, mic_size> get_mic_ith(uint32_t mic_idx) {
+  //   std::array<uint32_t, mic_size> raw_data;
+
+  //   switch (mic_idx) {
+  //   case 0:
+  //     raw_data = mic0_br.read_array<uint32_t, mic_size>();
+  //     uint16_t _mic1 = 0;
+  //     uint16_t _mic2 = 0;
+  //     split_mic_value(mic, _mic1, _mic2);
+  //     int32_t mic1_signed = static_cast<int32_t>(static_cast<int16_t>(_mic1));
+  //     int32_t mic2_signed = static_cast<int32_t>(static_cast<int16_t>(_mic2));
+  //     break;
+  //   case 1:
+  //     raw_data = mic1_br.read_array<uint32_t, mic_size>();
+  //     break;
+  //   case 2:
+  //     raw_data = mic2_br.read_array<uint32_t, mic_size>();
+  //     break;
+  //   case 3:
+  //     raw_data = mic3_br.read_array<uint32_t, mic_size>();
+  //     break;
+  //   default:
+  //     ctx.print<ERROR>("Invalid microphone index: %d\n", mic_idx);
+  //     return std::array<uint32_t, mic_size>{0};
+  //   }
+
+  //   // for (uint32_t i = 0; i < mic_size; i++) {
+  //   //   ctx.print<DEBUG>(" Raw data[%d]: 0x%08X ", i, raw_data[i]);
+  //   // }
+  //   // ctx.print<DEBUG>("\n Finished reading microphone %d data.\n", mic_idx);
+
+  //   return raw_data;
+  // }
 
   void set_mic_sel(uint32_t sel) {
     ctl.write_reg(reg::mic_select, sel);
