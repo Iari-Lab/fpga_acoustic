@@ -55,18 +55,10 @@ module sesenta (
   localparam integer INPUT_FREQ = 120_000_000;
   localparam integer PDM_FREQ = 2_400_000;
   localparam integer LED_FREQ = 12000000;
-  localparam integer DATA_WIDTH = 600;  // 30 mics * 16 bits
+  localparam integer DATA_WIDTH = 630;  // 30 mics * 21 bits
   localparam integer MICS_DATA_WIDTH = 480;  // 30 mics * 16 bits
   localparam CIC_DATA_WIDTH = 16;
   wire clk, clk_leds, rst, pdm_clk;  //start
-  //   reg [2:0] rstart;
-  //   wire start_pulse;
-  //   always @(posedge clk) begin
-  //     rstart <= {rstart[1:0], start};
-  //   end
-
-  //   assign start_pulse = rstart[2] & ~rstart[1];
-
 
 
   wire clk_rising_mics;
@@ -76,7 +68,7 @@ module sesenta (
   // Manual LED control signals
   reg pcm_valid;
   initial begin
-    reg_mics_data = 960'b0;
+    reg_mics_data = 630'b0;
   end
 
   reg [DATA_WIDTH-1:0] reg_mics_data;
@@ -118,36 +110,36 @@ module sesenta (
   wire [29:0] cic_overflow, cic_overflow2;
 
   always @(posedge clk) begin
-    reg_mics_data[0*20+:20] <= beamformed_sum_0;
-    reg_mics_data[1*20+:20] <= beamformed_sum_1;
-    reg_mics_data[2*20+:20] <= beamformed_sum_2;
-    reg_mics_data[3*20+:20] <= beamformed_sum_3;
-    reg_mics_data[4*20+:20] <= beamformed_sum_4;
-    reg_mics_data[5*20+:20] <= beamformed_sum_5;
-    reg_mics_data[6*20+:20] <= beamformed_sum_6;
-    reg_mics_data[7*20+:20] <= beamformed_sum_7;
-    reg_mics_data[8*20+:20] <= beamformed_sum_8;
-    reg_mics_data[9*20+:20] <= beamformed_sum_9;
-    reg_mics_data[10*20+:20] <= beamformed_sum_10;
-    reg_mics_data[11*20+:20] <= beamformed_sum_11;
-    reg_mics_data[12*20+:20] <= beamformed_sum_12;
-    reg_mics_data[13*20+:20] <= beamformed_sum_13;
-    reg_mics_data[14*20+:20] <= beamformed_sum_14;
-    reg_mics_data[15*20+:20] <= beamformed_sum_15;
-    reg_mics_data[16*20+:20] <= beamformed_sum_16;
-    reg_mics_data[17*20+:20] <= beamformed_sum_17;
-    reg_mics_data[18*20+:20] <= beamformed_sum_18;
-    reg_mics_data[19*20+:20] <= beamformed_sum_19;
-    reg_mics_data[20*20+:20] <= beamformed_sum_20;
-    reg_mics_data[21*20+:20] <= beamformed_sum_21;
-    reg_mics_data[22*20+:20] <= beamformed_sum_22;
-    reg_mics_data[23*20+:20] <= beamformed_sum_23;
-    reg_mics_data[24*20+:20] <= beamformed_sum_24;
-    reg_mics_data[25*20+:20] <= beamformed_sum_25;
-    reg_mics_data[26*20+:20] <= beamformed_sum_26;
-    reg_mics_data[27*20+:20] <= beamformed_sum_27;
-    reg_mics_data[28*20+:20] <= beamformed_sum_28;
-    reg_mics_data[29*20+:20] <= beamformed_sum_29;
+    reg_mics_data[0*21+:21] <= beamformed_sum_0;
+    reg_mics_data[1*21+:21] <= beamformed_sum_1;
+    reg_mics_data[2*21+:21] <= beamformed_sum_2;
+    reg_mics_data[3*21+:21] <= beamformed_sum_3;
+    reg_mics_data[4*21+:21] <= beamformed_sum_4;
+    reg_mics_data[5*21+:21] <= beamformed_sum_5;
+    reg_mics_data[6*21+:21] <= beamformed_sum_6;
+    reg_mics_data[7*21+:21] <= beamformed_sum_7;
+    reg_mics_data[8*21+:21] <= beamformed_sum_8;
+    reg_mics_data[9*21+:21] <= beamformed_sum_9;
+    reg_mics_data[10*21+:21] <= beamformed_sum_10;
+    reg_mics_data[11*21+:21] <= beamformed_sum_11;
+    reg_mics_data[12*21+:21] <= beamformed_sum_12;
+    reg_mics_data[13*21+:21] <= beamformed_sum_13;
+    reg_mics_data[14*21+:21] <= beamformed_sum_14;
+    reg_mics_data[15*21+:21] <= beamformed_sum_15;
+    reg_mics_data[16*21+:21] <= beamformed_sum_16;
+    reg_mics_data[17*21+:21] <= beamformed_sum_17;
+    reg_mics_data[18*21+:21] <= beamformed_sum_18;
+    reg_mics_data[19*21+:21] <= beamformed_sum_19;
+    reg_mics_data[20*21+:21] <= beamformed_sum_20;
+    reg_mics_data[21*21+:21] <= beamformed_sum_21;
+    reg_mics_data[22*21+:21] <= beamformed_sum_22;
+    reg_mics_data[23*21+:21] <= beamformed_sum_23;
+    reg_mics_data[24*21+:21] <= beamformed_sum_24;
+    reg_mics_data[25*21+:21] <= beamformed_sum_25;
+    reg_mics_data[26*21+:21] <= beamformed_sum_26;
+    reg_mics_data[27*21+:21] <= beamformed_sum_27;
+    reg_mics_data[28*21+:21] <= beamformed_sum_28;
+    reg_mics_data[29*21+:21] <= beamformed_sum_29;
     pcm_valid <= mics_data_valid;
   end
   assign beam_data = reg_mics_data;
