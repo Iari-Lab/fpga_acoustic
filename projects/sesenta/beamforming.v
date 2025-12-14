@@ -144,14 +144,11 @@ module beamforming (
           .in27(delayed_data[27][i]),
           .in28(delayed_data[28][i]),
           .in29(delayed_data[29][i]),
-          .sum(sum[i]),
-          .carry_out()  // We can ignore the carry out for this application
+          .sum(sum[i])
       );
     end
   endgenerate
 
-  // Direct connection from adder outputs to beamformed outputs
-  // Sign extend 21-bit adder output to 32-bit beamformed sum
   assign beamformed_sum_0 = sum[0];
   assign beamformed_sum_1 = sum[1];
   assign beamformed_sum_2 = sum[2];
