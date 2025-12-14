@@ -11,6 +11,7 @@ module delay_line (
   integer i;
   reg [15:0] buffer[MAX_DELAY:0];
   reg [3:0] delay_reg;
+  reg [15:0] delayed_pcm_data_r; 
 
   always @(posedge clk or posedge rst) begin
     if (rst) begin
@@ -18,6 +19,7 @@ module delay_line (
         buffer[i] <= 16'h0000;
       end
       delay_reg <= 4'h0;
+      delayed_pcm_data_r <= 16'h0000;
     end else begin
       delay_reg <= delay;
       if (pcm_valid) begin
@@ -26,9 +28,11 @@ module delay_line (
         end
         buffer[0] <= pcm_data;
       end
+      delayed_pcm_data_r <= buffer[delay_reg];
     end
   end
 
-  assign delayed_pcm_data = buffer[delay_reg];
+  // Output is now registered, reducing timing pressure
+  assign delayed_pcm_data = delayed_pcm_data_r;
 
 endmodule

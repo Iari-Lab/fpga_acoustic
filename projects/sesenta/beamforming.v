@@ -1,60 +1,50 @@
-
 module beamforming (
     input wire clk,
     input wire rst,
-    input wire start,
     input wire [479:0] mics_data,
     input wire mics_data_valid,
-    output wire [31:0] beamformed_sum_0,
-    output wire [31:0] beamformed_sum_1,
-    output wire [31:0] beamformed_sum_2,
-    output wire [31:0] beamformed_sum_3,
-    output wire [31:0] beamformed_sum_4,
-    output wire [31:0] beamformed_sum_5,
-    output wire [31:0] beamformed_sum_6,
-    output wire [31:0] beamformed_sum_7,
-    output wire [31:0] beamformed_sum_8,
-    output wire [31:0] beamformed_sum_9,
-    output wire [31:0] beamformed_sum_10,
-    output wire [31:0] beamformed_sum_11,
-    output wire [31:0] beamformed_sum_12,
-    output wire [31:0] beamformed_sum_13,
-    output wire [31:0] beamformed_sum_14,
-    output wire [31:0] beamformed_sum_15,
-    output wire [31:0] beamformed_sum_16,
-    output wire [31:0] beamformed_sum_17,
-    output wire [31:0] beamformed_sum_18,
-    output wire [31:0] beamformed_sum_19,
-    output wire [31:0] beamformed_sum_20,
-    output wire [31:0] beamformed_sum_21,
-    output wire [31:0] beamformed_sum_22,
-    output wire [31:0] beamformed_sum_23,
-    output wire [31:0] beamformed_sum_24,
-    output wire [31:0] beamformed_sum_25,
-    output wire [31:0] beamformed_sum_26,
-    output wire [31:0] beamformed_sum_27,
-    output wire [31:0] beamformed_sum_28,
-    output wire [31:0] beamformed_sum_29
+    output wire [20:0] beamformed_sum_0,
+    output wire [20:0] beamformed_sum_1,
+    output wire [20:0] beamformed_sum_2,
+    output wire [20:0] beamformed_sum_3,
+    output wire [20:0] beamformed_sum_4,
+    output wire [20:0] beamformed_sum_5,
+    output wire [20:0] beamformed_sum_6,
+    output wire [20:0] beamformed_sum_7,
+    output wire [20:0] beamformed_sum_8,
+    output wire [20:0] beamformed_sum_9,
+    output wire [20:0] beamformed_sum_10,
+    output wire [20:0] beamformed_sum_11,
+    output wire [20:0] beamformed_sum_12,
+    output wire [20:0] beamformed_sum_13,
+    output wire [20:0] beamformed_sum_14,
+    output wire [20:0] beamformed_sum_15,
+    output wire [20:0] beamformed_sum_16,
+    output wire [20:0] beamformed_sum_17,
+    output wire [20:0] beamformed_sum_18,
+    output wire [20:0] beamformed_sum_19,
+    output wire [20:0] beamformed_sum_20,
+    output wire [20:0] beamformed_sum_21,
+    output wire [20:0] beamformed_sum_22,
+    output wire [20:0] beamformed_sum_23,
+    output wire [20:0] beamformed_sum_24,
+    output wire [20:0] beamformed_sum_25,
+    output wire [20:0] beamformed_sum_26,
+    output wire [20:0] beamformed_sum_27,
+    output wire [20:0] beamformed_sum_28,
+    output wire [20:0] beamformed_sum_29
 );
 
-  localparam ACCUMULATION_COUNT = 2048;
-  localparam COUNTER_WIDTH = 11;
-
   wire [15:0] delayed_data[29:0][29:0];
-  wire [31:0] sum[29:0];
-  
-  reg [COUNTER_WIDTH-1:0] accumulation_counter;
-  reg accumulating;
-  
-  reg [63:0] accumulated_sum[29:0];
+  wire [20:0] sum[29:0];  
   
   genvar i;
   
   generate
-    for (i = 0; i < 30; i = i + 1) begin : delay_module_instances
+    for (i = 0; i < 30; i = i + 1) begin : gen_delay_module_instances
       delay_module u_delay_module (
           .clk(clk),
-          .rst(~rst),
+          .rst(rst),
           .delay_select(i + 1),
           .pcm_data_0(mics_data[0*16+:16]),
           .pcm_data_1(mics_data[1*16+:16]),
@@ -122,77 +112,75 @@ module beamforming (
   endgenerate
 
   generate
-    for (i = 0; i < 30; i = i + 1) begin : beamforming_sum
-      assign sum[i] = $signed(delayed_data[0][i]) + $signed(delayed_data[1][i]) + 
-                      $signed(delayed_data[2][i]) + $signed(delayed_data[3][i]) + 
-                      $signed(delayed_data[4][i]) + $signed(delayed_data[5][i]) + 
-                      $signed(delayed_data[6][i]) + $signed(delayed_data[7][i]) + 
-                      $signed(delayed_data[8][i]) + $signed(delayed_data[9][i]) + 
-                      $signed(delayed_data[10][i]) + $signed(delayed_data[11][i]) + 
-                      $signed(delayed_data[12][i]) + $signed(delayed_data[13][i]) + 
-                      $signed(delayed_data[14][i]) + $signed(delayed_data[15][i]) + 
-                      $signed(delayed_data[16][i]) + $signed(delayed_data[17][i]) + 
-                      $signed(delayed_data[18][i]) + $signed(delayed_data[19][i]) + 
-                      $signed(delayed_data[20][i]) + $signed(delayed_data[21][i]) + 
-                      $signed(delayed_data[22][i]) + $signed(delayed_data[23][i]) + 
-                      $signed(delayed_data[24][i]) + $signed(delayed_data[25][i]) + 
-                      $signed(delayed_data[26][i]) + $signed(delayed_data[27][i]) + 
-                      $signed(delayed_data[28][i]) + $signed(delayed_data[29][i]);
+    for (i = 0; i < 30; i = i + 1) begin : gen_beamforming_sum_advanced
+      adder_30x16 u_adder_30x (
+          .in0(delayed_data[0][i]),
+          .in1(delayed_data[1][i]),
+          .in2(delayed_data[2][i]),
+          .in3(delayed_data[3][i]),
+          .in4(delayed_data[4][i]),
+          .in5(delayed_data[5][i]),
+          .in6(delayed_data[6][i]),
+          .in7(delayed_data[7][i]),
+          .in8(delayed_data[8][i]),
+          .in9(delayed_data[9][i]),
+          .in10(delayed_data[10][i]),
+          .in11(delayed_data[11][i]),
+          .in12(delayed_data[12][i]),
+          .in13(delayed_data[13][i]),
+          .in14(delayed_data[14][i]),
+          .in15(delayed_data[15][i]),
+          .in16(delayed_data[16][i]),
+          .in17(delayed_data[17][i]),
+          .in18(delayed_data[18][i]),
+          .in19(delayed_data[19][i]),
+          .in20(delayed_data[20][i]),
+          .in21(delayed_data[21][i]),
+          .in22(delayed_data[22][i]),
+          .in23(delayed_data[23][i]),
+          .in24(delayed_data[24][i]),
+          .in25(delayed_data[25][i]),
+          .in26(delayed_data[26][i]),
+          .in27(delayed_data[27][i]),
+          .in28(delayed_data[28][i]),
+          .in29(delayed_data[29][i]),
+          .sum(sum[i]),
+          .carry_out()  // We can ignore the carry out for this application
+      );
     end
   endgenerate
 
-  always @(posedge clk or posedge rst) begin
-    if (rst) begin
-      accumulation_counter <= 0;
-      accumulating <= 1'b0;
-      for (int j = 0; j < 30; j = j + 1) begin
-        accumulated_sum[j] <= 64'b0;
-      end
-    end else begin
-      if (start) begin
-        accumulation_counter <= 0;
-        for (int j = 0; j < 30; j = j + 1) begin
-          accumulated_sum[j] <= 64'b0;
-        end
-      end else if (mics_data_valid) begin
-        if (accumulation_counter < ACCUMULATION_COUNT - 1) begin
-          accumulation_counter <= accumulation_counter + 1;
-          for (int j = 0; j < 30; j = j + 1) begin
-            accumulated_sum[j] <= accumulated_sum[j] + $signed(sum[j]);
-          end
-      end
-    end
-  end
-
-  assign beamformed_sum_0 = accumulated_sum[0][31:0];
-  assign beamformed_sum_1 = accumulated_sum[1][31:0];
-  assign beamformed_sum_2 = accumulated_sum[2][31:0];
-  assign beamformed_sum_3 = accumulated_sum[3][31:0];
-  assign beamformed_sum_4 = accumulated_sum[4][31:0];
-  assign beamformed_sum_5 = accumulated_sum[5][31:0];
-  assign beamformed_sum_6 = accumulated_sum[6][31:0];
-  assign beamformed_sum_7 = accumulated_sum[7][31:0];
-  assign beamformed_sum_8 = accumulated_sum[8][31:0];
-  assign beamformed_sum_9 = accumulated_sum[9][31:0];
-  assign beamformed_sum_10 = accumulated_sum[10][31:0];
-  assign beamformed_sum_11 = accumulated_sum[11][31:0];
-  assign beamformed_sum_12 = accumulated_sum[12][31:0];
-  assign beamformed_sum_13 = accumulated_sum[13][31:0];
-  assign beamformed_sum_14 = accumulated_sum[14][31:0];
-  assign beamformed_sum_15 = accumulated_sum[15][31:0];
-  assign beamformed_sum_16 = accumulated_sum[16][31:0];
-  assign beamformed_sum_17 = accumulated_sum[17][31:0];
-  assign beamformed_sum_18 = accumulated_sum[18][31:0];
-  assign beamformed_sum_19 = accumulated_sum[19][31:0];
-  assign beamformed_sum_20 = accumulated_sum[20][31:0];
-  assign beamformed_sum_21 = accumulated_sum[21][31:0];
-  assign beamformed_sum_22 = accumulated_sum[22][31:0];
-  assign beamformed_sum_23 = accumulated_sum[23][31:0];
-  assign beamformed_sum_24 = accumulated_sum[24][31:0];
-  assign beamformed_sum_25 = accumulated_sum[25][31:0];
-  assign beamformed_sum_26 = accumulated_sum[26][31:0];
-  assign beamformed_sum_27 = accumulated_sum[27][31:0];
-  assign beamformed_sum_28 = accumulated_sum[28][31:0];
-  assign beamformed_sum_29 = accumulated_sum[29][31:0];
+  // Direct connection from adder outputs to beamformed outputs
+  // Sign extend 21-bit adder output to 32-bit beamformed sum
+  assign beamformed_sum_0 = sum[0];
+  assign beamformed_sum_1 = sum[1];
+  assign beamformed_sum_2 = sum[2];
+  assign beamformed_sum_3 = sum[3];
+  assign beamformed_sum_4 = sum[4];
+  assign beamformed_sum_5 = sum[5];
+  assign beamformed_sum_6 = sum[6];
+  assign beamformed_sum_7 = sum[7];
+  assign beamformed_sum_8 = sum[8];
+  assign beamformed_sum_9 = sum[9];
+  assign beamformed_sum_10 =sum[10];
+  assign beamformed_sum_11 =sum[11];
+  assign beamformed_sum_12 =sum[12];
+  assign beamformed_sum_13 =sum[13];
+  assign beamformed_sum_14 =sum[14];
+  assign beamformed_sum_15 =sum[15];
+  assign beamformed_sum_16 =sum[16];
+  assign beamformed_sum_17 =sum[17];
+  assign beamformed_sum_18 =sum[18];
+  assign beamformed_sum_19 =sum[19];
+  assign beamformed_sum_20 =sum[20];
+  assign beamformed_sum_21 =sum[21];
+  assign beamformed_sum_22 =sum[22];
+  assign beamformed_sum_23 =sum[23];
+  assign beamformed_sum_24 =sum[24];
+  assign beamformed_sum_25 =sum[25];
+  assign beamformed_sum_26 =sum[26];
+  assign beamformed_sum_27 =sum[27];
+  assign beamformed_sum_28 =sum[28];
+  assign beamformed_sum_29 =sum[29];
 
 endmodule

@@ -1,6 +1,3 @@
-// Delay module for 30 microphones
-// 30 delay cases (one for each source microphone M0-M29)
-// Each case assigns delays to all 30 microphones
 module delay_module (
     input wire clk,
     input wire rst,
