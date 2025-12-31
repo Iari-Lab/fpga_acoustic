@@ -34,7 +34,7 @@ public:
         mic29_br(ctx.mm.get<mem::mic29>())
   {
     ctx.print<INFO>("BEAm------------------------------------------>");
-    start_beamforming();
+    // start_beamforming();
   }
   ~Sesenta() {
     beamforming_started = false;
@@ -264,6 +264,7 @@ inline void Sesenta::beamf_thread() {
     std::array<double, num_directions> beam_powers = {0.0};
 
     for (int dir = 0; dir < num_directions; dir++) {
+      set_mic_sel(dir);
       auto beamformed_sum = get_mic_ith(dir);
 
       double power = 0.0;

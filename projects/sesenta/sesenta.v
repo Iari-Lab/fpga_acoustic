@@ -226,9 +226,8 @@ module sesenta (
     ila_0 ila_bram (
         .clk(clk),  // input wire clk
         .probe0(led_sel),
-        .probe1(mic_sel_safe),
-        .probe2(mic_dbg),
-        .probe3(mics_data_valid)
+        .probe1(sum_dbg),
+        .probe2(mics_data_valid)
     );
 //   ila_0 ila_bram (
 //       .clk(clk),  // input wire clk
@@ -248,10 +247,10 @@ module sesenta (
       mic_sel_ff4 <= mic_sel_ff3;
     end 
     assign mic_sel_safe = mic_sel_ff4;
-    wire [15:0] mic_dbg;
-    wire [20:0] sum_dbg;
-    assign mic_dbg = mics_data[16*mic_sel_safe+:16];
-    assign sum_dbg = reg_mics_data[21*mic_sel_safe+:21];
+    // wire [15:0] mic_dbg;
+    wire [31:0] sum_dbg;
+    // assign mic_dbg = mics_data[16*mic_sel_safe+:16];
+    assign sum_dbg = reg_mics_data[32*mic_sel_safe+:32];
     
   beamforming u_beamforming_module (
       .clk(clk),

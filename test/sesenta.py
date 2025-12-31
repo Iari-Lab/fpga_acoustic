@@ -61,6 +61,10 @@ class Sesenta(object):
         return self.client.recv_vector(dtype='int32')
 
     @command()
+    def get_mic_ith(self, mic_idx):
+        return self.client.recv_array(2048, dtype='int32')
+
+    @command()
     def get_mics_ith(self, samples, mic_idx):
         return self.client.recv_vector(dtype='int32')
 

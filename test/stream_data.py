@@ -41,6 +41,10 @@ class Acoustic():
         self.plot_step_response(dig_mic_fir, "{}_{}_{}".format(name, "digital_fir", test))
         self.gen_audio(dig_mic_fir,"{}_{}_{}".format(name, "digital_fir", test))
 
+    def data_bram_ith(self,ith):
+        print("Collecting data for mic index:", ith)
+        mic = self.driver.get_mic_ith(ith)
+        self.plot_all([mic], "{}".format(ith), test= ith)
 
     def data_flow_ith(self, samples, name, test):
         print("Collecting data for mic index:", test)

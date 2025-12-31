@@ -66,11 +66,10 @@ if {$enable_ila} {
     # ] [get_ips ila_1]
 
     set_property -dict [ list \
-        CONFIG.C_NUM_OF_PROBES {4} \
+        CONFIG.C_NUM_OF_PROBES {3} \
         CONFIG.C_PROBE0_WIDTH {8} \
-        CONFIG.C_PROBE1_WIDTH {8} \
-        CONFIG.C_PROBE2_WIDTH {21} \
-        CONFIG.C_PROBE3_WIDTH {1} \
+        CONFIG.C_PROBE1_WIDTH {32} \
+        CONFIG.C_PROBE2_WIDTH {1} \
         CONFIG.C_DATA_DEPTH {16384}  \
         CONFIG.C_EN_STRG_QUAL {1} \
         CONFIG.C_ADV_TRIGGER {true} \
