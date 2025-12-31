@@ -10,6 +10,7 @@ create_ip -name cic_compiler -vendor xilinx.com -library ip -version 4.0 -module
 # Create the ILA IP only if enabled
 if {$enable_ila} {
     create_ip -name ila -vendor xilinx.com -library ip -version 6.2 -module_name ila_0
+    # create_ip -name ila -vendor xilinx.com -library ip -version 6.2 -module_name ila_1
 }
 
 if {$enable_cic} {
@@ -55,12 +56,21 @@ if {$enable_ila} {
 #         CONFIG.C_ADV_TRIGGER {true} \
 #         CONFIG.ALL_PROBE_SAME_MU_CNT {2} \
 #     ] [get_ips ila_0]
+    # set_property -dict [ list \
+    #     CONFIG.C_NUM_OF_PROBES {1} \
+    #     CONFIG.C_PROBE0_WIDTH {21} \
+    #     CONFIG.C_DATA_DEPTH {8192}  \
+    #     CONFIG.C_EN_STRG_QUAL {1} \
+    #     CONFIG.C_ADV_TRIGGER {true} \
+    #     CONFIG.ALL_PROBE_SAME_MU_CNT {2} \
+    # ] [get_ips ila_1]
+
     set_property -dict [ list \
         CONFIG.C_NUM_OF_PROBES {4} \
-        CONFIG.C_PROBE0_WIDTH {1} \
-        CONFIG.C_PROBE1_WIDTH {1} \
-        CONFIG.C_PROBE2_WIDTH {16} \
-        CONFIG.C_PROBE3_WIDTH {7} \
+        CONFIG.C_PROBE0_WIDTH {8} \
+        CONFIG.C_PROBE1_WIDTH {8} \
+        CONFIG.C_PROBE2_WIDTH {21} \
+        CONFIG.C_PROBE3_WIDTH {1} \
         CONFIG.C_DATA_DEPTH {16384}  \
         CONFIG.C_EN_STRG_QUAL {1} \
         CONFIG.C_ADV_TRIGGER {true} \
@@ -76,6 +86,7 @@ if {$enable_ila} {
 set ip_list [get_ips *]
 set cic_xci ""
 set ila_xci ""
+set ila_xci1 ""
 # Loop through the IPs
 foreach ip $ip_list {
     puts [get_property NAME $ip]
@@ -87,13 +98,22 @@ foreach ip $ip_list {
         set ila_xci [get_property IP_FILE $ip]
         puts [get_property IP_FILE $ip]
     }
+    if {[get_property NAME $ip] eq "ila_1"} {
+        set ila_xci1 [get_property IP_FILE $ip]
+        puts [get_property IP_FILE $ip]
+    }
 }
 
 if {$enable_ila} {
     puts $ila_xci
+    puts $ila_xci1
     report_property [get_ips ila_0]
     set_property GENERATE_SYNTH_CHECKPOINT false [get_files $ila_xci]
     set_property IS_GLOBAL_INCLUDE true [get_files $ila_xci]
+
+    # report_property [get_ips ila_1]
+    # set_property GENERATE_SYNTH_CHECKPOINT false [get_files $ila_xci1]
+    # set_property IS_GLOBAL_INCLUDE true [get_files $ila_xci1]
 }
 
 if {$enable_cic} {
@@ -108,6 +128,7 @@ if {$enable_cic} {
 }
 if {$enable_ila} {
     generate_target all [get_ips ila_0]
+    # generate_target all [get_ips ila_1]
 }
 update_ip_catalog
 

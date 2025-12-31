@@ -114,6 +114,8 @@ module beamforming (
   generate
     for (i = 0; i < 30; i = i + 1) begin : gen_beamforming_sum_advanced
       adder_30x16 u_adder_30x (
+          .rst(rst),
+          .clk(clk),
           .in0(delayed_data[0][i]),
           .in1(delayed_data[1][i]),
           .in2(delayed_data[2][i]),

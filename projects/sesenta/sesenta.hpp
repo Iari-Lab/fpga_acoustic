@@ -152,14 +152,14 @@ public:
     ctl.set_bit<reg::start_capture, 0>();
     std::this_thread::sleep_for(std::chrono::microseconds(1));
     ctl.clear_bit<reg::start_capture, 0>();
-    auto t_start = std::chrono::high_resolution_clock::now();
+    // auto t_start = std::chrono::high_resolution_clock::now();
     while (!(sts.read_reg(reg::done_capture) & 0x1))
       ;
-    auto t_end = std::chrono::high_resolution_clock::now();
-    auto elapsed_us =
-        std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start)
-            .count();
-    std::cout << "Capture wait time: " << elapsed_us << " us\n";
+    // auto t_end = std::chrono::high_resolution_clock::now();
+    // auto elapsed_us =
+    //     std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start)
+    //         .count();
+    // std::cout << "Capture wait time: " << elapsed_us << " us\n";
   }
 
   auto get_mics_bram(uint32_t dir) {
@@ -273,7 +273,7 @@ inline void Sesenta::beamf_thread() {
       }
 
       beam_powers[dir] = power;
-      ctx.print<DEBUG>("Direction %d: Power = %e\n", dir, power);
+      // ctx.print<DEBUG>("Direction MIC %d: LED = %d\n", dir, M_DATA_TO_MIC[dir]);
     }
 
     int max_direction = 0;

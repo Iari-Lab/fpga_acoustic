@@ -2,7 +2,7 @@
 source $board_path/config/ports.tcl
 source $board_path/base_system.tcl
 source $sdk_path/fpga/lib/bram.tcl
-# source $sdk_path/projects/sesenta/amd.tcl
+source $sdk_path/projects/sesenta/amd.tcl
 # connect_pins FCLK_CLK0 $mics_clk
 # connect_pins FCLK_CLK1 $mics_clk
 # connect_pins peripheral_aresetn proc_sys_reset_adc_clk/peripheral_aresetn
@@ -18,7 +18,7 @@ connect_port_pin reset proc_sys_reset_adc_clk/peripheral_aresetn
 connect_pins mic_sel [get_slice_pin [ctl_pin mic_select] 6 0 mic_sel_pin]
 connect_pins led_sel [get_slice_pin [ctl_pin led_select] 6 0 led_sel_pin]
 
-set mic_width 21
+set mic_width 32
 for {set i 0} {$i < 30} {incr i} {
   add_bram mic$i
 }
