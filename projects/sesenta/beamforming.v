@@ -32,12 +32,14 @@ module beamforming (
   genvar i;
   
   // Generate 21 delay_module instances (one per source direction)
+  // Now using parameter instead of port for delay selection
   generate
     for (i = 0; i < 21; i = i + 1) begin : gen_delay_module_instances
-      delay_module u_delay_module (
+      delay_module #(
+          .DELAY_SELECT(i)  // Parameter instead of port
+      ) u_delay_module (
           .clk(clk),
           .rst(rst),
-          .delay_select(i),
           .pcm_data_0(mics_data[0*16+:16]),    // M0
           .pcm_data_1(mics_data[1*16+:16]),    // M2
           .pcm_data_2(mics_data[2*16+:16]),    // M4
