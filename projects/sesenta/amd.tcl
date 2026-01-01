@@ -1,5 +1,5 @@
 # Global flag to enable or disable ILA-related commands
-set enable_ila 1
+set enable_ila 0
 set enable_cic 0
 
 # Create the CIC Compiler IP

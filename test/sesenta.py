@@ -20,7 +20,10 @@ class Sesenta(object):
         pass
 
     @command()
-    def beamf(self):
+    def bf(self):
+        pass
+    @command()
+    def beamf(self, mic):
         pass
 
     @command()
@@ -70,7 +73,7 @@ class Sesenta(object):
 
     @command()
     def get_mic_ith(self, mic_idx):
-        return self.client.recv_array(2048, dtype='int32')
+        return self.client.recv_array(4096, dtype='int32')
 
     @command()
     def get_mics_ith(self, samples, mic_idx):

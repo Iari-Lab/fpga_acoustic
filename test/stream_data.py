@@ -122,7 +122,7 @@ class Acoustic():
         plt.legend()
         plt.tight_layout()
         plt.savefig(f"../{filedir}/{name}_{test}.png", dpi=300, bbox_inches='tight')
-        plt.show(block= False)
+        # plt.show(block= False)
 
 
     def gen_audio(self, data, name):

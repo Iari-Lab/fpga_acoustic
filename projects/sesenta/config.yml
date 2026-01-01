@@ -1,131 +1,123 @@
----
 name: sesenta
 board: boards/myir
-
 cores:
-  - fpga/cores/axi_ctl_register_v1_0
-  - fpga/cores/axis_variable_v1_0
-  - fpga/cores/axis_tlast_v1_0
-  - fpga/cores/axi_sts_register_v1_0
-  - fpga/cores/addr_counter_v1_0
-
+- fpga/cores/axi_ctl_register_v1_0
+- fpga/cores/axis_variable_v1_0
+- fpga/cores/axis_tlast_v1_0
+- fpga/cores/axi_sts_register_v1_0
+- fpga/cores/addr_counter_v1_0
 memory:
-  - name: control
-    range: 4K
-    offset: '0x40000000'
-  - name: status
-    range: 4K
-    offset: '0x50000000'
-  - name: mic0
-    range: 8K
-    offset: '0x40040000'
-  - name: mic1
-    range: 8K
-    offset: '0x40042000'
-  - name: mic2
-    range: 8K
-    offset: '0x40044000'
-  - name: mic3
-    range: 8K
-    offset: '0x40046000'
-  - name: mic4
-    range: 8K
-    offset: '0x40048000'
-  - name: mic5
-    range: 8K
-    offset: '0x4004A000'
-  - name: mic6
-    range: 8K
-    offset: '0x4004C000'
-  - name: mic7
-    range: 8K
-    offset: '0x4004E000'
-  - name: mic8
-    range: 8K
-    offset: '0x40050000'
-  - name: mic9
-    range: 8K
-    offset: '0x40052000'
-  - name: mic10
-    range: 8K
-    offset: '0x40054000'
-  - name: mic11
-    range: 8K
-    offset: '0x40056000'
-  - name: mic12
-    range: 8K
-    offset: '0x40058000'
-  - name: mic13
-    range: 8K
-    offset: '0x4005A000'
-  - name: mic14
-    range: 8K
-    offset: '0x4005C000'
-  - name: mic15
-    range: 8K
-    offset: '0x4005E000'
-  - name: mic16
-    range: 8K
-    offset: '0x40060000'
-  - name: mic17
-    range: 8K
-    offset: '0x40062000'
-  - name: mic18
-    range: 8K
-    offset: '0x40064000'
-  - name: mic19
-    range: 8K
-    offset: '0x40066000'
-  - name: mic20
-    range: 8K
-    offset: '0x40068000'
-  - name: mic21
-    range: 8K
-    offset: '0x4006A000'
-  - name: mic22
-    range: 8K
-    offset: '0x4006C000'
-  - name: mic23
-    range: 8K
-    offset: '0x4006E000'
-  - name: mic24
-    range: 8K
-    offset: '0x40070000'
-  - name: mic25
-    range: 8K
-    offset: '0x40072000'
-  - name: mic26
-    range: 8K
-    offset: '0x40074000'
-  - name: mic27
-    range: 8K
-    offset: '0x40076000'
-  - name: mic28
-    range: 8K
-    offset: '0x40078000'
-  - name: mic29
-    range: 8K
-    offset: '0x4007A000'
-
+- name: control
+  range: 4K
+  offset: '0x40000000'
+- name: status
+  range: 4K
+  offset: '0x50000000'
+- name: mic0
+  range: 16K
+  offset: '0x40040000'
+- name: mic1
+  range: 16K
+  offset: '0x40044000'
+- name: mic2
+  range: 16K
+  offset: '0x40048000'
+- name: mic3
+  range: 16K
+  offset: '0x4004C000'
+- name: mic4
+  range: 16K
+  offset: '0x40050000'
+- name: mic5
+  range: 16K
+  offset: '0x40054000'
+- name: mic6
+  range: 16K
+  offset: '0x40058000'
+- name: mic7
+  range: 16K
+  offset: '0x4005C000'
+- name: mic8
+  range: 16K
+  offset: '0x40060000'
+- name: mic9
+  range: 16K
+  offset: '0x40064000'
+- name: mic10
+  range: 16K
+  offset: '0x40068000'
+- name: mic11
+  range: 16K
+  offset: '0x4006C000'
+- name: mic12
+  range: 16K
+  offset: '0x40070000'
+- name: mic13
+  range: 16K
+  offset: '0x40074000'
+- name: mic14
+  range: 16K
+  offset: '0x40078000'
+- name: mic15
+  range: 16K
+  offset: '0x4007C000'
+- name: mic16
+  range: 16K
+  offset: '0x40080000'
+- name: mic17
+  range: 16K
+  offset: '0x40084000'
+- name: mic18
+  range: 16K
+  offset: '0x40088000'
+- name: mic19
+  range: 16K
+  offset: '0x4008C000'
+- name: mic20
+  range: 16K
+  offset: '0x40090000'
+- name: mic21
+  range: 16K
+  offset: '0x40094000'
+- name: mic22
+  range: 16K
+  offset: '0x40098000'
+- name: mic23
+  range: 16K
+  offset: '0x4009C000'
+- name: mic24
+  range: 16K
+  offset: '0x400A0000'
+- name: mic25
+  range: 16K
+  offset: '0x400A4000'
+- name: mic26
+  range: 16K
+  offset: '0x400A8000'
+- name: mic27
+  range: 16K
+  offset: '0x400AC000'
+- name: mic28
+  range: 16K
+  offset: '0x400B0000'
+- name: mic29
+  range: 16K
+  offset: '0x400B4000'
 control_registers:
-  - rst_regs
-  - dma_gate
-  - dma_gate1
-  - n_samples
-  - mic_select
-  - led_select
-  - start_capture
-
+- rst_regs
+- dma_gate
+- dma_gate1
+- n_samples
+- mic_select
+- led_select
+- start_capture
 status_registers:
-  - mode
-  - done_capture
-
+- mode
+- done_capture
 parameters:
   fclk0: 100000000
-
 xdc:
-  - boards/myir/config/ports.xdc
-
+- boards/myir/config/ports.xdc
 drivers:
-  - server/drivers/common.hpp
-  - ./sesenta.hpp
+- server/drivers/common.hpp
+- ./sesenta.hpp

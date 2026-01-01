@@ -125,7 +125,8 @@ module sesenta (
     reg_mics_data[13*32+:32] <= {{11{beamformed_sum_13[20]}}, beamformed_sum_13};
     reg_mics_data[14*32+:32] <= {{11{beamformed_sum_14[20]}}, beamformed_sum_14};
     reg_mics_data[15*32+:32] <= {{11{beamformed_sum_15[20]}}, beamformed_sum_15};
-    reg_mics_data[16*32+:32] <= {{11{beamformed_sum_16[20]}}, beamformed_sum_16};
+    reg_mics_data[16*32+:32] <= 32'b0;  // Disable beamformed output 16
+    // reg_mics_data[16*32+:32] <= {{11{beamformed_sum_16[20]}}, beamformed_sum_16};
     reg_mics_data[17*32+:32] <= {{11{beamformed_sum_17[20]}}, beamformed_sum_17};
     reg_mics_data[18*32+:32] <= {{11{beamformed_sum_18[20]}}, beamformed_sum_18};
     reg_mics_data[19*32+:32] <= {{11{beamformed_sum_19[20]}}, beamformed_sum_19};
@@ -136,8 +137,10 @@ module sesenta (
     reg_mics_data[24*32+:32] <= {{11{beamformed_sum_24[20]}}, beamformed_sum_24};
     reg_mics_data[25*32+:32] <= {{11{beamformed_sum_25[20]}}, beamformed_sum_25};
     reg_mics_data[26*32+:32] <= {{11{beamformed_sum_26[20]}}, beamformed_sum_26};
-    reg_mics_data[27*32+:32] <= {{11{beamformed_sum_27[20]}}, beamformed_sum_27};
-    reg_mics_data[28*32+:32] <= {{11{beamformed_sum_28[20]}}, beamformed_sum_28};
+    // reg_mics_data[27*32+:32] <= {{11{beamformed_sum_27[20]}}, beamformed_sum_27};
+    reg_mics_data[27*32+:32] <= 32'b0;  // Disable beamformed output 27
+    // reg_mics_data[28*32+:32] <= {{11{beamformed_sum_28[20]}}, beamformed_sum_28};
+    reg_mics_data[28*32+:32] <= 32'b0;  // Disable beamformed output 28
     reg_mics_data[29*32+:32] <= {{11{beamformed_sum_29[20]}}, beamformed_sum_29};
     pcm_valid <= mics_data_valid;
   end
@@ -223,34 +226,35 @@ module sesenta (
     //     .clk(clk),  // input wire clk
     //     .probe0(sum_dbg)
     // );
-    ila_0 ila_bram (
-        .clk(clk),  // input wire clk
-        .probe0(led_sel),
-        .probe1(sum_dbg),
-        .probe2(mics_data_valid)
-    );
-//   ila_0 ila_bram (
-//       .clk(clk),  // input wire clk
-//       .probe0(led_sel),
-//       .probe1(mics_data_valid),
-//       .probe2(mic_dbg),
-//       .probe3(mic_sel)
-//   );
+//     ila_0 ila_bram (
+//         .clk(clk),  // input wire clk
+//         .probe0(led_sel),
+//         .probe1(sum_dbg),
+//         .probe2(mics_data_valid)
+//     );
+// //   ila_0 ila_bram (
+// //       .clk(clk),  // input wire clk
+// //       .probe0(led_sel),
+// //       .probe1(mics_data_valid),
+// //       .probe2(mic_dbg),
+// //       .probe3(mic_sel)
+// //   );
   
-    wire [ 7:0] mic_sel, mic_sel_safe;  // 5 bits to select from 30 cases
-    // 2 ff sincronizer for mic_sel
-    reg [7:0] mic_sel_ff1, mic_sel_ff2, mic_sel_ff3, mic_sel_ff4;
-    always @(posedge clk) begin
-      mic_sel_ff1 <= mic_sel;
-      mic_sel_ff2 <= mic_sel_ff1;
-      mic_sel_ff3 <= mic_sel_ff2;
-      mic_sel_ff4 <= mic_sel_ff3;
-    end 
-    assign mic_sel_safe = mic_sel_ff4;
-    // wire [15:0] mic_dbg;
-    wire [31:0] sum_dbg;
-    // assign mic_dbg = mics_data[16*mic_sel_safe+:16];
-    assign sum_dbg = reg_mics_data[32*mic_sel_safe+:32];
+    wire [ 7:0] mic_sel;  // 5 bits to select from 30 cases
+    // wire [ 7:0] mic_sel, mic_sel_safe;  // 5 bits to select from 30 cases
+//     // 2 ff sincronizer for mic_sel
+//     reg [7:0] mic_sel_ff1, mic_sel_ff2, mic_sel_ff3, mic_sel_ff4;
+//     always @(posedge clk) begin
+//       mic_sel_ff1 <= mic_sel;
+//       mic_sel_ff2 <= mic_sel_ff1;
+//       mic_sel_ff3 <= mic_sel_ff2;
+//       mic_sel_ff4 <= mic_sel_ff3;
+//     end 
+//     assign mic_sel_safe = mic_sel_ff4;
+//     // wire [15:0] mic_dbg;
+//     wire [31:0] sum_dbg;
+//     // assign mic_dbg = mics_data[16*mic_sel_safe+:16];
+//     assign sum_dbg = reg_mics_data[32*mic_sel_safe+:32];
     
   beamforming u_beamforming_module (
       .clk(clk),

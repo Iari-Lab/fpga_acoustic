@@ -6,7 +6,12 @@ def record_all_mics(fpga):
     fpga.driver.record()
     for mic in range(len(mics_map)):
         fpga.data_bram_ith(mic)
-        sleep(0.5)
+        # sleep(0.5)
+    fpga.driver.bf()
+    # for mic in range(len(mics_map)):
+    #     fpga.driver.beamf(mic)
+    #     sleep(0.5)
+
 
 if __name__ == "__main__":
     # ip_address = sys.argv[1]

@@ -33,7 +33,7 @@ public:
         mic27_br(ctx.mm.get<mem::mic27>()), mic28_br(ctx.mm.get<mem::mic28>()),
         mic29_br(ctx.mm.get<mem::mic29>()) {
     ctx.print<INFO>("BEAm------------------------------------------>");
-    start_beamforming();
+    // start_beamforming();
   }
   ~Sesenta() {
     beamforming_started = false;
@@ -97,7 +97,7 @@ public:
       break;
     // case 16: leider mikrofon 16 defekt
     //   mic_data = mic16_br.read_array<int32_t, mic_size>();
-      // break;
+    // break;
     case 17:
       mic_data = mic17_br.read_array<int32_t, mic_size>();
       break;
@@ -128,17 +128,17 @@ public:
     case 26:
       mic_data = mic26_br.read_array<int32_t, mic_size>();
       break;
-    case 27:
-      mic_data = mic27_br.read_array<int32_t, mic_size>();
-      break;
-    case 28:
-      mic_data = mic28_br.read_array<int32_t, mic_size>();
-      break;
+    // case 27:
+    //   mic_data = mic27_br.read_array<int32_t, mic_size>();
+    //   break;
+    // case 28:
+    //   mic_data = mic28_br.read_array<int32_t, mic_size>();
+    //   break;
     case 29:
       mic_data = mic29_br.read_array<int32_t, mic_size>();
       break;
     default:
-      ctx.print<ERROR>("Invalid microphone index: %d\n", mic_idx);
+      // ctx.print<ERROR>("Invalid microphone index: %d\n", mic_idx);
       return std::array<int32_t, mic_size>{0};
     }
 
@@ -188,18 +188,68 @@ public:
     }
     return data_ret;
   }
-
   void beamf(uint32_t dir) {
     record();
     auto beamformed_sum = get_mic_ith(dir);
     double power = 0.0;
     for (uint32_t sample_idx = 0; sample_idx < mic_size; sample_idx++) {
-      double sample = static_cast<double>(beamformed_sum[sample_idx]);
+      double sample = (double)beamformed_sum[sample_idx];
+      // double sample = static_cast<double>(beamformed_sum[sample_idx]);
       power += (sample * sample);
     }
     ctx.print<DEBUG>("Direction MIC %d: LED = %d   power: %f\n", dir,
                      M_DATA_TO_MIC[dir], power);
     set_led_sel(M_DATA_TO_MIC[dir]);
+  }
+
+  void bf() {
+
+    const int num_directions = 30;
+
+    std::array<double, num_directions> beam_powers = {0.0};
+    while (1) {
+
+      beam_powers = {0.0};
+
+      record();
+      for (int dir = 0; dir < num_directions; dir++) {
+        if (dir == 16 || dir == 27 || dir == 28) {
+          // skip defective microphones
+          continue;
+        }
+        auto beamformed_sum = get_mic_ith(dir);
+
+        double power = 0.0;
+        for (uint32_t sample_idx = 0; sample_idx < mic_size; sample_idx++) {
+          double sample = (double)beamformed_sum[sample_idx];
+          // double sample = static_cast<double>(beamformed_sum[sample_idx]);
+          power += (sample * sample);
+        }
+
+        beam_powers[dir] = power / mic_size;
+        ctx.print<DEBUG>("Direction MIC %d: power: %f \n", dir,
+                         beam_powers[dir]);
+
+        // ctx.print<DEBUG>("Direction MIC %d: LED = %d   power: %f  samples
+        // %d\n", dir,
+        //  M_DATA_TO_MIC[dir], beam_powers[dir], mic_size);
+      }
+
+      int max_direction = 0;
+      double max_power = 0.0;
+      for (int dir = 0; dir < num_directions; dir++) {
+        if (beam_powers[dir] > max_power) {
+          max_power = beam_powers[dir];
+          max_direction = dir;
+        }
+      }
+
+      ctx.print<INFO>("Maximum sound energy detected from direction: %d (M%d) "
+                      "(Power: %e)\n",
+                      max_direction, M_DATA_TO_MIC[max_direction], max_power);
+
+      set_led_sel(M_DATA_TO_MIC[max_direction]);
+    }
   }
 
   void set_led_sel(uint32_t sel) { ctl.write_reg(reg::led_select, sel); }
@@ -289,6 +339,11 @@ inline void Sesenta::beamf_thread() {
 
     record();
     for (int dir = 0; dir < num_directions; dir++) {
+
+      if (dir == 16 || dir == 27 || dir == 28) {
+        // skip defective microphones
+        continue;
+      }
       auto beamformed_sum = get_mic_ith(dir);
 
       double power = 0.0;
@@ -297,9 +352,9 @@ inline void Sesenta::beamf_thread() {
         power += (sample * sample);
       }
 
-      beam_powers[dir] = power;
+      beam_powers[dir] = power / mic_size;
       // ctx.print<DEBUG>("Direction MIC %d: LED = %d   power: %f\n", dir,
-                      //  M_DATA_TO_MIC[dir], power);
+      //  M_DATA_TO_MIC[dir], power);
     }
 
     int max_direction = 0;
