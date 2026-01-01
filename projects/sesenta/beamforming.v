@@ -93,6 +93,7 @@ module beamforming (
       adder_21x16 u_adder_21x (
           .rst(rst),
           .clk(clk),
+          .en(mics_data_valid),
           .in0(delayed_data[0][i]),
           .in1(delayed_data[1][i]),
           .in2(delayed_data[2][i]),
