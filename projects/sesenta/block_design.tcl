@@ -19,7 +19,7 @@ connect_pins mic_sel [get_slice_pin [ctl_pin mic_select] 6 0 mic_sel_pin]
 connect_pins led_sel [get_slice_pin [ctl_pin led_select] 6 0 led_sel_pin]
 
 set mic_width 32
-for {set i 0} {$i < 30} {incr i} {
+for {set i 0} {$i < 21} {incr i} {
   add_bram mic$i
 }
 cell iari:user:addr_counter:1.0 addr_counter_0 {
@@ -52,12 +52,12 @@ cell iari:user:addr_counter:1.0 addr_counter_0 {
 
 # }
 
-for {set i 0} {$i < 30} {incr i} {
+for {set i 0} {$i < 21} {incr i} {
   set from  [expr ($i + 1) * $mic_width - 1]
   set to    [expr $i * $mic_width]
 
   cell xilinx.com:ip:c_accum:12.0 c_accum_$i {
-      INPUT_WIDTH 21
+      INPUT_WIDTH 32
       OUTPUT_WIDTH 32
       LATENCY_CONFIGURATION Automatic
       CE true

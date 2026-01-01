@@ -26,12 +26,8 @@ public:
         mic13_br(ctx.mm.get<mem::mic13>()), mic14_br(ctx.mm.get<mem::mic14>()),
         mic15_br(ctx.mm.get<mem::mic15>()), mic16_br(ctx.mm.get<mem::mic16>()),
         mic17_br(ctx.mm.get<mem::mic17>()), mic18_br(ctx.mm.get<mem::mic18>()),
-        mic19_br(ctx.mm.get<mem::mic19>()), mic20_br(ctx.mm.get<mem::mic20>()),
-        mic21_br(ctx.mm.get<mem::mic21>()), mic22_br(ctx.mm.get<mem::mic22>()),
-        mic23_br(ctx.mm.get<mem::mic23>()), mic24_br(ctx.mm.get<mem::mic24>()),
-        mic25_br(ctx.mm.get<mem::mic25>()), mic26_br(ctx.mm.get<mem::mic26>()),
-        mic27_br(ctx.mm.get<mem::mic27>()), mic28_br(ctx.mm.get<mem::mic28>()),
-        mic29_br(ctx.mm.get<mem::mic29>()) {
+        mic19_br(ctx.mm.get<mem::mic19>()), mic20_br(ctx.mm.get<mem::mic20>())
+        {
     ctx.print<INFO>("BEAm------------------------------------------>");
     // start_beamforming();
   }
@@ -95,9 +91,9 @@ public:
     case 15:
       mic_data = mic15_br.read_array<int32_t, mic_size>();
       break;
-    // case 16: leider mikrofon 16 defekt
-    //   mic_data = mic16_br.read_array<int32_t, mic_size>();
-    // break;
+    case 16: 
+      mic_data = mic16_br.read_array<int32_t, mic_size>();
+    break;
     case 17:
       mic_data = mic17_br.read_array<int32_t, mic_size>();
       break;
@@ -109,33 +105,6 @@ public:
       break;
     case 20:
       mic_data = mic20_br.read_array<int32_t, mic_size>();
-      break;
-    case 21:
-      mic_data = mic21_br.read_array<int32_t, mic_size>();
-      break;
-    case 22:
-      mic_data = mic22_br.read_array<int32_t, mic_size>();
-      break;
-    case 23:
-      mic_data = mic23_br.read_array<int32_t, mic_size>();
-      break;
-    case 24:
-      mic_data = mic24_br.read_array<int32_t, mic_size>();
-      break;
-    case 25:
-      mic_data = mic25_br.read_array<int32_t, mic_size>();
-      break;
-    case 26:
-      mic_data = mic26_br.read_array<int32_t, mic_size>();
-      break;
-    // case 27:
-    //   mic_data = mic27_br.read_array<int32_t, mic_size>();
-    //   break;
-    // case 28:
-    //   mic_data = mic28_br.read_array<int32_t, mic_size>();
-    //   break;
-    case 29:
-      mic_data = mic29_br.read_array<int32_t, mic_size>();
       break;
     default:
       // ctx.print<ERROR>("Invalid microphone index: %d\n", mic_idx);
@@ -204,19 +173,15 @@ public:
 
   void bf() {
 
-    const int num_directions = 30;
+    const int num_directions = 21;
 
     std::array<double, num_directions> beam_powers = {0.0};
-    while (1) {
+    // while (1) {
 
       beam_powers = {0.0};
 
       record();
       for (int dir = 0; dir < num_directions; dir++) {
-        if (dir == 16 || dir == 27 || dir == 28) {
-          // skip defective microphones
-          continue;
-        }
         auto beamformed_sum = get_mic_ith(dir);
 
         double power = 0.0;
@@ -248,8 +213,8 @@ public:
                       "(Power: %e)\n",
                       max_direction, M_DATA_TO_MIC[max_direction], max_power);
 
-      set_led_sel(M_DATA_TO_MIC[max_direction]);
-    }
+      // set_led_sel(M_DATA_TO_MIC[max_direction]);
+    // }
   }
 
   void set_led_sel(uint32_t sel) { ctl.write_reg(reg::led_select, sel); }
@@ -292,15 +257,6 @@ private:
   Memory<mem::mic18> &mic18_br;
   Memory<mem::mic19> &mic19_br;
   Memory<mem::mic20> &mic20_br;
-  Memory<mem::mic21> &mic21_br;
-  Memory<mem::mic22> &mic22_br;
-  Memory<mem::mic23> &mic23_br;
-  Memory<mem::mic24> &mic24_br;
-  Memory<mem::mic25> &mic25_br;
-  Memory<mem::mic26> &mic26_br;
-  Memory<mem::mic27> &mic27_br;
-  Memory<mem::mic28> &mic28_br;
-  Memory<mem::mic29> &mic29_br;
 
   std::atomic<bool> beamforming_started{false};
   std::thread beamforming_thread;

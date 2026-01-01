@@ -76,33 +76,7 @@ memory:
 - name: mic20
   range: 16K
   offset: '0x40090000'
-- name: mic21
-  range: 16K
-  offset: '0x40094000'
-- name: mic22
-  range: 16K
-  offset: '0x40098000'
-- name: mic23
-  range: 16K
-  offset: '0x4009C000'
-- name: mic24
-  range: 16K
-  offset: '0x400A0000'
-- name: mic25
-  range: 16K
-  offset: '0x400A4000'
-- name: mic26
-  range: 16K
-  offset: '0x400A8000'
-- name: mic27
-  range: 16K
-  offset: '0x400AC000'
-- name: mic28
-  range: 16K
-  offset: '0x400B0000'
-- name: mic29
-  range: 16K
-  offset: '0x400B4000'
+
 control_registers:
 - rst_regs
 - dma_gate

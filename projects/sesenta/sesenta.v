@@ -8,11 +8,12 @@
 // Project Name:
 // Target Devices:
 // Tool Versions:
-// Description: Updated for 30 microphones (M0-M29)
+// Description: Updated for 21 microphones (M0, M2, M4, M6, M8, M10, M12, M14, M16, M18, M22, M24, M28, M30, M34, M36, M42, M44, M50, M52, M58)
 //
 // Dependencies:
 //
 // Revision:
+// Revision 0.04 - Updated for 21 microphones with 21 delay cases
 // Revision 0.03 - Updated for 30 microphones with 30 delay cases
 // Revision 0.02 - Updated for 30 microphones
 // Revision 0.01 - File Created
@@ -45,7 +46,7 @@ module sesenta (
     output M0_CLK,
     output M1_CLK,
     output M2_CLK,
-    input [29:0] M_DATA,  // 30 microphone inputs (M0-M29)
+    input [20:0] M_DATA,  // 21 microphone inputs
     output LEDS,
     output SYNC_IN,
     output SYNC_OUT
@@ -55,8 +56,8 @@ module sesenta (
   localparam integer INPUT_FREQ = 120_000_000;
   localparam integer PDM_FREQ = 2_400_000;
   localparam integer LED_FREQ = 12000000;
-  localparam integer DATA_WIDTH = 960;  // 30 mics * 21 bits
-  localparam integer MICS_DATA_WIDTH = 480;  // 30 mics * 16 bits
+  localparam integer DATA_WIDTH = 672;  // 21 mics * 32 bits
+  localparam integer MICS_DATA_WIDTH = 336;  // 21 mics * 16 bits
   localparam CIC_DATA_WIDTH = 16;
   wire clk, clk_leds, rst, pdm_clk;  //start
 
@@ -68,7 +69,7 @@ module sesenta (
   // Manual LED control signals
   reg pcm_valid;
   initial begin
-    reg_mics_data = 960'b0;
+    reg_mics_data = 672'b0;
   end
 
   reg [DATA_WIDTH-1:0] reg_mics_data;
@@ -107,7 +108,7 @@ module sesenta (
   assign SYNC_OUT = pdm_clk;
   assign SYNC_IN  = pcm_valid;
 
-  wire [29:0] cic_overflow, cic_overflow2;
+  wire [20:0] cic_overflow;
   always @(posedge clk) begin
     reg_mics_data[0*32+:32] <= {{11{beamformed_sum_0[20]}}, beamformed_sum_0};
     reg_mics_data[1*32+:32] <= {{11{beamformed_sum_1[20]}}, beamformed_sum_1};
@@ -125,66 +126,23 @@ module sesenta (
     reg_mics_data[13*32+:32] <= {{11{beamformed_sum_13[20]}}, beamformed_sum_13};
     reg_mics_data[14*32+:32] <= {{11{beamformed_sum_14[20]}}, beamformed_sum_14};
     reg_mics_data[15*32+:32] <= {{11{beamformed_sum_15[20]}}, beamformed_sum_15};
-    reg_mics_data[16*32+:32] <= 32'b0;  // Disable beamformed output 16
-    // reg_mics_data[16*32+:32] <= {{11{beamformed_sum_16[20]}}, beamformed_sum_16};
+    reg_mics_data[16*32+:32] <= {{11{beamformed_sum_16[20]}}, beamformed_sum_16};
     reg_mics_data[17*32+:32] <= {{11{beamformed_sum_17[20]}}, beamformed_sum_17};
     reg_mics_data[18*32+:32] <= {{11{beamformed_sum_18[20]}}, beamformed_sum_18};
     reg_mics_data[19*32+:32] <= {{11{beamformed_sum_19[20]}}, beamformed_sum_19};
     reg_mics_data[20*32+:32] <= {{11{beamformed_sum_20[20]}}, beamformed_sum_20};
-    reg_mics_data[21*32+:32] <= {{11{beamformed_sum_21[20]}}, beamformed_sum_21};
-    reg_mics_data[22*32+:32] <= {{11{beamformed_sum_22[20]}}, beamformed_sum_22};
-    reg_mics_data[23*32+:32] <= {{11{beamformed_sum_23[20]}}, beamformed_sum_23};
-    reg_mics_data[24*32+:32] <= {{11{beamformed_sum_24[20]}}, beamformed_sum_24};
-    reg_mics_data[25*32+:32] <= {{11{beamformed_sum_25[20]}}, beamformed_sum_25};
-    reg_mics_data[26*32+:32] <= {{11{beamformed_sum_26[20]}}, beamformed_sum_26};
-    // reg_mics_data[27*32+:32] <= {{11{beamformed_sum_27[20]}}, beamformed_sum_27};
-    reg_mics_data[27*32+:32] <= 32'b0;  // Disable beamformed output 27
-    // reg_mics_data[28*32+:32] <= {{11{beamformed_sum_28[20]}}, beamformed_sum_28};
-    reg_mics_data[28*32+:32] <= 32'b0;  // Disable beamformed output 28
-    reg_mics_data[29*32+:32] <= {{11{beamformed_sum_29[20]}}, beamformed_sum_29};
     pcm_valid <= mics_data_valid;
   end
-//   always @(posedge clk) begin
-//     reg_mics_data[0*21+:21] <= beamformed_sum_0;
-//     reg_mics_data[1*21+:21] <= beamformed_sum_1;
-//     reg_mics_data[2*21+:21] <= beamformed_sum_2;
-//     reg_mics_data[3*21+:21] <= beamformed_sum_3;
-//     reg_mics_data[4*21+:21] <= beamformed_sum_4;
-//     reg_mics_data[5*21+:21] <= beamformed_sum_5;
-//     reg_mics_data[6*21+:21] <= beamformed_sum_6;
-//     reg_mics_data[7*21+:21] <= beamformed_sum_7;
-//     reg_mics_data[8*21+:21] <= beamformed_sum_8;
-//     reg_mics_data[9*21+:21] <= beamformed_sum_9;
-//     reg_mics_data[10*21+:21] <= beamformed_sum_10;
-//     reg_mics_data[11*21+:21] <= beamformed_sum_11;
-//     reg_mics_data[12*21+:21] <= beamformed_sum_12;
-//     reg_mics_data[13*21+:21] <= beamformed_sum_13;
-//     reg_mics_data[14*21+:21] <= beamformed_sum_14;
-//     reg_mics_data[15*21+:21] <= beamformed_sum_15;
-//     reg_mics_data[16*21+:21] <= beamformed_sum_16;
-//     reg_mics_data[17*21+:21] <= beamformed_sum_17;
-//     reg_mics_data[18*21+:21] <= beamformed_sum_18;
-//     reg_mics_data[19*21+:21] <= beamformed_sum_19;
-//     reg_mics_data[20*21+:21] <= beamformed_sum_20;
-//     reg_mics_data[21*21+:21] <= beamformed_sum_21;
-//     reg_mics_data[22*21+:21] <= beamformed_sum_22;
-//     reg_mics_data[23*21+:21] <= beamformed_sum_23;
-//     reg_mics_data[24*21+:21] <= beamformed_sum_24;
-//     reg_mics_data[25*21+:21] <= beamformed_sum_25;
-//     reg_mics_data[26*21+:21] <= beamformed_sum_26;
-//     reg_mics_data[27*21+:21] <= beamformed_sum_27;
-//     reg_mics_data[28*21+:21] <= beamformed_sum_28;
-//     reg_mics_data[29*21+:21] <= beamformed_sum_29;
-//   end
+
   assign beam_data = reg_mics_data;
 
   wire [20:0] beamformed_sum_0, beamformed_sum_1, beamformed_sum_2, beamformed_sum_3, beamformed_sum_4;
   wire [20:0] beamformed_sum_5, beamformed_sum_6, beamformed_sum_7, beamformed_sum_8, beamformed_sum_9;
   wire [20:0] beamformed_sum_10, beamformed_sum_11, beamformed_sum_12, beamformed_sum_13, beamformed_sum_14;
   wire [20:0] beamformed_sum_15, beamformed_sum_16, beamformed_sum_17, beamformed_sum_18, beamformed_sum_19;
-  wire [20:0] beamformed_sum_20, beamformed_sum_21, beamformed_sum_22, beamformed_sum_23, beamformed_sum_24;
-  wire [20:0] beamformed_sum_25, beamformed_sum_26, beamformed_sum_27, beamformed_sum_28, beamformed_sum_29;
+  wire [20:0] beamformed_sum_20;
 
+  // First CIC decimator (index 0 - M0)
   cic_decimator #(
       .DATA_WIDTH(CIC_DATA_WIDTH),
       .CIC_STAGES(4),
@@ -203,8 +161,9 @@ module sesenta (
   genvar i;
   genvar j, idx;
 
+  // Generate remaining 20 CIC decimators (indices 1-20)
   generate
-    for (j = 1; j < 30; j = j + 1) begin : pdms_gen_nege
+    for (j = 1; j < 21; j = j + 1) begin : pdms_gen_nege
       cic_decimator #(
           .DATA_WIDTH(CIC_DATA_WIDTH),
           .CIC_STAGES(4),
@@ -222,40 +181,8 @@ module sesenta (
     end
   endgenerate
 
-    // ila_1 ila_bram1 (
-    //     .clk(clk),  // input wire clk
-    //     .probe0(sum_dbg)
-    // );
-//     ila_0 ila_bram (
-//         .clk(clk),  // input wire clk
-//         .probe0(led_sel),
-//         .probe1(sum_dbg),
-//         .probe2(mics_data_valid)
-//     );
-// //   ila_0 ila_bram (
-// //       .clk(clk),  // input wire clk
-// //       .probe0(led_sel),
-// //       .probe1(mics_data_valid),
-// //       .probe2(mic_dbg),
-// //       .probe3(mic_sel)
-// //   );
-  
-    wire [ 7:0] mic_sel;  // 5 bits to select from 30 cases
-    // wire [ 7:0] mic_sel, mic_sel_safe;  // 5 bits to select from 30 cases
-//     // 2 ff sincronizer for mic_sel
-//     reg [7:0] mic_sel_ff1, mic_sel_ff2, mic_sel_ff3, mic_sel_ff4;
-//     always @(posedge clk) begin
-//       mic_sel_ff1 <= mic_sel;
-//       mic_sel_ff2 <= mic_sel_ff1;
-//       mic_sel_ff3 <= mic_sel_ff2;
-//       mic_sel_ff4 <= mic_sel_ff3;
-//     end 
-//     assign mic_sel_safe = mic_sel_ff4;
-//     // wire [15:0] mic_dbg;
-//     wire [31:0] sum_dbg;
-//     // assign mic_dbg = mics_data[16*mic_sel_safe+:16];
-//     assign sum_dbg = reg_mics_data[32*mic_sel_safe+:32];
-    
+  wire [7:0] mic_sel;
+
   beamforming u_beamforming_module (
       .clk(clk),
       .rst(~rst),
@@ -281,16 +208,7 @@ module sesenta (
       .beamformed_sum_17(beamformed_sum_17),
       .beamformed_sum_18(beamformed_sum_18),
       .beamformed_sum_19(beamformed_sum_19),
-      .beamformed_sum_20(beamformed_sum_20),
-      .beamformed_sum_21(beamformed_sum_21),
-      .beamformed_sum_22(beamformed_sum_22),
-      .beamformed_sum_23(beamformed_sum_23),
-      .beamformed_sum_24(beamformed_sum_24),
-      .beamformed_sum_25(beamformed_sum_25),
-      .beamformed_sum_26(beamformed_sum_26),
-      .beamformed_sum_27(beamformed_sum_27),
-      .beamformed_sum_28(beamformed_sum_28),
-      .beamformed_sum_29(beamformed_sum_29)
+      .beamformed_sum_20(beamformed_sum_20)
   );
 
   system system_i (
