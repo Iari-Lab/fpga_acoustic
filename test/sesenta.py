@@ -16,6 +16,14 @@ class Sesenta(object):
         pass
 
     @command()
+    def record(self):
+        pass
+
+    @command()
+    def beamf(self):
+        pass
+
+    @command()
     def set_rate(self, rate):
         pass
 
