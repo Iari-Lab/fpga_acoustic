@@ -283,23 +283,20 @@ inline void Sesenta::start_beamforming() {
 }
 
 inline void Sesenta::beamf_thread() {
-  const int num_directions = 30;
+  const int num_directions = 21;
 
   beamforming_started = true;
   ctx.print<INFO>("Beamforming thread started for 30 directions.\n");
 
   ctx.print<INFO>("BRAM buffer size: %u samples\n", mic_size);
 
-  while (beamforming_started) {
     std::array<double, num_directions> beam_powers = {0.0};
+  while (beamforming_started) {
 
+    beam_powers = {0.0};
     record();
     for (int dir = 0; dir < num_directions; dir++) {
 
-      if (dir == 16 || dir == 27 || dir == 28) {
-        // skip defective microphones
-        continue;
-      }
       auto beamformed_sum = get_mic_ith(dir);
 
       double power = 0.0;
