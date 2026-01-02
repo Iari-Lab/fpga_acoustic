@@ -30,46 +30,44 @@ set_property IOSTANDARD LVCMOS33 [get_ports LEDS]
 set_property PACKAGE_PIN P18 [get_ports LEDS]
 
 set_property IOSTANDARD LVCMOS33 [get_ports {M_DATA[*]}]
-# IO Pin: IO_B34_LP12
-set_property PACKAGE_PIN U18 [get_ports M_DATA[0]]
-# D2 IO_B13_LN18 (BANK 13) need to fix this in csv, the mapping was to bank 34
-set_property PACKAGE_PIN Y11 [get_ports M_DATA[1]]
-# IO Pin: IO_B34_LN14
-set_property PACKAGE_PIN P20 [get_ports M_DATA[2]]
-# IO Pin: IO_B34_LP18
-set_property PACKAGE_PIN V16 [get_ports M_DATA[3]]
-# IO Pin: IO_B13_LN14
-set_property PACKAGE_PIN Y8 [get_ports M_DATA[4]]
-# IO Pin: IO_B13_0
-set_property PACKAGE_PIN V5 [get_ports M_DATA[5]]
-# IO Pin: IO_B13_LN20
-set_property PACKAGE_PIN Y13 [get_ports M_DATA[6]]
-# IO Pin: IO_B34_LP15
-set_property PACKAGE_PIN T20 [get_ports M_DATA[7]]
-# IO Pin: IO_B34_LN12
-set_property PACKAGE_PIN U19 [get_ports M_DATA[8]]
+# M18 - D18 -> M_DATA[0]
 # IO Pin: IO_B34_LP21
-set_property PACKAGE_PIN V17 [get_ports M_DATA[9]]
+set_property PACKAGE_PIN V17 [get_ports M_DATA[0]]
+
+# M20 - D20 -> M_DATA[2]
+# IO Pin: IO_B34_LP20
+set_property PACKAGE_PIN T17 [get_ports M_DATA[1]]
+
+# M22 - D22 -> M_DATA[4]
 # IO Pin: IO_B13_LN13
-set_property PACKAGE_PIN Y6 [get_ports M_DATA[10]]
+set_property PACKAGE_PIN Y6 [get_ports M_DATA[2]]
+
+
+# M24 - D24 -> M_DATA[6]
 # IO Pin: IO_B13_LP13
-set_property PACKAGE_PIN Y7 [get_ports M_DATA[11]]
+set_property PACKAGE_PIN Y7 [get_ports M_DATA[3]]
+
+# M26 - D26 -> M_DATA[8]
+# IO Pin: IO_B13_LP18
+set_property PACKAGE_PIN W11 [get_ports M_DATA[4]]
+
+
+# M28 - D28 -> M_DATA[10]
 # IO Pin: IO_B13_LN16
-set_property PACKAGE_PIN W9 [get_ports M_DATA[12]]
+set_property PACKAGE_PIN W9 [get_ports M_DATA[5]]
+
+# M30 - D30 -> M_DATA[12]
 # IO Pin: IO_B34_LN15
-set_property PACKAGE_PIN U20 [get_ports M_DATA[13]]
+set_property PACKAGE_PIN U20 [get_ports M_DATA[6]]
+
+# M32 - D32 -> M_DATA[14]
+# IO Pin: IO_B34_LN18
+set_property PACKAGE_PIN R17 [get_ports M_DATA[7]]
+
+# M34 - D34 -> M_DATA[16]
 # IO Pin: IO_B34_LP24
-set_property PACKAGE_PIN P15 [get_ports M_DATA[14]]
-# IO Pin: IO_B34_0
-set_property PACKAGE_PIN R19 [get_ports M_DATA[15]]
-# IO Pin: IO_B13_LP19
-set_property PACKAGE_PIN T5 [get_ports M_DATA[16]]
-# IO Pin: IO_B13_LN15
-set_property PACKAGE_PIN W8 [get_ports M_DATA[17]]
-# IO Pin: IO_B13_LP16
-set_property PACKAGE_PIN W10 [get_ports M_DATA[18]]
-# IO Pin: IO_B34_LP10
-set_property PACKAGE_PIN V15 [get_ports M_DATA[19]]
-# IO Pin: IO_B34_25
-set_property PACKAGE_PIN T19 [get_ports M_DATA[20]]
+set_property PACKAGE_PIN P15 [get_ports M_DATA[8]]
+
+
+
 

@@ -3,7 +3,7 @@
 # create_bd_port -dir I -from 511 -to 0 mics
 # create_bd_port -dir I -from 511 -to 0 mics2
 
-create_bd_port -dir I -from 672 -to 0 mics
+create_bd_port -dir I -from 576 -to 0 mics
 # create_bd_port -dir I -from 630 -to 0 mics
 # create_bd_port -dir I -from 255 -to 0 mics2
 # create_bd_port -dir I -from 255 -to 0 mics

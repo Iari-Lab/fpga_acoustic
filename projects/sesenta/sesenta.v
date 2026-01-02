@@ -8,16 +8,9 @@
 // Project Name:
 // Target Devices:
 // Tool Versions:
-// Description: Updated for 21 microphones (M0, M2, M4, M6, M8, M10, M12, M14, M16, M18, M22, M24, M28, M30, M34, M36, M42, M44, M50, M52, M58)
+// Description: Updated for 18 microphones (M18-M35)
 //
 // Dependencies:
-//
-// Revision:
-// Revision 0.04 - Updated for 21 microphones with 21 delay cases
-// Revision 0.03 - Updated for 30 microphones with 30 delay cases
-// Revision 0.02 - Updated for 30 microphones
-// Revision 0.01 - File Created
-// Additional Comments:
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -46,7 +39,7 @@ module sesenta (
     output M0_CLK,
     output M1_CLK,
     output M2_CLK,
-    input [20:0] M_DATA,  // 21 microphone inputs
+    input [8:0] M_DATA,  // 18 microphone inputs (M18-M35)
     output LEDS,
     output SYNC_IN,
     output SYNC_OUT
@@ -56,8 +49,8 @@ module sesenta (
   localparam integer INPUT_FREQ = 120_000_000;
   localparam integer PDM_FREQ = 2_400_000;
   localparam integer LED_FREQ = 12000000;
-  localparam integer DATA_WIDTH = 672;  // 21 mics * 32 bits
-  localparam integer MICS_DATA_WIDTH = 336;  // 21 mics * 16 bits
+  localparam integer DATA_WIDTH = 576;  // 18 mics * 32 bits
+  localparam integer MICS_DATA_WIDTH = 288;  // 18 mics * 16 bits
   localparam CIC_DATA_WIDTH = 16;
   wire clk, clk_leds, rst, pdm_clk;  //start
 
@@ -69,7 +62,7 @@ module sesenta (
   // Manual LED control signals
   reg pcm_valid;
   initial begin
-    reg_mics_data = 672'b0;
+    reg_mics_data = 576'b0;
   end
 
   reg [DATA_WIDTH-1:0] reg_mics_data;
@@ -108,7 +101,7 @@ module sesenta (
   assign SYNC_OUT = pdm_clk;
   assign SYNC_IN  = pcm_valid;
 
-  wire [20:0] cic_overflow;
+  wire [17:0] cic_overflow;
   always @(posedge clk) begin
     reg_mics_data[0*32+:32] <= {{11{beamformed_sum_0[20]}}, beamformed_sum_0};
     reg_mics_data[1*32+:32] <= {{11{beamformed_sum_1[20]}}, beamformed_sum_1};
@@ -124,13 +117,8 @@ module sesenta (
     reg_mics_data[11*32+:32] <= {{11{beamformed_sum_11[20]}}, beamformed_sum_11};
     reg_mics_data[12*32+:32] <= {{11{beamformed_sum_12[20]}}, beamformed_sum_12};
     reg_mics_data[13*32+:32] <= {{11{beamformed_sum_13[20]}}, beamformed_sum_13};
-    reg_mics_data[14*32+:32] <= {{11{beamformed_sum_14[20]}}, beamformed_sum_14};
-    reg_mics_data[15*32+:32] <= {{11{beamformed_sum_15[20]}}, beamformed_sum_15};
     reg_mics_data[16*32+:32] <= {{11{beamformed_sum_16[20]}}, beamformed_sum_16};
     reg_mics_data[17*32+:32] <= {{11{beamformed_sum_17[20]}}, beamformed_sum_17};
-    reg_mics_data[18*32+:32] <= {{11{beamformed_sum_18[20]}}, beamformed_sum_18};
-    reg_mics_data[19*32+:32] <= {{11{beamformed_sum_19[20]}}, beamformed_sum_19};
-    reg_mics_data[20*32+:32] <= {{11{beamformed_sum_20[20]}}, beamformed_sum_20};
     pcm_valid <= mics_data_valid;
   end
 
@@ -139,10 +127,9 @@ module sesenta (
   wire [20:0] beamformed_sum_0, beamformed_sum_1, beamformed_sum_2, beamformed_sum_3, beamformed_sum_4;
   wire [20:0] beamformed_sum_5, beamformed_sum_6, beamformed_sum_7, beamformed_sum_8, beamformed_sum_9;
   wire [20:0] beamformed_sum_10, beamformed_sum_11, beamformed_sum_12, beamformed_sum_13, beamformed_sum_14;
-  wire [20:0] beamformed_sum_15, beamformed_sum_16, beamformed_sum_17, beamformed_sum_18, beamformed_sum_19;
-  wire [20:0] beamformed_sum_20;
+  wire [20:0] beamformed_sum_15, beamformed_sum_16, beamformed_sum_17;
 
-  // First CIC decimator (index 0 - M0)
+  // First CIC decimator (index 0 - M18)
   cic_decimator #(
       .DATA_WIDTH(CIC_DATA_WIDTH),
       .CIC_STAGES(4),
@@ -158,24 +145,46 @@ module sesenta (
       .sample_count()
   );
 
-  genvar i;
-  genvar j, idx;
-
-  // Generate remaining 20 CIC decimators (indices 1-20)
+  genvar j;
+  // Generate 18 CIC decimators from 9 M_DATA lines
+  // Even j (0,2,4,...16): use clk,  maps to M_DATA[j/2]
+  // Odd j  (1,3,5,...17): use ~clk, maps to M_DATA[j/2]
   generate
-    for (j = 1; j < 21; j = j + 1) begin : pdms_gen_nege
+    for (j = 1; j < 14; j = j + 1) begin : pdms_gen
       cic_decimator #(
           .DATA_WIDTH(CIC_DATA_WIDTH),
           .CIC_STAGES(4),
           .CIC_DECIMATION(50)
       ) cic_stage (
-          .clk(clk),
-          .rst(~rst),
-          .pdm_clk(pdm_clk),
-          .pdm_data(M_DATA[j]),
-          .pcm_valid(),
-          .pcm_data(mics_data[j*16+:16]),
-          .overflow(cic_overflow[j]),
+          .clk         (j[0] ? ~clk : clk),    // Odd: ~clk, Even: clk
+          .rst         (~rst),
+          .pdm_clk     (pdm_clk),
+          .pdm_data    (M_DATA[j/2]),          // Integer division: 0,1→0, 2,3→1, etc.
+          .pcm_valid   (),
+          .pcm_data    (mics_data[j*16+:16]),
+          .overflow    (cic_overflow[j]),
+          .sample_count()
+      );
+    end
+  endgenerate
+//  genvar j;
+  // Generate 18 CIC decimators from 9 M_DATA lines
+  // Even j (0,2,4,...16): use clk,  maps to M_DATA[j/2]
+  // Odd j  (1,3,5,...17): use ~clk, maps to M_DATA[j/2]
+  generate
+    for (j = 16; j < 18; j = j + 1) begin : pdms_gen
+      cic_decimator #(
+          .DATA_WIDTH(CIC_DATA_WIDTH),
+          .CIC_STAGES(4),
+          .CIC_DECIMATION(50)
+      ) cic_stage (
+          .clk         (j[0] ? ~clk : clk),    // Odd: ~clk, Even: clk
+          .rst         (~rst),
+          .pdm_clk     (pdm_clk),
+          .pdm_data    (M_DATA[j/2]),          // Integer division: 0,1→0, 2,3→1, etc.
+          .pcm_valid   (),
+          .pcm_data    (mics_data[j*16+:16]),
+          .overflow    (cic_overflow[j]),
           .sample_count()
       );
     end
@@ -202,13 +211,10 @@ module sesenta (
       .beamformed_sum_11(beamformed_sum_11),
       .beamformed_sum_12(beamformed_sum_12),
       .beamformed_sum_13(beamformed_sum_13),
-      .beamformed_sum_14(beamformed_sum_14),
-      .beamformed_sum_15(beamformed_sum_15),
+      .beamformed_sum_14(),
+      .beamformed_sum_15(),
       .beamformed_sum_16(beamformed_sum_16),
-      .beamformed_sum_17(beamformed_sum_17),
-      .beamformed_sum_18(beamformed_sum_18),
-      .beamformed_sum_19(beamformed_sum_19),
-      .beamformed_sum_20(beamformed_sum_20)
+      .beamformed_sum_17(beamformed_sum_17)
   );
 
   system system_i (

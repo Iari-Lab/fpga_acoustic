@@ -27,20 +27,6 @@ class Acoustic():
         client = connect(host, 'Sesenta', restart=False)
         self.driver = Sesenta(client)
 
-    def data_stream_diga2(self, samples, name, test):
-        mics = self.driver.get_mics_ad(samples)
-        reshaped_array = np.vstack([mics[i::3] for i in range(3)])
-        # analog_mic = reshaped_array[1]
-        analog_mic = reshaped_array[1].astype(np.int32)
-        dig_mic = reshaped_array[0].astype(np.int32)
-        dig_mic_fir = reshaped_array[2].astype(np.int32)
-        self.plot_step_response(analog_mic, "{}_{}_{}".format(name, "analog", test))
-        self.gen_audio(analog_mic,"{}_{}_{}".format(name, "analog", test))
-        self.plot_step_response(dig_mic, "{}_{}_{}".format(name, "digital_cic", test))
-        self.gen_audio(dig_mic,"{}_{}_{}".format(name, "digital_cic", test))
-        self.plot_step_response(dig_mic_fir, "{}_{}_{}".format(name, "digital_fir", test))
-        self.gen_audio(dig_mic_fir,"{}_{}_{}".format(name, "digital_fir", test))
-
     def data_bram_ith(self,ith):
         print("Collecting data for mic index:", ith)
         mic = self.driver.get_mic_ith(ith)
@@ -52,54 +38,6 @@ class Acoustic():
         reshaped_array = np.vstack([mics[i::4] for i in range(4)])
         print(reshaped_array)
         self.plot_all(reshaped_array, "{}".format(name), test= test)
-
-    def data_stream_pro4(self, samples, channels, name, filedir):
-        # mics = self.driver.read_mics6(samples)
-        mics = self.driver.get_mics4(samples)
-        print("Data received:", len(mics))
-        mics_posedge = np.vstack([mics[i::channels] for i in range(channels)]) # dma1
-        print("Mics posedge shape:", mics_posedge.shape)
-        self.plot_all(mics_posedge, "{}_dma1_2".format(name), filedir=filedir)
-
-    def data_brams4(self, lenght, filedir, name, dir):
-        mics = self.driver.get_mics_bram(dir)
-        print("Data received:", len(mics))
-        mics = np.split(mics,4)
-        self.plot_all(mics, "{}_brams".format(name), filedir=filedir)
-
-    def data_stream_pro6(self, samples, channels, name, filedir):
-        # mics = self.driver.read_mics6(samples)
-        mics = self.driver.get_mics6(samples)
-        print("Data received:", len(mics))
-        dma1, dma2 = np.split(mics,2)
-        print("Data split:", dma1, len(dma1))
-        print("Data split:", dma2, len(dma2))
-        mics_posedge = np.vstack([dma1[i::channels] for i in range(channels)]) # dma1
-        print("Mics posedge shape:", mics_posedge.shape)
-        mics_negedge = np.vstack([dma2[i::channels] for i in range(channels)]) #dma2
-        combined = np.vstack((
-            mics_posedge[:3],   # channels 0–2 posedge
-            mics_negedge[:3]    # channels 0–2 negedge
-        )) 
-        self.plot_all(combined, "{}_dma1_2".format(name), filedir=filedir)
-
-    def data_stream_pro(self, samples, channels, name):
-        mics = self.driver.get_mics(samples)
-        print("Data received:", len(mics))
-        dma1, dma2 = np.split(mics,2)
-        print("Data split:", dma1, len(dma1))
-        # _channels = 6
-        # NOTE: we are not using the last 2 values from the 512 buffers from the dmas, so those mics are 0
-        # mics_posedge = np.vstack([dma1[i::_channels] for i in range(_channels)]) # dma1
-        mics_posedge = np.vstack([dma1[i::channels] for i in range(channels)]) # dma1
-        # for i in range(channels):
-        #     self.gen_audio(mics_posedge[i],"{}{}".format(name, i))
-        self.plot_all(mics_posedge[:6], "{}_dma1".format(name))
-        mics_negedge = np.vstack([dma2[i::channels] for i in range(channels)]) #dma2
-        # mics_negedge = np.vstack([dma2[i::_channels] for i in range(_channels)]) #dma2
-        # for i in range(channels):
-        #     self.gen_audio(mics_negedge[i],"{}{}".format(name, i))
-        self.plot_all(mics_negedge[:6], "{}_dma2".format(name))
 
     def plot_all(self, data_arrays, name, filedir="mini", test=0):
         """
@@ -122,7 +60,7 @@ class Acoustic():
         plt.legend()
         plt.tight_layout()
         plt.savefig(f"../{filedir}/{name}_{test}.png", dpi=300, bbox_inches='tight')
-        # plt.show(block= False)
+        plt.show(block= False)
 
 
     def gen_audio(self, data, name):

@@ -19,8 +19,8 @@ puts "ltx_file: $ltx_file"
 puts "full_bit_filename: $full_bit_filename"
 
 
-set_property PROBES.FILE $ltx_file [get_hw_devices xc7z020_0]
-set_property FULL_PROBES.FILE $ltx_file [get_hw_devices xc7z020_0]
+# set_property PROBES.FILE $ltx_file [get_hw_devices xc7z020_0]
+# set_property FULL_PROBES.FILE $ltx_file [get_hw_devices xc7z020_0]
 # set_property PROBES.FILE $ltx_file [get_hw_devices xc7z020_0]
 # set_property FULL_PROBES.FILE $ltx_file [get_hw_devices xc7z020_0]
 refresh_hw_device -update_hw_probes true [lindex [get_hw_devices xc7z020_0] 0]
