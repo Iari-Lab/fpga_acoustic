@@ -87,12 +87,12 @@ public:
     case 13:
       mic_data = mic13_br.read_array<int32_t, mic_size>();
       break;
-    case 14:
-      mic_data = mic14_br.read_array<int32_t, mic_size>();
-      break;
-    case 15:
-      mic_data = mic15_br.read_array<int32_t, mic_size>();
-      break;
+    // case 14:
+    //   mic_data = mic14_br.read_array<int32_t, mic_size>();
+    //   break;
+    // case 15:
+    //   mic_data = mic15_br.read_array<int32_t, mic_size>();
+    //   break;
     case 16:
       mic_data = mic16_br.read_array<int32_t, mic_size>();
       break;

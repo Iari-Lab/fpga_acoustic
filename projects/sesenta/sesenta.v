@@ -117,6 +117,8 @@ module sesenta (
     reg_mics_data[11*32+:32] <= {{11{beamformed_sum_11[20]}}, beamformed_sum_11};
     reg_mics_data[12*32+:32] <= {{11{beamformed_sum_12[20]}}, beamformed_sum_12};
     reg_mics_data[13*32+:32] <= {{11{beamformed_sum_13[20]}}, beamformed_sum_13};
+    reg_mics_data[14*32+:32] <= {{11{beamformed_sum_14[20]}}, beamformed_sum_14};
+    reg_mics_data[15*32+:32] <= {{11{beamformed_sum_15[20]}}, beamformed_sum_15};
     reg_mics_data[16*32+:32] <= {{11{beamformed_sum_16[20]}}, beamformed_sum_16};
     reg_mics_data[17*32+:32] <= {{11{beamformed_sum_17[20]}}, beamformed_sum_17};
     pcm_valid <= mics_data_valid;
@@ -150,29 +152,7 @@ module sesenta (
   // Even j (0,2,4,...16): use clk,  maps to M_DATA[j/2]
   // Odd j  (1,3,5,...17): use ~clk, maps to M_DATA[j/2]
   generate
-    for (j = 1; j < 14; j = j + 1) begin : pdms_gen
-      cic_decimator #(
-          .DATA_WIDTH(CIC_DATA_WIDTH),
-          .CIC_STAGES(4),
-          .CIC_DECIMATION(50)
-      ) cic_stage (
-          .clk         (j[0] ? ~clk : clk),    // Odd: ~clk, Even: clk
-          .rst         (~rst),
-          .pdm_clk     (pdm_clk),
-          .pdm_data    (M_DATA[j/2]),          // Integer division: 0,1→0, 2,3→1, etc.
-          .pcm_valid   (),
-          .pcm_data    (mics_data[j*16+:16]),
-          .overflow    (cic_overflow[j]),
-          .sample_count()
-      );
-    end
-  endgenerate
-//  genvar j;
-  // Generate 18 CIC decimators from 9 M_DATA lines
-  // Even j (0,2,4,...16): use clk,  maps to M_DATA[j/2]
-  // Odd j  (1,3,5,...17): use ~clk, maps to M_DATA[j/2]
-  generate
-    for (j = 16; j < 18; j = j + 1) begin : pdms_gen
+    for (j = 1; j < 18; j = j + 1) begin : pdms_gen
       cic_decimator #(
           .DATA_WIDTH(CIC_DATA_WIDTH),
           .CIC_STAGES(4),
@@ -211,8 +191,8 @@ module sesenta (
       .beamformed_sum_11(beamformed_sum_11),
       .beamformed_sum_12(beamformed_sum_12),
       .beamformed_sum_13(beamformed_sum_13),
-      .beamformed_sum_14(),
-      .beamformed_sum_15(),
+      .beamformed_sum_14(beamformed_sum_14),
+      .beamformed_sum_15(beamformed_sum_15),
       .beamformed_sum_16(beamformed_sum_16),
       .beamformed_sum_17(beamformed_sum_17)
   );
