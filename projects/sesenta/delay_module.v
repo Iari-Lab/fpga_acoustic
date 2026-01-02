@@ -48,13 +48,6 @@ module delay_module #(
     output wire [15:0] delayed_pcm_data_20
 );
 
-  // =========================================================================
-  // DELAY CONFIGURATION LOOKUP TABLE
-  // =========================================================================
-  // All 21 delay configurations stored as a packed array.
-  // Format: DELAY_TABLE[config_index] contains 21 x 4-bit delays = 84 bits
-  // Delays are packed as: {mic20_delay, mic19_delay, ..., mic1_delay, mic0_delay}
-  // =========================================================================
   
   // Function to pack 21 4-bit delays into 84 bits
   function [83:0] pack_delays;

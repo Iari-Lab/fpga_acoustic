@@ -3,6 +3,7 @@
 #ifndef __DRIVERS_SESENTA_HPP__
 #define __DRIVERS_SESENTA_HPP__
 
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <cmath>
@@ -11,6 +12,17 @@
 // constexpr uint32_t mic_size = 512;
 // constexpr uint32_t mic_size = 2048;
 constexpr uint32_t mic_size = mem::mic0_range / sizeof(uint32_t);
+
+// Structure to hold direction and power for sorting
+struct BeamResult {
+  int direction;
+  double power;
+};
+
+// Comparator function for sorting by power (descending)
+inline bool compareByPower(const BeamResult &a, const BeamResult &b) {
+  return a.power > b.power;
+}
 
 class Sesenta {
 public:
@@ -26,8 +38,7 @@ public:
         mic13_br(ctx.mm.get<mem::mic13>()), mic14_br(ctx.mm.get<mem::mic14>()),
         mic15_br(ctx.mm.get<mem::mic15>()), mic16_br(ctx.mm.get<mem::mic16>()),
         mic17_br(ctx.mm.get<mem::mic17>()), mic18_br(ctx.mm.get<mem::mic18>()),
-        mic19_br(ctx.mm.get<mem::mic19>()), mic20_br(ctx.mm.get<mem::mic20>())
-        {
+        mic19_br(ctx.mm.get<mem::mic19>()), mic20_br(ctx.mm.get<mem::mic20>()) {
     ctx.print<INFO>("BEAm------------------------------------------>");
     // start_beamforming();
   }
@@ -91,9 +102,9 @@ public:
     case 15:
       mic_data = mic15_br.read_array<int32_t, mic_size>();
       break;
-    case 16: 
+    case 16:
       mic_data = mic16_br.read_array<int32_t, mic_size>();
-    break;
+      break;
     case 17:
       mic_data = mic17_br.read_array<int32_t, mic_size>();
       break;
@@ -175,46 +186,53 @@ public:
 
     const int num_directions = 21;
 
-    std::array<double, num_directions> beam_powers = {0.0};
-    // while (1) {
+    std::array<BeamResult, num_directions> beam_results;
 
-      beam_powers = {0.0};
+    record();
+    for (int dir = 0; dir < num_directions; dir++) {
+      auto beamformed_sum = get_mic_ith(dir);
 
-      record();
-      for (int dir = 0; dir < num_directions; dir++) {
-        auto beamformed_sum = get_mic_ith(dir);
-
-        double power = 0.0;
-        for (uint32_t sample_idx = 0; sample_idx < mic_size; sample_idx++) {
-          double sample = (double)beamformed_sum[sample_idx];
-          // double sample = static_cast<double>(beamformed_sum[sample_idx]);
-          power += (sample * sample);
-        }
-
-        beam_powers[dir] = power / mic_size;
-        ctx.print<DEBUG>("Direction MIC %d: power: %f \n", dir,
-                         beam_powers[dir]);
-
-        // ctx.print<DEBUG>("Direction MIC %d: LED = %d   power: %f  samples
-        // %d\n", dir,
-        //  M_DATA_TO_MIC[dir], beam_powers[dir], mic_size);
+      double power = 0.0;
+      for (uint32_t sample_idx = 0; sample_idx < mic_size; sample_idx++) {
+        double sample = (double)beamformed_sum[sample_idx];
+        // double sample = static_cast<double>(beamformed_sum[sample_idx]);
+        power += (sample * sample);
       }
 
-      int max_direction = 0;
-      double max_power = 0.0;
-      for (int dir = 0; dir < num_directions; dir++) {
-        if (beam_powers[dir] > max_power) {
-          max_power = beam_powers[dir];
-          max_direction = dir;
-        }
-      }
+      beam_results[dir].direction = dir;
+      beam_results[dir].power = power / mic_size;
+      ctx.print<DEBUG>("Direction MIC %d: power: %f \n", dir, beam_results[dir].power);
 
-      ctx.print<INFO>("Maximum sound energy detected from direction: %d (M%d) "
-                      "(Power: %e)\n",
-                      max_direction, M_DATA_TO_MIC[max_direction], max_power);
+      // ctx.print<DEBUG>("Direction MIC %d: LED = %d   power: %f  samples
+      // %d\n", dir,
+      //  M_DATA_TO_MIC[dir], beam_results[dir].power, mic_size);
+    }
 
-      // set_led_sel(M_DATA_TO_MIC[max_direction]);
-    // }
+    // Sort by power (descending) using comparator function
+    std::sort(beam_results.begin(), beam_results.end(), compareByPower);
+
+    // Print sorted results
+    ctx.print<INFO>("\n=== Sorted Beamforming Results (by Power, Descending) ===\n");
+    ctx.print<INFO>("Rank | Direction | Mic Index | Power\n");
+    ctx.print<INFO>("-----|-----------|-----------|---------------\n");
+    for (int i = 0; i < num_directions; i++) {
+      ctx.print<INFO>("%4d | %9d | %9d | %e\n",
+                      i + 1,
+                      beam_results[i].direction,
+                      M_DATA_TO_MIC[beam_results[i].direction],
+                      beam_results[i].power);
+    }
+    ctx.print<INFO>("=========================================================\n");
+
+    // Maximum is now the first element after sorting
+    int max_direction = beam_results[0].direction;
+    double max_power = beam_results[0].power;
+
+    ctx.print<INFO>("Maximum sound energy detected from direction: %d (M%d) "
+                    "(Power: %e)\n",
+                    max_direction, M_DATA_TO_MIC[max_direction], max_power);
+
+    // set_led_sel(M_DATA_TO_MIC[max_direction]);
   }
 
   void set_led_sel(uint32_t sel) { ctl.write_reg(reg::led_select, sel); }
@@ -290,10 +308,10 @@ inline void Sesenta::beamf_thread() {
 
   ctx.print<INFO>("BRAM buffer size: %u samples\n", mic_size);
 
-    std::array<double, num_directions> beam_powers = {0.0};
+  std::array<BeamResult, num_directions> beam_results;
+
   while (beamforming_started) {
 
-    beam_powers = {0.0};
     record();
     for (int dir = 0; dir < num_directions; dir++) {
 
@@ -305,19 +323,31 @@ inline void Sesenta::beamf_thread() {
         power += (sample * sample);
       }
 
-      beam_powers[dir] = power / mic_size;
+      beam_results[dir].direction = dir;
+      beam_results[dir].power = power / mic_size;
       // ctx.print<DEBUG>("Direction MIC %d: LED = %d   power: %f\n", dir,
       //  M_DATA_TO_MIC[dir], power);
     }
 
-    int max_direction = 0;
-    double max_power = 0.0;
-    for (int dir = 0; dir < num_directions; dir++) {
-      if (beam_powers[dir] > max_power) {
-        max_power = beam_powers[dir];
-        max_direction = dir;
-      }
+    // Sort by power (descending) using comparator function
+    std::sort(beam_results.begin(), beam_results.end(), compareByPower);
+
+    // Print sorted results
+    ctx.print<INFO>("\n=== Sorted Beamforming Results (by Power, Descending) ===\n");
+    ctx.print<INFO>("Rank | Direction | Mic Index | Power\n");
+    ctx.print<INFO>("-----|-----------|-----------|---------------\n");
+    for (int i = 0; i < num_directions; i++) {
+      ctx.print<INFO>("%4d | %9d | %9d | %e\n",
+                      i + 1,
+                      beam_results[i].direction,
+                      M_DATA_TO_MIC[beam_results[i].direction],
+                      beam_results[i].power);
     }
+    ctx.print<INFO>("=========================================================\n");
+
+    // Maximum is now the first element after sorting
+    int max_direction = beam_results[0].direction;
+    double max_power = beam_results[0].power;
 
     ctx.print<INFO>(
         "Maximum sound energy detected from direction: %d (M%d) (Power: %e)\n",
