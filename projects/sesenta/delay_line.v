@@ -7,10 +7,10 @@ module delay_line (
     output wire [15:0] delayed_pcm_data
 );
 
-  parameter MAX_DELAY = 15;
+  parameter MAX_DELAY = 3;
   integer i;
   reg [15:0] buffer[MAX_DELAY:0];
-  reg [3:0] delay_reg;
+  reg [MAX_DELAY:0] delay_reg;
   reg [15:0] delayed_pcm_data_r; 
 
   always @(posedge clk or posedge rst) begin
@@ -32,7 +32,6 @@ module delay_line (
     end
   end
 
-  // Output is now registered, reducing timing pressure
   assign delayed_pcm_data = delayed_pcm_data_r;
 
 endmodule

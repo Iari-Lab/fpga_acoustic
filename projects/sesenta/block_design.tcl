@@ -19,9 +19,26 @@ connect_pins mic_sel [get_slice_pin [ctl_pin mic_select] 6 0 mic_sel_pin]
 connect_pins led_sel [get_slice_pin [ctl_pin led_select] 6 0 led_sel_pin]
 
 set mic_width 32
-for {set i 0} {$i < 18} {incr i} {
+for {set i 0} {$i < 16} {incr i} {
   add_bram mic$i
 }
+ cell xilinx.com:ip:c_addsub:12.0 adder_0 {
+    Latency_Configuration Manual
+    Latency 1
+    A_Type Signed
+    B_Type Signed
+    A_Width 16
+    B_Width 16
+    Add_Mode Add
+    CE true
+  } {
+    A 
+    B 
+    CLK clk
+    CE mics_data_valid
+  }
+  connect_ports offset_diff_0
+
 cell iari:user:addr_counter:1.0 addr_counter_0 {
     ADDR_WIDTH 12
   } {

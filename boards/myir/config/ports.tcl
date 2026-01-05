@@ -3,7 +3,17 @@
 # create_bd_port -dir I -from 511 -to 0 mics
 # create_bd_port -dir I -from 511 -to 0 mics2
 
-create_bd_port -dir I -from 576 -to 0 mics
+
+# Parameters
+set NUM_CHANNELS 16
+set BITS_PER_CHANNEL 16
+set NUM_CONFIGS 16
+
+# Calculate width (NUM_CONFIGS * NUM_CHANNELS * BITS_PER_CHANNEL - 1)
+set port_width [expr {$NUM_CONFIGS * $NUM_CHANNELS * $BITS_PER_CHANNEL - 1}]
+
+# Create port
+create_bd_port -dir I -from $port_width -to 0 mics
 # create_bd_port -dir I -from 630 -to 0 mics
 # create_bd_port -dir I -from 255 -to 0 mics2
 # create_bd_port -dir I -from 255 -to 0 mics
