@@ -39,7 +39,7 @@ module sesenta (
     output M0_CLK,
     output M1_CLK,
     output M2_CLK,
-    input [8:0] M_DATA,  // 18 microphone inputs (M18-M35)
+    input [7:0] M_DATA,  // 18 microphone inputs (M18-M35)
     output LEDS,
     output SYNC_IN,
     output SYNC_OUT
