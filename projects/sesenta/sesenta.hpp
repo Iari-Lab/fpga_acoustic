@@ -99,6 +99,7 @@ public:
 
     return mic_data;
   }
+  void start_bf() { start_beamforming(); }
 
   void record() {
     ctl.set_bit<reg::start_capture, 0>();
@@ -183,7 +184,6 @@ public:
                     "(Power: %e)\n",
                     max_direction, M_DATA_TO_MIC[max_direction], max_power);
     set_led_sel(M_DATA_TO_MIC[max_direction]);
-
   }
   void set_led_sel(uint32_t sel) { ctl.write_reg(reg::led_select, sel); }
 
@@ -267,7 +267,7 @@ inline void Sesenta::beamf_thread() {
   ctx.print<INFO>("Beamforming thread started for 30 directions.\n");
   ctx.print<INFO>("BRAM buffer size: %u samples\n", mic_size);
   while (beamforming_started) {
-      bf();
+    bf();
   }
 }
 #endif // __SESENTA_HPP__

@@ -184,7 +184,7 @@ module sesenta (
       .mic_sel(mic_sel),
       .led_sel(led_sel),
       .mics(beam_data),
-      .mics_data_valid(mics_data_valid),
+      .beam_valid(beamformed_valid[0]),
       .DDR_addr(DDR_addr),
       .DDR_ba(DDR_ba),
       .DDR_cas_n(DDR_cas_n),

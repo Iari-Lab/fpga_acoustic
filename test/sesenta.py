@@ -22,6 +22,11 @@ class Sesenta(object):
     @command()
     def bf(self):
         pass
+
+    @command()
+    def start_bf(self):
+        pass
+
     @command()
     def beamf(self, mic):
         pass
@@ -82,15 +87,3 @@ class Sesenta(object):
     @command()
     def get_micsu(self, samples):
         return self.client.recv_vector(dtype='uint32')
-
-
-d18, d19, 0
-d20, d21, 1
-d22, d23, 2
-d24, d25, 3
-d26, d27, 4
-d28, d29, 5
-d30, d31, 6
-
-mics_order = [18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
-mics_map = [59 - i for i in mics_order]  # Map FPGA mic indices to physical mic numbers

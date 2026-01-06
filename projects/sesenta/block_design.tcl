@@ -28,7 +28,7 @@ cell iari:user:addr_counter:1.0 addr_counter_0 {
     ADDR_WIDTH 12
   } {
     clk $mics_clk
-    enable mics_data_valid
+    enable beam_valid
     start [get_slice_pin [ctl_pin start_capture] 0 0 start]
     done [sts_pin done_capture]
   }
@@ -68,7 +68,7 @@ for {set i 0} {$i < $micsn} {incr i} {
   } {
       clk $mics_clk
       B [get_slice_pin mics $from $to] 
-      CE mics_data_valid
+      CE beam_valid
       SCLR start/Dout
   }
   
