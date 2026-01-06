@@ -43,7 +43,7 @@ module beamforming #(
       for (j = 0; j < NUM_CHANNELS; j = j + 1) begin : collect_channels
         // From delayed_data, get config j, channel i
         assign adder_input[j*DATA_WIDTH +: DATA_WIDTH] =
-               delayed_data[(j*NUM_CHANNELS + i)*DATA_WIDTH +: DATA_WIDTH];
+               delayed_data[(i*NUM_CHANNELS + j)*DATA_WIDTH +: DATA_WIDTH];
       end
 
       adder_tree_recursive #(

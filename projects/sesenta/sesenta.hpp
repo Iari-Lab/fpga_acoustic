@@ -242,9 +242,8 @@ private:
   // mics_map = [60 - i for i in mics_order]  # Map FPGA mic indices to physical
   // mic numbers
   static constexpr std::array<uint8_t, 16> M_DATA_TO_MIC = {
-      42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29};
-  // static constexpr std::array<uint8_t, 16> M_DATA_TO_MIC = {
-  //     41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28};
+      40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 25, 24, 23};
+      // 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23};
 
   void beamf_thread();
 

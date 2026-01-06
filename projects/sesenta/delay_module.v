@@ -22,7 +22,9 @@ module delay_module #(
   genvar i;
   generate
     for (i = 0; i < NUM_CHANNELS; i = i + 1) begin : delay_lines
-      delay_line dl (
+      delay_line #(
+        .MAX_DELAY(6)
+      ) dl (
           .clk(clk),
           .rst(rst),
           .pcm_valid(pcm_valid),
