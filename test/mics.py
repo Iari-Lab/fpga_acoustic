@@ -6,7 +6,7 @@ def record_all_mics(fpga):
     # mics = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 22, 24, 28, 30, 34, 36, 42, 44, 50, 52, 58] 
     # mapping = {i: i - 60 for i in mics}
     fpga.driver.record()
-    for mic in range(18):
+    for mic in range(16):
         fpga.data_bram_ith(mic)
         # sleep(0.5)
     fpga.driver.bf()

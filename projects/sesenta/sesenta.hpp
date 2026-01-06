@@ -27,8 +27,7 @@ public:
         mic9_br(ctx.mm.get<mem::mic9>()), mic10_br(ctx.mm.get<mem::mic10>()),
         mic11_br(ctx.mm.get<mem::mic11>()), mic12_br(ctx.mm.get<mem::mic12>()),
         mic13_br(ctx.mm.get<mem::mic13>()), mic14_br(ctx.mm.get<mem::mic14>()),
-        mic15_br(ctx.mm.get<mem::mic15>()), mic16_br(ctx.mm.get<mem::mic16>()),
-        mic17_br(ctx.mm.get<mem::mic17>()) {
+        mic15_br(ctx.mm.get<mem::mic15>()) {
     ctx.print<INFO>("BEAm------------------------------------------>");
     // start_beamforming();
   }
@@ -87,17 +86,11 @@ public:
     case 13:
       mic_data = mic13_br.read_array<int32_t, mic_size>();
       break;
-    // case 14:
-    //   mic_data = mic14_br.read_array<int32_t, mic_size>();
-    //   break;
-    // case 15:
-    //   mic_data = mic15_br.read_array<int32_t, mic_size>();
-    //   break;
-    case 16:
-      mic_data = mic16_br.read_array<int32_t, mic_size>();
+    case 14:
+      mic_data = mic14_br.read_array<int32_t, mic_size>();
       break;
-    case 17:
-      mic_data = mic17_br.read_array<int32_t, mic_size>();
+    case 15:
+      mic_data = mic15_br.read_array<int32_t, mic_size>();
       break;
     default:
       // ctx.print<ERROR>("Invalid microphone index: %d\n", mic_idx);
@@ -163,20 +156,15 @@ public:
                      M_DATA_TO_MIC[dir], power);
     set_led_sel(M_DATA_TO_MIC[dir]);
   }
+
   void bf() {
-
-    const int num_directions = 18;
-
+    const int num_directions = 16;
     std::array<double, num_directions> beam_powers = {0.0};
-    std::array<int, num_directions> sorted_indices;
-
-    // Initialize indices: 0, 1, 2, ..., 20
-    for (int i = 0; i < num_directions; i++) {
-      sorted_indices[i] = i;
-    }
-
     record();
+    int max_direction = 0;
+    double max_power = 0.0;
     for (int dir = 0; dir < num_directions; dir++) {
+      beam_powers = {0.0};
       auto beamformed_sum = get_mic_ith(dir);
 
       double power = 0.0;
@@ -186,43 +174,16 @@ public:
       }
 
       beam_powers[dir] = power / mic_size;
-      ctx.print<DEBUG>("Direction MIC %d: power: %f \n", dir, beam_powers[dir]);
-    }
-
-    // Sort indices by power (descending) using bubble sort
-    for (int i = 0; i < num_directions - 1; i++) {
-      for (int j = 0; j < num_directions - 1 - i; j++) {
-        if (beam_powers[sorted_indices[j]] <
-            beam_powers[sorted_indices[j + 1]]) {
-          int temp = sorted_indices[j];
-          sorted_indices[j] = sorted_indices[j + 1];
-          sorted_indices[j + 1] = temp;
-        }
+      if (beam_powers[dir] > max_power) {
+        max_power = beam_powers[dir];
+        max_direction = dir;
       }
     }
-
-    // Print sorted results
-    ctx.print<INFO>(
-        "\n=== Sorted Beamforming Results (by Power, Descending) ===\n");
-    ctx.print<INFO>("Rank | Direction | Mic Index | Power\n");
-    ctx.print<INFO>("-----|-----------|-----------|---------------\n");
-    for (int i = 0; i < num_directions; i++) {
-      int dir = sorted_indices[i];
-      ctx.print<INFO>("%4d | %9d | %9d | %e\n", i + 1, dir, M_DATA_TO_MIC[dir],
-                      beam_powers[dir]);
-    }
-    ctx.print<INFO>(
-        "=========================================================\n");
-
-    // Maximum is now the first element after sorting
-    int max_direction = sorted_indices[0];
-    double max_power = beam_powers[max_direction];
-
     ctx.print<INFO>("Maximum sound energy detected from direction: %d (M%d) "
                     "(Power: %e)\n",
                     max_direction, M_DATA_TO_MIC[max_direction], max_power);
+    set_led_sel(M_DATA_TO_MIC[max_direction]);
 
-    // set_led_sel(M_DATA_TO_MIC[max_direction]);
   }
   void set_led_sel(uint32_t sel) { ctl.write_reg(reg::led_select, sel); }
 
@@ -259,17 +220,31 @@ private:
   Memory<mem::mic13> &mic13_br;
   Memory<mem::mic14> &mic14_br;
   Memory<mem::mic15> &mic15_br;
-  Memory<mem::mic16> &mic16_br;
-  Memory<mem::mic17> &mic17_br;
 
   std::atomic<bool> beamforming_started{false};
   std::thread beamforming_thread;
 
   // Mapping for 30 microphones (M0-M29)
   // Corresponding to 30 beamforming directions
-  static constexpr std::array<uint8_t, 30> M_DATA_TO_MIC = {
-      60, 58, 56, 54, 52, 50, 48, 46, 44, 42, 40, 38, 36, 34, 32,
-      30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8,  6,  4,  2};
+  // static constexpr std::array<uint8_t, 30> M_DATA_TO_MIC = {
+  //     60, 58, 56, 54, 52, 50, 48, 46, 44, 42, 40, 38, 36, 34, 32,
+  //     30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8,  6,  4,  2};
+
+  // Mapping for 16 microphones to LED
+  // d18, d19, 0
+  // d20, d21, 1
+  // d22, d23, 2
+  // d24, d25, 3
+  // d26, d27, 4
+  // d28, d29, 5
+  // d30, d31, 6
+  // mics_order = [18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+  // mics_map = [60 - i for i in mics_order]  # Map FPGA mic indices to physical
+  // mic numbers
+  static constexpr std::array<uint8_t, 16> M_DATA_TO_MIC = {
+      42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29};
+  // static constexpr std::array<uint8_t, 16> M_DATA_TO_MIC = {
+  //     41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28};
 
   void beamf_thread();
 
@@ -286,75 +261,13 @@ inline void Sesenta::start_beamforming() {
   }
 }
 
-
 inline void Sesenta::beamf_thread() {
-  const int num_directions = 21;
 
   beamforming_started = true;
   ctx.print<INFO>("Beamforming thread started for 30 directions.\n");
-
   ctx.print<INFO>("BRAM buffer size: %u samples\n", mic_size);
-
-  std::array<double, num_directions> beam_powers = {0.0};
-  std::array<int, num_directions> sorted_indices;
-
   while (beamforming_started) {
-
-    beam_powers = {0.0};
-
-    // Initialize indices: 0, 1, 2, ..., 20
-    for (int i = 0; i < num_directions; i++) {
-      sorted_indices[i] = i;
-    }
-
-    record();
-    for (int dir = 0; dir < num_directions; dir++) {
-
-      auto beamformed_sum = get_mic_ith(dir);
-
-      double power = 0.0;
-      for (uint32_t sample_idx = 0; sample_idx < mic_size; sample_idx++) {
-        double sample = static_cast<double>(beamformed_sum[sample_idx]);
-        power += (sample * sample);
-      }
-
-      beam_powers[dir] = power / mic_size;
-    }
-
-    // Sort indices by power (descending) using bubble sort
-    for (int i = 0; i < num_directions - 1; i++) {
-      for (int j = 0; j < num_directions - 1 - i; j++) {
-        if (beam_powers[sorted_indices[j]] < beam_powers[sorted_indices[j + 1]]) {
-          int temp = sorted_indices[j];
-          sorted_indices[j] = sorted_indices[j + 1];
-          sorted_indices[j + 1] = temp;
-        }
-      }
-    }
-
-    // Print sorted results
-    ctx.print<INFO>("\n=== Sorted Beamforming Results (by Power, Descending) ===\n");
-    ctx.print<INFO>("Rank | Direction | Mic Index | Power\n");
-    ctx.print<INFO>("-----|-----------|-----------|---------------\n");
-    for (int i = 0; i < num_directions; i++) {
-      int dir = sorted_indices[i];
-      ctx.print<INFO>("%4d | %9d | %9d | %e\n",
-                      i + 1,
-                      dir,
-                      M_DATA_TO_MIC[dir],
-                      beam_powers[dir]);
-    }
-    ctx.print<INFO>("=========================================================\n");
-
-    // Maximum is now the first element after sorting
-    int max_direction = sorted_indices[0];
-    double max_power = beam_powers[max_direction];
-
-    ctx.print<INFO>(
-        "Maximum sound energy detected from direction: %d (M%d) (Power: %e)\n",
-        max_direction, M_DATA_TO_MIC[max_direction], max_power);
-
-    set_led_sel(M_DATA_TO_MIC[max_direction]);
+      bf();
   }
 }
 #endif // __SESENTA_HPP__
