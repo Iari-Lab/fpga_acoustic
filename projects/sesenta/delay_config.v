@@ -1,36 +1,32 @@
 module delay_config #(
     parameter DELAY_SELECT = 0
 )(
-    output wire [63:0] delays  // 16 x 4-bit delays packed
+    output wire [47:0] delays  // 12 x 4-bit delays packed
 );
 
-  // Function to pack 16 4-bit delays into 64 bits
-  function [63:0] pack_delays;
-    input [3:0] d0, d1, d2, d3, d4, d5, d6, d7;
-    input [3:0] d8, d9, d10, d11, d12, d13, d14, d15;
+  // Function to pack 12 4-bit delays into 48 bits
+  function [47:0] pack_delays;
+    input [3:0] d0, d1, d2, d3, d4, d5;
+    input [3:0] d6, d7, d8, d9, d10, d11;
     begin
-      pack_delays = {d15, d14, d13, d12, d11, d10, d9, d8, d7, d6, d5, d4, d3, d2, d1, d0};
+      pack_delays = {d11, d10, d9, d8, d7, d6, d5, d4, d3, d2, d1, d0};
     end
   endfunction
 
-  // Delay configurations for all 16 source directions
-  // Mics: M18  M19  M20  M21  M22  M23  M24  M25  M26  M27  M28  M29  M30  M31  M34  M35
-  localparam [63:0] DELAY_CONFIG_0  = pack_delays(5,5,4,4,3,2,2,1,0,0,1,0,2,2,5,5);  // Source M18
-  localparam [63:0] DELAY_CONFIG_1  = pack_delays(5,5,5,5,4,3,2,2,0,1,0,0,1,2,4,4);  // Source M19
-  localparam [63:0] DELAY_CONFIG_2  = pack_delays(5,6,6,6,5,4,4,3,1,1,1,0,1,1,4,4);  // Source M20
-  localparam [63:0] DELAY_CONFIG_3  = pack_delays(4,5,5,5,5,4,4,3,2,2,1,0,0,1,2,3);  // Source M21
-  localparam [63:0] DELAY_CONFIG_4  = pack_delays(3,3,4,5,5,5,4,3,2,2,1,0,0,0,1,1);  // Source M22
-  localparam [63:0] DELAY_CONFIG_5  = pack_delays(2,3,4,4,5,5,5,4,4,3,2,1,0,0,0,1);  // Source M23
-  localparam [63:0] DELAY_CONFIG_6  = pack_delays(1,2,2,3,4,5,5,5,4,3,3,1,1,0,0,0);  // Source M24
-  localparam [63:0] DELAY_CONFIG_7  = pack_delays(1,2,2,3,4,4,5,5,5,5,4,3,2,2,0,0);  // Source M25
-  localparam [63:0] DELAY_CONFIG_8  = pack_delays(1,1,1,3,4,4,5,6,6,6,5,4,4,3,1,0);  // Source M26
-  localparam [63:0] DELAY_CONFIG_9  = pack_delays(0,1,0,2,2,3,4,5,5,5,5,4,4,3,1,0);  // Source M27
-  localparam [63:0] DELAY_CONFIG_10 = pack_delays(1,0,0,1,2,2,3,4,4,5,5,5,5,4,2,0);  // Source M28
-  localparam [63:0] DELAY_CONFIG_11 = pack_delays(1,1,0,1,1,1,3,4,4,5,6,6,6,5,3,1);  // Source M29
-  localparam [63:0] DELAY_CONFIG_12 = pack_delays(2,1,0,0,1,0,2,2,3,4,5,5,5,5,3,2);  // Source M30
-  localparam [63:0] DELAY_CONFIG_13 = pack_delays(2,2,0,1,0,0,1,2,2,3,4,4,5,5,4,3);  // Source M31
-  localparam [63:0] DELAY_CONFIG_14 = pack_delays(5,4,3,2,2,0,1,0,0,1,2,2,3,4,5,5);  // Source M34
-  localparam [63:0] DELAY_CONFIG_15 = pack_delays(6,5,4,4,3,1,1,1,0,1,1,1,3,4,6,6);  // Source M35
+  // Delay configurations for all 12 source directions
+  // Mics: M37  M39  M41  M43  M45  M47  M49  M51  M53  M55  M57  M59
+  localparam [47:0] DELAY_CONFIG_0  = pack_delays(8,7,6,3,2,0,1,0,2,3,6,7);  // Source M37
+  localparam [47:0] DELAY_CONFIG_1  = pack_delays(9,10,9,7,5,2,2,0,2,2,5,7);  // Source M39
+  localparam [47:0] DELAY_CONFIG_2  = pack_delays(6,7,8,7,6,3,2,0,1,0,2,3);  // Source M41
+  localparam [47:0] DELAY_CONFIG_3  = pack_delays(5,7,9,10,9,7,5,2,2,0,2,2);  // Source M43
+  localparam [47:0] DELAY_CONFIG_4  = pack_delays(2,3,6,7,8,7,6,3,2,0,1,0);  // Source M45
+  localparam [47:0] DELAY_CONFIG_5  = pack_delays(2,2,5,7,9,10,9,7,5,2,2,0);  // Source M47
+  localparam [47:0] DELAY_CONFIG_6  = pack_delays(1,0,2,3,6,7,8,7,6,3,2,0);  // Source M49
+  localparam [47:0] DELAY_CONFIG_7  = pack_delays(2,0,2,2,5,7,9,10,9,7,5,2);  // Source M51
+  localparam [47:0] DELAY_CONFIG_8  = pack_delays(2,0,1,0,2,3,6,7,8,7,6,3);  // Source M53
+  localparam [47:0] DELAY_CONFIG_9  = pack_delays(5,2,2,0,2,2,5,7,9,10,9,7);  // Source M55
+  localparam [47:0] DELAY_CONFIG_10 = pack_delays(6,3,2,0,1,0,2,3,6,7,8,7);  // Source M57
+  localparam [47:0] DELAY_CONFIG_11 = pack_delays(9,7,5,2,2,0,2,2,5,7,9,10);  // Source M59
 
   // Select the appropriate delay configuration
   assign delays = 
@@ -46,10 +42,6 @@ module delay_config #(
     (DELAY_SELECT == 9 ) ? DELAY_CONFIG_9  :
     (DELAY_SELECT == 10) ? DELAY_CONFIG_10 :
     (DELAY_SELECT == 11) ? DELAY_CONFIG_11 :
-    (DELAY_SELECT == 12) ? DELAY_CONFIG_12 :
-    (DELAY_SELECT == 13) ? DELAY_CONFIG_13 :
-    (DELAY_SELECT == 14) ? DELAY_CONFIG_14 :
-    (DELAY_SELECT == 15) ? DELAY_CONFIG_15 :
-    64'h0;
+    48'h0;
 
 endmodule

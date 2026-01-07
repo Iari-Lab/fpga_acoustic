@@ -49,18 +49,6 @@ memory:
 - name: mic11
   range: 16K
   offset: '0x4006C000'
-- name: mic12
-  range: 16K
-  offset: '0x40070000'
-- name: mic13
-  range: 16K
-  offset: '0x40074000'
-- name: mic14
-  range: 16K
-  offset: '0x40078000'
-- name: mic15
-  range: 16K
-  offset: '0x4007C000'
 
 control_registers:
 - rst_regs

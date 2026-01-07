@@ -19,19 +19,30 @@ connect_pins mic_sel [get_slice_pin [ctl_pin mic_select] 6 0 mic_sel_pin]
 connect_pins led_sel [get_slice_pin [ctl_pin led_select] 6 0 led_sel_pin]
 
 set mic_width 32
-set micsn 16
+set micsn 12
 for {set i 0} {$i < $micsn} {incr i} {
   add_bram mic$i
-}
-
-cell iari:user:addr_counter:1.0 addr_counter_0 {
+  set from  $i
+  set to    $i
+cell iari:user:addr_counter:1.0 addr_counter_$i {
     ADDR_WIDTH 12
   } {
     clk $mics_clk
-    enable beam_valid
-    start [get_slice_pin [ctl_pin start_capture] 0 0 start]
-    done [sts_pin done_capture]
+    enable [get_slice_pin beam_valid $from $to beam_valid_pin_$i]
+    start [get_slice_pin [ctl_pin start_capture] 0 0 start_$i]
   }
+}
+# done [sts_pin done_capture]
+connect_pins addr_counter_0/done [sts_pin done_capture]
+
+# cell iari:user:addr_counter:1.0 addr_counter_0 {
+#     ADDR_WIDTH 12
+#   } {
+#     clk $mics_clk
+#     enable beam_valid
+#     start [get_slice_pin [ctl_pin start_capture] 0 0 start]
+#     done [sts_pin done_capture]
+#   }
 
 # cell xilinx.com:ip:system_ila:1.1 sila_3 {
 #     C_PROBE0_WIDTH 1
@@ -69,16 +80,16 @@ for {set i 0} {$i < $micsn} {incr i} {
       clk $mics_clk
       B [get_slice_pin mics $from $to] 
       CE beam_valid
-      SCLR start/Dout
+      SCLR start_$i/Dout
   }
   
   connect_cell blk_mem_gen_mic$i {
-    addrb addr_counter_0/addr
+    addrb addr_counter_$i/addr
     clkb $mics_clk
     dinb c_accum_$i/Q
     enb [get_constant_pin 1 1]
     rstb [get_constant_pin 0 1]
-    web addr_counter_0/write_en
+    web addr_counter_$i/write_en
   }
 }
 

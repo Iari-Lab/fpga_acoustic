@@ -50,7 +50,7 @@ class Acoustic():
         
         for idx, data in enumerate(data_arrays):
             time_axis = np.arange(len(data))
-            np.save(f"../{filedir}/{name}{idx}.npy", data)
+            # np.save(f"../{filedir}/{name}{idx}.npy", data)
             plt.plot(time_axis, data, label="{} {}".format(name, idx))  
     
         plt.title("{}".format(name))
@@ -59,7 +59,7 @@ class Acoustic():
         plt.grid(True)
         plt.legend()
         plt.tight_layout()
-        plt.savefig(f"../{filedir}/{name}_{test}.png", dpi=300, bbox_inches='tight')
+        # plt.savefig(f"../{filedir}/{name}_{test}.png", dpi=300, bbox_inches='tight')
         plt.show(block= False)
 
 

@@ -25,9 +25,7 @@ public:
         mic5_br(ctx.mm.get<mem::mic5>()), mic6_br(ctx.mm.get<mem::mic6>()),
         mic7_br(ctx.mm.get<mem::mic7>()), mic8_br(ctx.mm.get<mem::mic8>()),
         mic9_br(ctx.mm.get<mem::mic9>()), mic10_br(ctx.mm.get<mem::mic10>()),
-        mic11_br(ctx.mm.get<mem::mic11>()), mic12_br(ctx.mm.get<mem::mic12>()),
-        mic13_br(ctx.mm.get<mem::mic13>()), mic14_br(ctx.mm.get<mem::mic14>()),
-        mic15_br(ctx.mm.get<mem::mic15>()) {
+        mic11_br(ctx.mm.get<mem::mic11>()) {
     ctx.print<INFO>("BEAm------------------------------------------>");
     // start_beamforming();
   }
@@ -79,18 +77,6 @@ public:
       break;
     case 11:
       mic_data = mic11_br.read_array<int32_t, mic_size>();
-      break;
-    case 12:
-      mic_data = mic12_br.read_array<int32_t, mic_size>();
-      break;
-    case 13:
-      mic_data = mic13_br.read_array<int32_t, mic_size>();
-      break;
-    case 14:
-      mic_data = mic14_br.read_array<int32_t, mic_size>();
-      break;
-    case 15:
-      mic_data = mic15_br.read_array<int32_t, mic_size>();
       break;
     default:
       // ctx.print<ERROR>("Invalid microphone index: %d\n", mic_idx);
@@ -216,10 +202,6 @@ private:
   Memory<mem::mic9> &mic9_br;
   Memory<mem::mic10> &mic10_br;
   Memory<mem::mic11> &mic11_br;
-  Memory<mem::mic12> &mic12_br;
-  Memory<mem::mic13> &mic13_br;
-  Memory<mem::mic14> &mic14_br;
-  Memory<mem::mic15> &mic15_br;
 
   std::atomic<bool> beamforming_started{false};
   std::thread beamforming_thread;
@@ -239,10 +221,13 @@ private:
   // d28, d29, 5
   // d30, d31, 6
   // mics_order = [18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+  // ring4_mics= [37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59]
+  // led_map [22, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0]
   // mics_map = [60 - i for i in mics_order]  # Map FPGA mic indices to physical
   // mic numbers
   static constexpr std::array<uint8_t, 16> M_DATA_TO_MIC = {
-      40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 25, 24, 23};
+      22, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0 };
+      // 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 25, 24, 23};
       // 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23};
 
   void beamf_thread();

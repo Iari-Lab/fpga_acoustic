@@ -39,7 +39,7 @@ module sesenta (
     output M0_CLK,
     output M1_CLK,
     output M2_CLK,
-    input [7:0] M_DATA,  // 18 microphone inputs (M18-M35)
+    input [11:0] M_DATA,  // 18 microphone inputs (M18-M35)
     output LEDS,
     output SYNC_IN,
     output SYNC_OUT
@@ -48,8 +48,8 @@ module sesenta (
   localparam integer INPUT_FREQ = 120_000_000;
   localparam integer PDM_FREQ = 2_400_000;
   localparam integer LED_FREQ = 12000000;
-  localparam integer NUM_CONFIGS = 16;
-  localparam integer NUM_CHANNELS = 16;
+  localparam integer NUM_CONFIGS = 12;
+  localparam integer NUM_CHANNELS = 12;
   localparam integer CIC_DATA_WIDTH = 16;
   // SUM_WIDTH matches adder_tree_recursive: DATA_WIDTH + $clog2(NUM_CHANNELS) + 1
   localparam integer SUM_WIDTH = CIC_DATA_WIDTH + $clog2(NUM_CHANNELS) + 1;  // 22 bits
@@ -131,7 +131,7 @@ module sesenta (
       .CIC_STAGES(4),
       .CIC_DECIMATION(50)
   ) cic_stage (
-      .clk(clk),
+      .clk(~clk),
       .rst(~rst),
       .pdm_clk(pdm_clk),
       .pdm_data(M_DATA[0]),
@@ -143,7 +143,6 @@ module sesenta (
 
   genvar j;
   // Generate 18 CIC decimators from 9 M_DATA lines
-  // Even j (0,2,4,...16): use clk,  maps to M_DATA[j/2]
   // Odd j  (1,3,5,...17): use ~clk, maps to M_DATA[j/2]
   generate
     for (j = 1; j < NUM_CHANNELS; j = j + 1) begin : pdms_gen
@@ -152,10 +151,10 @@ module sesenta (
           .CIC_STAGES(4),
           .CIC_DECIMATION(50)
       ) cic_stage (
-          .clk         (j[0] ? ~clk : clk),    // Odd: ~clk, Even: clk
+          .clk         (~clk),    // Odd: ~clk, Even: clk
           .rst         (~rst),
           .pdm_clk     (pdm_clk),
-          .pdm_data    (M_DATA[j/2]),          // Integer division: 0,1→0, 2,3→1, etc.
+          .pdm_data    (M_DATA[j]),          // Integer division: 0,1→0, 2,3→1, etc.
           .pcm_valid   (),
           .pcm_data    (mics_data[j*CIC_DATA_WIDTH +: CIC_DATA_WIDTH]),
           .overflow    (cic_overflow[j]),
@@ -163,6 +162,28 @@ module sesenta (
       );
     end
   endgenerate
+//   genvar j;
+//   // Generate 18 CIC decimators from 9 M_DATA lines
+//   // Even j (0,2,4,...16): use clk,  maps to M_DATA[j/2]
+//   // Odd j  (1,3,5,...17): use ~clk, maps to M_DATA[j/2]
+//   generate
+//     for (j = 1; j < NUM_CHANNELS; j = j + 1) begin : pdms_gen
+//       cic_decimator #(
+//           .DATA_WIDTH(CIC_DATA_WIDTH),
+//           .CIC_STAGES(4),
+//           .CIC_DECIMATION(50)
+//       ) cic_stage (
+//           .clk         (j[0] ? ~clk : clk),    // Odd: ~clk, Even: clk
+//           .rst         (~rst),
+//           .pdm_clk     (pdm_clk),
+//           .pdm_data    (M_DATA[j/2]),          // Integer division: 0,1→0, 2,3→1, etc.
+//           .pcm_valid   (),
+//           .pcm_data    (mics_data[j*CIC_DATA_WIDTH +: CIC_DATA_WIDTH]),
+//           .overflow    (cic_overflow[j]),
+//           .sample_count()
+//       );
+//     end
+//   endgenerate
 
   wire [7:0] mic_sel;
 
@@ -184,7 +205,7 @@ module sesenta (
       .mic_sel(mic_sel),
       .led_sel(led_sel),
       .mics(beam_data),
-      .beam_valid(beamformed_valid[0]),
+      .beam_valid(beamformed_valid),
       .DDR_addr(DDR_addr),
       .DDR_ba(DDR_ba),
       .DDR_cas_n(DDR_cas_n),
