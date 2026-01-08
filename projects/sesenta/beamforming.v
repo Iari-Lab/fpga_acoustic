@@ -2,7 +2,8 @@ module beamforming #(
     parameter NUM_CONFIGS = 18,
     parameter NUM_CHANNELS = 18,
     parameter DATA_WIDTH = 16,
-    parameter FANIN = 4
+    parameter FANIN = 4,
+    parameter SUM_WIDTH = 20
 )(
     input wire clk,
     input wire rst,
@@ -13,7 +14,7 @@ module beamforming #(
 );
 
   // SUM_WIDTH matches adder_tree_recursive calculation
-  localparam SUM_WIDTH = DATA_WIDTH + $clog2(NUM_CHANNELS) + 1;
+  // localparam SUM_WIDTH = DATA_WIDTH + $clog2(NUM_CHANNELS) + 1;
 
   // Packed delayed data from delay_bank
   wire [NUM_CONFIGS*NUM_CHANNELS*DATA_WIDTH-1:0] delayed_data;

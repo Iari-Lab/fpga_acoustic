@@ -693,7 +693,8 @@ if __name__ == "__main__":
     # Example: Ring 3 microphones (18 mics)
     # ring3_mics = [18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 34, 35]
 
-    ring4_mics= [37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59]
+    # ring4_mics= [37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59]
+    all_rings = [i for i in range(60)]
 
     # ring3_mics = [18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]
     
@@ -702,4 +703,5 @@ if __name__ == "__main__":
         svg_path="sesenta.svg"
     )
     
-    tool.generate_all(ring4_mics, output_dir="output")
+    tool.generate_all(all_rings, output_dir="output")
+    # tool.generate_all(ring4_mics, output_dir="output")

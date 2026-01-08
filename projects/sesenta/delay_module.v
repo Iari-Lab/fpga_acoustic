@@ -1,6 +1,6 @@
 module delay_module #(
     parameter DELAY_SELECT = 0,
-    parameter NUM_CHANNELS = 12
+    parameter NUM_CHANNELS = 60
 )(
     input wire clk,
     input wire rst,
@@ -10,7 +10,7 @@ module delay_module #(
 );
 
   // Get delays from config module
-  wire [47:0] selected_delays;
+  wire [239:0] selected_delays;
   
   delay_config #(
     .DELAY_SELECT(DELAY_SELECT)
@@ -23,7 +23,7 @@ module delay_module #(
   generate
     for (i = 0; i < NUM_CHANNELS; i = i + 1) begin : delay_lines
       delay_line #(
-        .MAX_DELAY(6)
+        .MAX_DELAY(16)
       ) dl (
           .clk(clk),
           .rst(rst),

@@ -14,53 +14,193 @@ memory:
   range: 4K
   offset: '0x50000000'
 - name: mic0
-  range: 16K
+  range: 8K
   offset: '0x40040000'
 - name: mic1
-  range: 16K
-  offset: '0x40044000'
+  range: 8K
+  offset: '0x40042000'
 - name: mic2
-  range: 16K
-  offset: '0x40048000'
+  range: 8K
+  offset: '0x40044000'
 - name: mic3
-  range: 16K
-  offset: '0x4004C000'
+  range: 8K
+  offset: '0x40046000'
 - name: mic4
-  range: 16K
-  offset: '0x40050000'
+  range: 8K
+  offset: '0x40048000'
 - name: mic5
-  range: 16K
-  offset: '0x40054000'
+  range: 8K
+  offset: '0x4004A000'
 - name: mic6
-  range: 16K
-  offset: '0x40058000'
+  range: 8K
+  offset: '0x4004C000'
 - name: mic7
-  range: 16K
-  offset: '0x4005C000'
+  range: 8K
+  offset: '0x4004E000'
 - name: mic8
-  range: 16K
-  offset: '0x40060000'
+  range: 8K
+  offset: '0x40050000'
 - name: mic9
-  range: 16K
-  offset: '0x40064000'
+  range: 8K
+  offset: '0x40052000'
 - name: mic10
-  range: 16K
-  offset: '0x40068000'
+  range: 8K
+  offset: '0x40054000'
 - name: mic11
-  range: 16K
+  range: 8K
+  offset: '0x40056000'
+- name: mic12
+  range: 8K
+  offset: '0x40058000'
+- name: mic13
+  range: 8K
+  offset: '0x4005A000'
+- name: mic14
+  range: 8K
+  offset: '0x4005C000'
+- name: mic15
+  range: 8K
+  offset: '0x4005E000'
+- name: mic16
+  range: 8K
+  offset: '0x40060000'
+- name: mic17
+  range: 8K
+  offset: '0x40062000'
+- name: mic18
+  range: 8K
+  offset: '0x40064000'
+- name: mic19
+  range: 8K
+  offset: '0x40066000'
+- name: mic20
+  range: 8K
+  offset: '0x40068000'
+- name: mic21
+  range: 8K
+  offset: '0x4006A000'
+- name: mic22
+  range: 8K
   offset: '0x4006C000'
+- name: mic23
+  range: 8K
+  offset: '0x4006E000'
+- name: mic24
+  range: 8K
+  offset: '0x40070000'
+- name: mic25
+  range: 8K
+  offset: '0x40072000'
+- name: mic26
+  range: 8K
+  offset: '0x40074000'
+- name: mic27
+  range: 8K
+  offset: '0x40076000'
+- name: mic28
+  range: 8K
+  offset: '0x40078000'
+- name: mic29
+  range: 8K
+  offset: '0x4007A000'
+- name: mic30
+  range: 8K
+  offset: '0x4007C000'
+- name: mic31
+  range: 8K
+  offset: '0x4007E000'
+- name: mic32
+  range: 8K
+  offset: '0x40080000'
+- name: mic33
+  range: 8K
+  offset: '0x40082000'
+- name: mic34
+  range: 8K
+  offset: '0x40084000'
+- name: mic35
+  range: 8K
+  offset: '0x40086000'
+- name: mic36
+  range: 8K
+  offset: '0x40088000'
+- name: mic37
+  range: 8K
+  offset: '0x4008A000'
+- name: mic38
+  range: 8K
+  offset: '0x4008C000'
+- name: mic39
+  range: 8K
+  offset: '0x4008E000'
+- name: mic40
+  range: 8K
+  offset: '0x40090000'
+- name: mic41
+  range: 8K
+  offset: '0x40092000'
+- name: mic42
+  range: 8K
+  offset: '0x40094000'
+- name: mic43
+  range: 8K
+  offset: '0x40096000'
+- name: mic44
+  range: 8K
+  offset: '0x40098000'
+- name: mic45
+  range: 8K
+  offset: '0x4009A000'
+- name: mic46
+  range: 8K
+  offset: '0x4009C000'
+- name: mic47
+  range: 8K
+  offset: '0x4009E000'
+- name: mic48
+  range: 8K
+  offset: '0x400A0000'
+- name: mic49
+  range: 8K
+  offset: '0x400A2000'
+- name: mic50
+  range: 8K
+  offset: '0x400A4000'
+- name: mic51
+  range: 8K
+  offset: '0x400A6000'
+- name: mic52
+  range: 8K
+  offset: '0x400A8000'
+- name: mic53
+  range: 8K
+  offset: '0x400AA000'
+- name: mic54
+  range: 8K
+  offset: '0x400AC000'
+- name: mic55
+  range: 8K
+  offset: '0x400AE000'
+- name: mic56
+  range: 8K
+  offset: '0x400B0000'
+- name: mic57
+  range: 8K
+  offset: '0x400B2000'
+- name: mic58
+  range: 8K
+  offset: '0x400B4000'
+- name: mic59
+  range: 8K
+  offset: '0x400B6000'
 
 control_registers:
-- rst_regs
-- dma_gate
-- dma_gate1
-- n_samples
-- mic_select
 - led_select
 - start_capture
+
 status_registers:
-- mode
 - done_capture
+
 parameters:
   fclk0: 100000000
 xdc:
