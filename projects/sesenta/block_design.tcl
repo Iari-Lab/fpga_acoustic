@@ -99,7 +99,7 @@ for {set i 0} {$i < $micsn} {incr i} {
   }
   
   connect_cell blk_mem_gen_mic$i {
-    addrb addr_counter_$i/addr
+    addrb addr_counter_0/addr
     clkb $mics_clk
     dinb c_accum_$i/Q
     enb [get_constant_pin 1 1]
