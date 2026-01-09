@@ -1,7 +1,6 @@
 module delay_line  #(
     parameter MAX_DELAY = 6
 )(
-
     input wire clk,
     input wire rst,
     input wire pcm_valid,
@@ -15,9 +14,12 @@ module delay_line  #(
   reg [MAX_DELAY:0] delay_reg;
   reg [15:0] delayed_pcm_data_r; 
 
-  always @(posedge clk) begin
+  always @(posedge clk or negedge rst) begin
     if (rst) begin
-      delay_reg <= 0;
+      for (i = 0; i <= MAX_DELAY; i = i + 1) begin
+        buffer[i] <= 16'h0000;
+      end
+      delay_reg <= 4'h0;
       delayed_pcm_data_r <= 16'h0000;
     end else begin
       delay_reg <= delay;
