@@ -15,11 +15,8 @@ module delay_line  #(
   reg [MAX_DELAY:0] delay_reg;
   reg [15:0] delayed_pcm_data_r; 
 
-  always @(posedge clk or posedge rst) begin
+  always @(posedge clk) begin
     if (rst) begin
-      for (i = 0; i <= MAX_DELAY; i = i + 1) begin
-        buffer[i] <= 0;
-      end
       delay_reg <= 0;
       delayed_pcm_data_r <= 16'h0000;
     end else begin

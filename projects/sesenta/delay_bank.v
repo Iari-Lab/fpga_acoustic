@@ -1,6 +1,6 @@
 module delay_bank #(
-    parameter NUM_CONFIGS = 60,   // Number of delay configurations (directions)
-    parameter NUM_CHANNELS = 60   // Number of microphone channels
+    parameter NUM_CONFIGS = 30,   // Number of delay configurations (directions)
+    parameter NUM_CHANNELS = 30   // Number of microphone channels
 )(
     input wire clk,
     input wire rst,

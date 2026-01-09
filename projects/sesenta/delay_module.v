@@ -1,6 +1,6 @@
 module delay_module #(
     parameter DELAY_SELECT = 0,
-    parameter NUM_CHANNELS = 60
+    parameter NUM_CHANNELS = 30
 )(
     input wire clk,
     input wire rst,
@@ -10,7 +10,7 @@ module delay_module #(
 );
 
   // Get delays from config module
-  wire [239:0] selected_delays;
+  wire [119:0] selected_delays;
   
   delay_config #(
     .DELAY_SELECT(DELAY_SELECT)
