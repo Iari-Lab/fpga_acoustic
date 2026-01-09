@@ -15,49 +15,23 @@ connect_port_pin reset proc_sys_reset_adc_clk/peripheral_aresetn
 # add_ctl_sts $mics_clk proc_sys_reset_adc_clk/peripheral_aresetn
 
 # source $sdk_path/projects/sesenta/amd.tcl
+# connect_pins mic_sel [get_slice_pin [ctl_pin mic_select] 6 0 mic_sel_pin]
 connect_pins led_sel [get_slice_pin [ctl_pin led_select] 6 0 led_sel_pin]
 
-
-# set mic_width 32
-# set micsn 60
 set mic_width 20
 set micsn 30
-# for {set i 0} {$i < $micsn} {incr i} {
-#   add_bram mic$i
-#   set from  $i
-#   set to    $i
-# cell iari:user:addr_counter:1.0 addr_counter_$i {
-#     ADDR_WIDTH 12
-#   } {
-#     clk $mics_clk
-#     enable [get_slice_pin beam_valid 0 0 beam_valid_pin_0]
-#     start [get_slice_pin [ctl_pin start_capture] 0 0 start]
-#   }
-# }
-# # done [sts_pin done_capture]
-# connect_pins addr_counter_0/done [sts_pin done_capture]
-
-
-for {set i 1} {$i < $micsn} {incr i} {
+for {set i 0} {$i < $micsn} {incr i} {
   add_bram mic$i
 }
-cell iari:user:addr_counter:2.0 addr_counter_0 {
+
+cell iari:user:addr_counter:1.0 addr_counter_0 {
     ADDR_WIDTH 12
   } {
     clk $mics_clk
-    enable [get_slice_pin beam_valid 0 0 beam_valid_pin_0]
-    start [get_slice_pin [ctl_pin start_capture] 1 0 start]
+    enable beam_valid
+    start [get_slice_pin [ctl_pin start_capture] 0 0 start]
     done [sts_pin done_capture]
   }
-
-# cell iari:user:addr_counter:2.0 addr_counter_0 {
-#     ADDR_WIDTH 13
-#   } {
-#     clk $mics_clk
-#     enable beam_valid
-#     start [get_slice_pin [ctl_pin start_capture] 1 0 start]
-#     done [sts_pin done_capture]
-#   }
 
 # cell xilinx.com:ip:system_ila:1.1 sila_3 {
 #     C_PROBE0_WIDTH 1
@@ -79,35 +53,7 @@ cell iari:user:addr_counter:2.0 addr_counter_0 {
 #     probe3 mics_data_valid
 
 # }
-# for {set i 0} {$i < $micsn} {incr i} {
-#   set from  [expr ($i + 1) * $mic_width - 1]
-#   set to    [expr $i * $mic_width]
 
-#   cell xilinx.com:ip:c_accum:12.0 c_accum_$i {
-#       INPUT_WIDTH 20
-#       OUTPUT_WIDTH 32
-#       INPUT_TYPE Signed
-#       Input_Type.VALUE_SRC USER
-#       LATENCY_CONFIGURATION Automatic
-#       CE true
-#       BYPASS false
-#       SCLR true
-#   } {
-#       clk $mics_clk
-#       B [get_slice_pin mics $from $to] 
-#       CE [get_slice_pin beam_valid 0 0 beam_valid_pin_1]
-#       SCLR start/Dout
-#   }
-  
-#   connect_cell blk_mem_gen_mic$i {
-#     addrb addr_counter_$i/addr
-#     clkb $mics_clk
-#     dinb c_accum_$i/Q
-#     enb [get_constant_pin 1 1]
-#     rstb [get_constant_pin 0 1]
-#     web addr_counter_$i/write_en
-#   }
-# }
 for {set i 0} {$i < $micsn} {incr i} {
   set from  [expr ($i + 1) * $mic_width - 1]
   set to    [expr $i * $mic_width]
@@ -124,7 +70,7 @@ for {set i 0} {$i < $micsn} {incr i} {
   } {
       clk $mics_clk
       B [get_slice_pin mics $from $to] 
-      CE [get_slice_pin beam_valid 0 0 beam_valid_pin_0]
+      CE beam_valid
       SCLR start/Dout
   }
   

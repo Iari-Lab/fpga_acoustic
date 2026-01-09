@@ -2,6 +2,8 @@ set xpr_filename [lindex $argv 0]
 set bit_filename [lindex $argv 1]
 set nCPU [lindex $argv 2]
 set enable_compress 1
+# set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE AggressiveExplore [get_runs impl_1]
+# set_property STEPS.ROUTE_DESIGN.ARGS.DIRECTIVE AggressiveExplore [get_runs impl_1]
 open_project $xpr_filename
 if {$enable_compress} {
   if {[get_property PROGRESS [get_runs impl_1]] != "100%"} {

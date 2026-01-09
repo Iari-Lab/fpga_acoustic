@@ -3,7 +3,6 @@ module delay_bank #(
     parameter NUM_CHANNELS = 30   // Number of microphone channels
 )(
     input wire clk,
-    input wire rst,
     input wire pcm_valid,
     input wire [NUM_CHANNELS*16-1:0] pcm_data,                      // Input: NUM_CHANNELS * 16 bits
     output wire [NUM_CONFIGS*NUM_CHANNELS*16-1:0] delayed_data      // Output: NUM_CONFIGS * NUM_CHANNELS * 16 bits
@@ -21,7 +20,6 @@ module delay_bank #(
           .NUM_CHANNELS(NUM_CHANNELS)
       ) u_delay (
           .clk(clk),
-          .rst(rst),
           .pcm_valid(pcm_valid),
           .pcm_data(pcm_data),
           .delayed_pcm_data(delayed_data[i*NUM_CHANNELS*16 +: NUM_CHANNELS*16])

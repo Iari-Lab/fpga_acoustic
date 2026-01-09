@@ -131,7 +131,7 @@ module sesenta (
       .CIC_STAGES(4),
       .CIC_DECIMATION(50)
   ) cic_stage (
-      .clk(~clk),
+      .clk(clk),
       .rst(~rst),
       .pdm_clk(pdm_clk),
       .pdm_data(M_DATA[0]),
@@ -172,7 +172,7 @@ module sesenta (
           .CIC_STAGES(4),
           .CIC_DECIMATION(50)
       ) cic_stage (
-          .clk         (~clk),    // Odd: ~clk, Even: clk
+          .clk         (clk),    // Odd: ~clk, Even: clk
           .rst         (~rst),
           .pdm_clk     (pdm_clk),
           .pdm_data    (M_DATA[j]),          // Integer division: 0,1→0, 2,3→1, etc.
@@ -224,7 +224,7 @@ module sesenta (
   system system_i (
       .led_sel(led_sel),
       .mics(beam_data),
-      .beam_valid(beamformed_valid),
+      .beam_valid(beamformed_valid[0]),
       .DDR_addr(DDR_addr),
       .DDR_ba(DDR_ba),
       .DDR_cas_n(DDR_cas_n),

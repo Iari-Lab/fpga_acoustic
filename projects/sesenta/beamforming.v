@@ -29,7 +29,6 @@ module beamforming #(
       .NUM_CHANNELS(NUM_CHANNELS)
   ) u_delay_bank (
       .clk(clk),
-      .rst(rst),
       .pcm_valid(mics_data_valid),
       .pcm_data(mics_data),
       .delayed_data(delayed_data)

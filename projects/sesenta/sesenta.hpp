@@ -164,27 +164,12 @@ public:
     //         .count();
     // std::cout << "Capture wait time: " << elapsed_us << " us\n";
   }
-  void set_mic_sel(uint32_t sel) {
-    ctl.write_reg(reg::mic_select, sel);
-    ctl.set_bit<reg::start_capture, 0>();
-    std::this_thread::sleep_for(std::chrono::microseconds(1));
-    ctl.clear_bit<reg::start_capture, 0>();
-    // auto t_start = std::chrono::high_resolution_clock::now();
-    while (!(sts.read_reg(reg::done_capture) & 0x1))
-      ;
-    // auto t_end = std::chrono::high_resolution_clock::now();
-    // auto elapsed_us =
-    //     std::chrono::duration_cast<std::chrono::microseconds>(t_end -
-    //     t_start)
-    //         .count();
-    // std::cout << "Capture wait time: " << elapsed_us << " us\n";
-  }
 
-  auto get_mics_bram(uint32_t dir) {
+  auto get_mics_bram() {
     const int num_mics = 29; // 29 microphones
     std::vector<int32_t> data_ret = {};
     for (int mic = 0; mic < num_mics; mic++) {
-      set_mic_sel(dir);
+      // set_mic_sel(dir);
       auto mic_data = get_mic_ith(mic);
       for (uint32_t sample_idx = 0; sample_idx < mic_size; sample_idx++) {
         uint32_t mic1 = mic_data[sample_idx];
@@ -208,7 +193,7 @@ public:
   }
 
   void bf() {
-    const int num_directions = 29;
+    const int num_directions = 30;
     std::array<double, num_directions> beam_powers = {0.0};
     record();
     int max_direction = 0;

@@ -105,20 +105,16 @@ memory:
   offset: '0x400B4000'
 
 control_registers:
-- rst_regs
-- dma_gate
-- dma_gate1
-- n_samples
-- mic_select
-- led_select
-- start_capture
+  - led_select
+  - start_capture
+
 status_registers:
-- mode
-- done_capture
+  - done_capture
+
 parameters:
   fclk0: 100000000
 xdc:
-- boards/myir/config/ports.xdc
+  - boards/myir/config/ports.xdc
 drivers:
-- server/drivers/common.hpp
-- ./sesenta.hpp
+  - server/drivers/common.hpp
+  - ./sesenta.hpp

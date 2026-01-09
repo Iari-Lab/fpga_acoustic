@@ -3,7 +3,6 @@ module delay_module #(
     parameter NUM_CHANNELS = 30
 )(
     input wire clk,
-    input wire rst,
     input wire pcm_valid,
     input wire [NUM_CHANNELS*16-1:0] pcm_data,
     output wire [NUM_CHANNELS*16-1:0] delayed_pcm_data
@@ -23,10 +22,9 @@ module delay_module #(
   generate
     for (i = 0; i < NUM_CHANNELS; i = i + 1) begin : delay_lines
       delay_line #(
-        .MAX_DELAY(16)
+        .MAX_DELAY(15)
       ) dl (
           .clk(clk),
-          .rst(rst),
           .pcm_valid(pcm_valid),
           .delay(selected_delays[i*4 +: 4]),
           .pcm_data(pcm_data[i*16 +: 16]),
