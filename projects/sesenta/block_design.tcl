@@ -17,6 +17,7 @@ connect_port_pin reset proc_sys_reset_adc_clk/peripheral_aresetn
 # source $sdk_path/projects/sesenta/amd.tcl
 connect_pins led_sel [get_slice_pin [ctl_pin led_select] 6 0 led_sel_pin]
 
+
 # set mic_width 32
 # set micsn 60
 set mic_width 20
@@ -29,8 +30,8 @@ cell iari:user:addr_counter:1.0 addr_counter_$i {
     ADDR_WIDTH 12
   } {
     clk $mics_clk
-    enable [get_slice_pin beam_valid $from $to beam_valid_pin_$i]
-    start [get_slice_pin [ctl_pin start_capture] 0 0 start_$i]
+    enable [get_slice_pin beam_valid 0 0 beam_valid_pin_0]
+    start [get_slice_pin [ctl_pin start_capture] 0 0 start]
   }
 }
 # done [sts_pin done_capture]
@@ -94,8 +95,8 @@ for {set i 0} {$i < $micsn} {incr i} {
   } {
       clk $mics_clk
       B [get_slice_pin mics $from $to] 
-      CE [get_slice_pin beam_valid $i $i beam_valid_pin2_$i]
-      SCLR start_$i/Dout
+      CE [get_slice_pin beam_valid 0 0 beam_valid_pin_1]
+      SCLR start/Dout
   }
   
   connect_cell blk_mem_gen_mic$i {
