@@ -4,9 +4,9 @@ set project_path [lindex $argv 1]
 open_hw_manager
 
 connect_hw_server -allow_non_jtag
-
+set device_name xc7z020_1
 open_hw_target
-current_hw_device [get_hw_devices xc7z020_0]
+current_hw_device [get_hw_devices $device_name]
 
 # Refresh the hardware device and update hardware probes
 
@@ -19,14 +19,14 @@ puts "ltx_file: $ltx_file"
 puts "full_bit_filename: $full_bit_filename"
 
 
-# set_property PROBES.FILE $ltx_file [get_hw_devices xc7z020_0]
-# set_property FULL_PROBES.FILE $ltx_file [get_hw_devices xc7z020_0]
-# set_property PROBES.FILE $ltx_file [get_hw_devices xc7z020_0]
-# set_property FULL_PROBES.FILE $ltx_file [get_hw_devices xc7z020_0]
-refresh_hw_device -update_hw_probes true [lindex [get_hw_devices xc7z020_0] 0]
-set_property PROGRAM.FILE $full_bit_filename  [get_hw_devices xc7z020_0]
-program_hw_devices [get_hw_devices xc7z020_0]
-refresh_hw_device [lindex [get_hw_devices xc7z020_0] 0]
+# set_property PROBES.FILE $ltx_file [get_hw_devices $device_name]
+# set_property FULL_PROBES.FILE $ltx_file [get_hw_devices $device_name]
+# set_property PROBES.FILE $ltx_file [get_hw_devices $device_name]
+# set_property FULL_PROBES.FILE $ltx_file [get_hw_devices $device_name]
+refresh_hw_device -update_hw_probes true [lindex [get_hw_devices $device_name] 0]
+set_property PROGRAM.FILE $full_bit_filename  [get_hw_devices $device_name]
+program_hw_devices [get_hw_devices $device_name]
+refresh_hw_device [lindex [get_hw_devices $device_name] 0]
 
 
 
