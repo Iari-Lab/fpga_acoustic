@@ -59,9 +59,9 @@ module sesenta (
   wire [CHANNELS_PER_EDGE*CIC_DATA_WIDTH-1:0] mics_data_neg;  // 30 mics on negative edge
   wire [MICS_DATA_WIDTH-1:0] mics_data;                        // Combined 60 mics
 
-  reg pcm_valid;
-  reg [DATA_WIDTH-1:0] reg_mics_data;
-  wire [DATA_WIDTH-1:0] beam_data;
+//   reg pcm_valid;
+//   reg [DATA_WIDTH-1:0] reg_mics_data;
+//   wire [DATA_WIDTH-1:0] beam_data;
 
   // PDM clock outputs
   assign M0_CLK = pdm_clk;
@@ -90,7 +90,7 @@ module sesenta (
 
   // Sync outputs
   assign SYNC_OUT = pdm_clk;
-  assign SYNC_IN  = pcm_valid;
+  assign SYNC_IN  = mics_data_valid_pos;
 
   // Beamformed output
   wire [BEAMFORMED_WIDTH-1:0] beamformed_sum;

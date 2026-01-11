@@ -106,7 +106,7 @@ for {set i 0} {$i < $micsn} {incr i} {
   connect_cell blk_mem_gen_mic$i {
     addrb addr_counter_0/addr
     clkb $mics_clk
-    dinb [get_concat_pin [list [get_slice_pin mics $from $to] [get_slice_pin mics $from2 $to2] 
+    dinb [get_concat_pin [list [get_slice_pin mics $from $to] [get_slice_pin mics $from2 $to2]] concat_$i]
     enb [get_constant_pin 1 1]
     rstb [get_constant_pin 0 1]
     web addr_counter_0/write_en
