@@ -18,8 +18,8 @@ connect_port_pin reset proc_sys_reset_adc_clk/peripheral_aresetn
 # connect_pins mic_sel [get_slice_pin [ctl_pin mic_select] 6 0 mic_sel_pin]
 connect_pins led_sel [get_slice_pin [ctl_pin led_select] 6 0 led_sel_pin]
 
-set mic_width 16
-set micsn 30
+set mic_width 21
+set micsn 60
 for {set i 0} {$i < $micsn} {incr i} {
   add_bram mic$i
 }
@@ -67,46 +67,29 @@ for {set i 0} {$i < $micsn} {incr i} {
   set from  [expr ($i + 1) * $mic_width - 1]
   set to    [expr $i * $mic_width]
 
-  set from2  [expr ($i + 31) * $mic_width - 1]
-  set to2    [expr ($i + 30) * $mic_width]
+  # set from2  [expr ($i + 31) * $mic_width - 1]
+  # set to2    [expr ($i + 30) * $mic_width]
 
-  # cell xilinx.com:ip:c_accum:12.0 c_accum_$i {
-  #     INPUT_WIDTH 16
-  #     OUTPUT_WIDTH 16
-  #     INPUT_TYPE Signed
-  #     Input_Type.VALUE_SRC USER
-  #     LATENCY_CONFIGURATION Automatic
-  #     CE true
-  #     BYPASS false
-  #     SCLR true
-  # } {
-  #     clk $mics_clk
-  #     B [get_slice_pin mics $from $to] 
-  #     CE beam_valid
-  #     SCLR start/Dout
-  # }
+  cell xilinx.com:ip:c_accum:12.0 c_accum_$i {
+      INPUT_WIDTH 21
+      OUTPUT_WIDTH 32
+      INPUT_TYPE Signed
+      Input_Type.VALUE_SRC USER
+      LATENCY_CONFIGURATION Automatic
+      CE true
+      BYPASS false
+      SCLR true
+  } {
+      clk $mics_clk
+      B [get_slice_pin mics $from $to] 
+      CE beam_valid
+      SCLR start/Dout
+  }
 
-  # cell xilinx.com:ip:c_accum:12.0 c_accum2_$i {
-  #     INPUT_WIDTH 16
-  #     OUTPUT_WIDTH 16
-  #     INPUT_TYPE Signed
-  #     Input_Type.VALUE_SRC USER
-  #     LATENCY_CONFIGURATION Automatic
-  #     CE true
-  #     BYPASS false
-  #     SCLR true
-  # } {
-  #     clk $mics_clk
-  #     B [get_slice_pin mics $from2 $to2] 
-  #     CE beam_valid
-  #     SCLR [get_slice_pin [ctl_pin start_capture] 0 0 start2]
-  # }
-#  set mic2 [get_slice_pin mics $from $to] 
-#  set mic1 [get_slice_pin mics $from2 $to2] 
-  connect_cell blk_mem_gen_mic$i {
+ connect_cell blk_mem_gen_mic$i {
     addrb addr_counter_0/addr
     clkb $mics_clk
-    dinb [get_concat_pin [list [get_slice_pin mics $from $to] [get_slice_pin mics $from2 $to2]] concat_$i]
+    dinb c_accum_$i/Q
     enb [get_constant_pin 1 1]
     rstb [get_constant_pin 0 1]
     web addr_counter_0/write_en
