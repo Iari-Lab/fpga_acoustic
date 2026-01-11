@@ -1,7 +1,8 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Updated for 60 microphones using multi-channel CIC decimator
-// 2 instances: one for clk edge, one for ~clk edge
+// OPTIMIZED sesenta module for 60 microphones (Version 3)
+// Uses shared delay lines with packed arrays for Vivado compatibility
+// Target: xc7z020clg400-1
 //////////////////////////////////////////////////////////////////////////////////
 
 module sesenta (
@@ -29,7 +30,7 @@ module sesenta (
     output M0_CLK,
     output M1_CLK,
     output M2_CLK,
-    input [29:0] M_DATA,  // 30 microphone data lines (2 mics per line = 60 total)
+    input [29:0] M_DATA,
     output LEDS,
     output SYNC_IN,
     output SYNC_OUT
@@ -40,12 +41,11 @@ module sesenta (
   localparam integer PDM_FREQ = 2_400_000;
   localparam integer LED_FREQ = 12_000_000;
   localparam integer NUM_CONFIGS = 60;
-  localparam integer NUM_CHANNELS = 60;           // Total 60 mics
-  localparam integer CHANNELS_PER_EDGE = 30;      // 30 mics per clock edge
+  localparam integer NUM_CHANNELS = 60;
+  localparam integer CHANNELS_PER_EDGE = 30;
   localparam integer CIC_DATA_WIDTH = 12;
-  localparam integer SUM_WIDTH = 16;
-  localparam integer DATA_WIDTH = NUM_CONFIGS * SUM_WIDTH;
-  localparam integer MICS_DATA_WIDTH = NUM_CHANNELS * CIC_DATA_WIDTH;  // 60 * 16 = 960 bits
+  localparam integer SUM_WIDTH = 18;
+  localparam integer MICS_DATA_WIDTH = NUM_CHANNELS * CIC_DATA_WIDTH;
   localparam integer BEAMFORMED_WIDTH = NUM_CONFIGS * SUM_WIDTH;
 
   // Clocks and resets
@@ -55,13 +55,9 @@ module sesenta (
 
   // Microphone data
   wire mics_data_valid_pos, mics_data_valid_neg;
-  wire [CHANNELS_PER_EDGE*CIC_DATA_WIDTH-1:0] mics_data_pos;  // 30 mics on positive edge
-  wire [CHANNELS_PER_EDGE*CIC_DATA_WIDTH-1:0] mics_data_neg;  // 30 mics on negative edge
-  wire [MICS_DATA_WIDTH-1:0] mics_data;                        // Combined 60 mics
-
-//   reg pcm_valid;
-//   reg [DATA_WIDTH-1:0] reg_mics_data;
-//   wire [DATA_WIDTH-1:0] beam_data;
+  wire [CHANNELS_PER_EDGE*CIC_DATA_WIDTH-1:0] mics_data_pos;
+  wire [CHANNELS_PER_EDGE*CIC_DATA_WIDTH-1:0] mics_data_neg;
+  wire [MICS_DATA_WIDTH-1:0] mics_data;
 
   // PDM clock outputs
   assign M0_CLK = pdm_clk;
@@ -96,9 +92,7 @@ module sesenta (
   wire [BEAMFORMED_WIDTH-1:0] beamformed_sum;
   wire [NUM_CONFIGS-1:0] beamformed_valid;
 
-  // ============================================================
-  // CIC Decimator Instance 1: Positive clock edge (channels 0-29)
-  // ============================================================
+  // CIC Decimator Instance 1: Positive clock edge
   cic_decimator_multi #(
       .SYS_FREQ_HZ(INPUT_FREQ),
       .PDM_FREQ_HZ(PDM_FREQ),
@@ -119,9 +113,7 @@ module sesenta (
       .channel()
   );
 
-  // ============================================================
-  // CIC Decimator Instance 2: Negative clock edge (channels 30-59)
-  // ============================================================
+  // CIC Decimator Instance 2: Negative clock edge
   cic_decimator_multi #(
       .SYS_FREQ_HZ(INPUT_FREQ),
       .PDM_FREQ_HZ(PDM_FREQ),
@@ -136,48 +128,34 @@ module sesenta (
       .clk(clk_inv),
       .resetn(rst),
       .pdm_data(M_DATA),
-      .pdm_clk(),  // Not used, shares pdm_clk from positive instance
+      .pdm_clk(),
       .pcm_data(mics_data_neg),
       .pcm_valid(mics_data_valid_neg),
       .channel()
   );
 
-  // ============================================================
-  // Combine positive and negative edge data into packed array
-  // Interleaved: [pos_ch0, neg_ch0, pos_ch1, neg_ch1, ...]
-  // ============================================================
+  // Combine positive and negative edge data
   genvar i;
   generate
       for (i = 0; i < CHANNELS_PER_EDGE; i = i + 1) begin : pack_mics
-          // Even indices (0,2,4,...) = positive edge mics
           assign mics_data[(2*i)*CIC_DATA_WIDTH +: CIC_DATA_WIDTH] = 
                  mics_data_pos[i*CIC_DATA_WIDTH +: CIC_DATA_WIDTH];
-          // Odd indices (1,3,5,...) = negative edge mics  
           assign mics_data[(2*i+1)*CIC_DATA_WIDTH +: CIC_DATA_WIDTH] = 
                  mics_data_neg[i*CIC_DATA_WIDTH +: CIC_DATA_WIDTH];
       end
   endgenerate
 
-  // Use positive edge valid as main valid signal
   wire mics_data_valid = mics_data_valid_pos;
 
-//   // Register beamformed data
-//   integer k;
-//   always @(posedge clk) begin
-//     for (k = 0; k < NUM_CONFIGS; k = k + 1) begin
-//       reg_mics_data[k*SUM_WIDTH +: SUM_WIDTH] <= beamformed_sum[k*SUM_WIDTH +: SUM_WIDTH];
-//     end
-//     pcm_valid <= mics_data_valid;
-//   end
-
-//   assign beam_data = reg_mics_data;
-
-  // Beamforming module
-  beamforming #(
+  // ============================================================
+  // OPTIMIZED Beamforming module (Version 3 - packed arrays)
+  // ============================================================
+  beamforming_optimized_v3 #(
       .NUM_CONFIGS(NUM_CONFIGS),
       .NUM_CHANNELS(NUM_CHANNELS),
       .DATA_WIDTH(CIC_DATA_WIDTH),
-      .SUM_WIDTH(SUM_WIDTH)
+      .SUM_WIDTH(SUM_WIDTH),
+      .MAX_DELAY(16)
   ) u_beamforming_module (
       .clk(clk),
       .rst(~rst),
