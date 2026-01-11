@@ -5,9 +5,9 @@
 
 
 # Parameters
-set NUM_CHANNELS 30
-set BITS_PER_CHANNEL 20
-set NUM_CONFIGS 30
+set NUM_CHANNELS 60
+set BITS_PER_CHANNEL 16
+set NUM_CONFIGS 60
 
 # Calculate width (NUM_CONFIGS * NUM_CHANNELS * BITS_PER_CHANNEL - 1)
 set port_width [expr { $NUM_CHANNELS * $BITS_PER_CHANNEL - 1}]

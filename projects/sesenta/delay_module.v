@@ -1,6 +1,6 @@
 module delay_module #(
     parameter DELAY_SELECT = 0,
-    parameter NUM_CHANNELS = 30
+    parameter NUM_CHANNELS = 60
 )(
     input wire clk,
     input wire pcm_valid,
@@ -8,9 +8,10 @@ module delay_module #(
     output wire [NUM_CHANNELS*16-1:0] delayed_pcm_data
 );
 
-  // Get delays from config module
-  wire [119:0] selected_delays;
-  
+  // // Get delays from config module
+  // wire [119:0] selected_delays;
+   // Get delays from config module
+  wire [239:0] selected_delays;
   delay_config #(
     .DELAY_SELECT(DELAY_SELECT)
   ) config_inst (
