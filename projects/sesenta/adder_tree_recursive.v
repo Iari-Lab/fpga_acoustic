@@ -1,9 +1,15 @@
 `timescale 1ns / 1ps
 
+//============================================================================
+// Module: adder_tree_recursive (Top-Level)
+// Description:
+//   Recursive adder tree with DSP block inference support for Vivado.
+//   Uses FANIN=4 with explicit 4-input tree pattern for DSP mapping.
+//============================================================================
 module adder_tree_recursive #(
     parameter NUM_CHANNELS = 18,
     parameter DATA_WIDTH = 16,
-    parameter FANIN = 4  // How many inputs to sum per stage (e.g., 4)
+    parameter FANIN = 4  // How many inputs to sum per stage (must be 4 for DSP)
 )(
     input wire clk,
     input wire rst,
@@ -47,13 +53,14 @@ module adder_tree_recursive #(
 endmodule
 
 
-// ============================================================================
-// Module: Adder Tree Node (The Recursive Core)
+//============================================================================
+// Module: Adder Tree Node (The Recursive Core with DSP Support)
 // Description:
-//   - If inputs <= FANIN, it sums them (Base Case).
+//   - If inputs <= FANIN, it sums them using DSP-friendly pattern (Base Case).
 //   - If inputs > FANIN, it groups them, sums the groups, and instantiates ITSELF.
 //   - Uses flat packed vectors for all ports (Icarus Verilog compatible)
-// ============================================================================
+//   - Implements explicit 4-input adder tree with use_dsp attributes
+//============================================================================
 module adder_tree_node #(
     parameter NUM_INPUTS = 4,
     parameter DATA_WIDTH = 21,
@@ -63,43 +70,56 @@ module adder_tree_node #(
     input wire rst,
     input wire en,
     input wire [NUM_INPUTS*DATA_WIDTH-1:0] inputs, // Flat vector input
-    output reg signed [DATA_WIDTH-1:0] sum,
+    (* use_dsp = "yes" *) output reg signed [DATA_WIDTH-1:0] sum,
     output reg valid_out
 );
 
     generate
-        // ====================================================================
+        //====================================================================
         // BASE CASE: Leaf Node
         // We have few enough inputs to simply add them all in one clock cycle.
-        // ====================================================================
+        // Uses explicit 4-input tree pattern for DSP inference.
+        //====================================================================
         if (NUM_INPUTS <= FANIN) begin : g_leaf
             
-            integer i;
-            reg signed [DATA_WIDTH-1:0] temp_sum; // Variable for immediate math
+            // Extract up to 4 signed operands (pad missing ones with 0)
+            wire signed [DATA_WIDTH-1:0] x0 = (NUM_INPUTS > 0) ? $signed(inputs[0*DATA_WIDTH +: DATA_WIDTH]) : {DATA_WIDTH{1'b0}};
+            wire signed [DATA_WIDTH-1:0] x1 = (NUM_INPUTS > 1) ? $signed(inputs[1*DATA_WIDTH +: DATA_WIDTH]) : {DATA_WIDTH{1'b0}};
+            wire signed [DATA_WIDTH-1:0] x2 = (NUM_INPUTS > 2) ? $signed(inputs[2*DATA_WIDTH +: DATA_WIDTH]) : {DATA_WIDTH{1'b0}};
+            wire signed [DATA_WIDTH-1:0] x3 = (NUM_INPUTS > 3) ? $signed(inputs[3*DATA_WIDTH +: DATA_WIDTH]) : {DATA_WIDTH{1'b0}};
 
+            // Hint Vivado to use DSPs for these adds
+            // First level: pairwise addition with 1-bit growth
+            (* use_dsp = "yes" *) wire signed [DATA_WIDTH:0] s01 = x0 + x1;
+            (* use_dsp = "yes" *) wire signed [DATA_WIDTH:0] s23 = x2 + x3;
+            
+            // Second level: combine pairs with 2-bit growth total
+            (* use_dsp = "yes" *) wire signed [DATA_WIDTH+1:0] s0123 = s01 + s23;
+
+            // Register the result
+            (* use_dsp = "yes" *) reg signed [DATA_WIDTH-1:0] sum_reg;
+            
             always @(posedge clk or posedge rst) begin
                 if (rst) begin
-                    sum <= 0;
-                    valid_out <= 0;
+                    sum_reg   <= {DATA_WIDTH{1'b0}};
+                    valid_out <= 1'b0;
                 end else if (en) begin
-                    // 1. Calculate Logic (Blocking =)
-                    temp_sum = 0;
-                    for (i = 0; i < NUM_INPUTS; i = i + 1) begin
-                        temp_sum = temp_sum + $signed(inputs[i*DATA_WIDTH +: DATA_WIDTH]);
-                    end
-                    
-                    // 2. Update Register (Non-Blocking <=)
-                    sum <= temp_sum;
+                    sum_reg   <= s0123[DATA_WIDTH-1:0]; // Truncate to DATA_WIDTH
                     valid_out <= 1'b1;
                 end else begin
-                    valid_out <= 0;
+                    valid_out <= 1'b0;
                 end
             end
             
-        // ====================================================================
+            always @(*) begin
+                sum = sum_reg;
+            end
+            
+        //====================================================================
         // RECURSIVE CASE: Internal Node
         // Too many inputs. Divide them into groups, sum the groups, then recurse.
-        // ====================================================================
+        // Uses explicit 4-input tree pattern for DSP inference in each group.
+        //====================================================================
         end else begin : g_recurse
             
             // Calculate how many partial sums we will produce
@@ -115,27 +135,33 @@ module adder_tree_node #(
                 localparam START = g * FANIN;
                 localparam COUNT = (START + FANIN > NUM_INPUTS) ? (NUM_INPUTS - START) : FANIN;
                 
-                reg signed [DATA_WIDTH-1:0] group_sum_reg;
+                // Extract up to 4 signed operands (pad missing ones with 0)
+                wire signed [DATA_WIDTH-1:0] x0 = (COUNT > 0) ? $signed(inputs[(START+0)*DATA_WIDTH +: DATA_WIDTH]) : {DATA_WIDTH{1'b0}};
+                wire signed [DATA_WIDTH-1:0] x1 = (COUNT > 1) ? $signed(inputs[(START+1)*DATA_WIDTH +: DATA_WIDTH]) : {DATA_WIDTH{1'b0}};
+                wire signed [DATA_WIDTH-1:0] x2 = (COUNT > 2) ? $signed(inputs[(START+2)*DATA_WIDTH +: DATA_WIDTH]) : {DATA_WIDTH{1'b0}};
+                wire signed [DATA_WIDTH-1:0] x3 = (COUNT > 3) ? $signed(inputs[(START+3)*DATA_WIDTH +: DATA_WIDTH]) : {DATA_WIDTH{1'b0}};
+
+                // Hint Vivado to use DSPs for these adds
+                // First level: pairwise addition with 1-bit growth
+                (* use_dsp = "yes" *) wire signed [DATA_WIDTH:0] s01 = x0 + x1;
+                (* use_dsp = "yes" *) wire signed [DATA_WIDTH:0] s23 = x2 + x3;
+                
+                // Second level: combine pairs with 2-bit growth total
+                (* use_dsp = "yes" *) wire signed [DATA_WIDTH+1:0] s0123 = s01 + s23;
+
+                // Register the group sum
+                (* use_dsp = "yes" *) reg signed [DATA_WIDTH-1:0] group_sum_reg;
                 reg group_valid_reg;
-                integer k;
-                reg signed [DATA_WIDTH-1:0] group_temp; // Variable for immediate math
 
                 always @(posedge clk or posedge rst) begin
                     if (rst) begin
-                        group_sum_reg <= 0;
-                        group_valid_reg <= 0;
+                        group_sum_reg   <= {DATA_WIDTH{1'b0}};
+                        group_valid_reg <= 1'b0;
                     end else if (en) begin
-                        // 1. Calculate Logic (Blocking =)
-                        group_temp = 0;
-                        for (k = 0; k < COUNT; k = k + 1) begin
-                            group_temp = group_temp + $signed(inputs[(START+k)*DATA_WIDTH +: DATA_WIDTH]);
-                        end
-                        
-                        // 2. Update Register (Non-Blocking <=)
-                        group_sum_reg <= group_temp;
+                        group_sum_reg   <= s0123[DATA_WIDTH-1:0]; // Truncate to DATA_WIDTH
                         group_valid_reg <= 1'b1;
                     end else begin
-                        group_valid_reg <= 0;
+                        group_valid_reg <= 1'b0;
                     end
                 end
                 

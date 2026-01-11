@@ -7,6 +7,8 @@ set enable_compress 1
 open_project $xpr_filename
 if {$enable_compress} {
   if {[get_property PROGRESS [get_runs impl_1]] != "100%"} {
+
+    set_property STEPS.SYNTH_DESIGN.ARGS.DIRECTIVE PerformanceOptimized [get_runs synth_1]
     set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]
     set_property STEPS.ROUTE_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]
     launch_runs impl_1 -to_step write_bitstream -jobs $nCPU
