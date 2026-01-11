@@ -1,9 +1,9 @@
 module beamforming #(
-    parameter NUM_CONFIGS = 18,
-    parameter NUM_CHANNELS = 18,
-    parameter DATA_WIDTH = 16,
-    parameter FANIN = 4,
-    parameter SUM_WIDTH = 20
+    parameter NUM_CONFIGS = 60,
+    parameter NUM_CHANNELS = 60,
+    parameter DATA_WIDTH = 12,
+    parameter SUM_WIDTH = 18,
+    parameter MAX_DELAY = 16
 )(
     input wire clk,
     input wire rst,
@@ -13,60 +13,74 @@ module beamforming #(
     output wire [NUM_CONFIGS-1:0] beamformed_valid
 );
 
-  // SUM_WIDTH matches adder_tree_recursive calculation
-  // localparam SUM_WIDTH = DATA_WIDTH + $clog2(NUM_CHANNELS) + 1;
+    //========================================================================
+    // SHARED DELAY LINES - 60 total (one per channel)
+    // Each outputs all 16 taps as a packed vector
+    // Format: [tap15][tap14]...[tap1][tap0] for each channel
+    //========================================================================
+    wire [MAX_DELAY*DATA_WIDTH-1:0] delay_taps_packed [0:NUM_CHANNELS-1];
+    
+    genvar ch;
+    generate
+        for (ch = 0; ch < NUM_CHANNELS; ch = ch + 1) begin : gen_delay
+            multi_tap_delay #(
+                .DATA_WIDTH(DATA_WIDTH),
+                .MAX_DELAY(MAX_DELAY)
+            ) u_delay (
+                .clk(clk),
+                .en(mics_data_valid),
+                .din(mics_data[ch*DATA_WIDTH +: DATA_WIDTH]),
+                .taps_packed(delay_taps_packed[ch])
+            );
+        end
+    endgenerate
 
-  // Packed delayed data from delay_bank
-  wire [NUM_CONFIGS*NUM_CHANNELS*DATA_WIDTH-1:0] delayed_data;
-  wire [SUM_WIDTH-1:0] sum [0:NUM_CONFIGS-1];
-  wire [NUM_CONFIGS-1:0] valid;
-
-  genvar i, j;
-
-  // Single delay_bank instance
-  delay_bank #(
-      .NUM_CONFIGS(NUM_CONFIGS),
-      .NUM_CHANNELS(NUM_CHANNELS)
-  ) u_delay_bank (
-      .clk(clk),
-      .pcm_valid(mics_data_valid),
-      .pcm_data(mics_data),
-      .delayed_data(delayed_data)
-  );
-
-  // Generate NUM_CONFIGS adder_tree_recursive instances (one per output beam)
-  generate
-    for (i = 0; i < NUM_CONFIGS; i = i + 1) begin : gen_adder
-      // Build packed input for adder: collect channel i from each config
-      wire [NUM_CHANNELS*DATA_WIDTH-1:0] adder_input;
-
-      for (j = 0; j < NUM_CHANNELS; j = j + 1) begin : collect_channels
-        // From delayed_data, get config j, channel i
-        assign adder_input[j*DATA_WIDTH +: DATA_WIDTH] =
-               delayed_data[(i*NUM_CHANNELS + j)*DATA_WIDTH +: DATA_WIDTH];
-      end
-
-      adder_tree_recursive #(
-          .NUM_CHANNELS(NUM_CHANNELS),
-          .DATA_WIDTH(DATA_WIDTH),
-          .FANIN(FANIN)
-      ) u_adder_tree (
-          .clk(clk),
-          .rst(rst),
-          .en(mics_data_valid),
-          .data_in(adder_input),
-          .sum(sum[i]),
-          .valid(valid[i])
-      );
-    end
-  endgenerate
-
-  // Pack all sums and valid signals into outputs
-  generate
-    for (i = 0; i < NUM_CONFIGS; i = i + 1) begin : pack_output
-      assign beamformed_sum[i*SUM_WIDTH +: SUM_WIDTH] = sum[i];
-      assign beamformed_valid[i] = valid[i];
-    end
-  endgenerate
+    genvar cfg, ch_sel;
+    generate
+        for (cfg = 0; cfg < NUM_CONFIGS; cfg = cfg + 1) begin : gen_beam
+            
+            // Wire to hold selected delayed samples for this configuration
+            wire [NUM_CHANNELS*DATA_WIDTH-1:0] selected_data;
+            
+            // Get delay taps for each channel using the LUT module
+            for (ch_sel = 0; ch_sel < NUM_CHANNELS; ch_sel = ch_sel + 1) begin : gen_sel
+                wire [3:0] tap_idx;
+                
+                // Instantiate delay tap LUT for this config/channel
+                delay_tap_lut u_delay_lut (
+                    .config_idx(cfg[5:0]),
+                    .channel_idx(ch_sel[5:0]),
+                    .delay_tap(tap_idx)
+                );
+                
+                // Select from packed delay taps based on LUT output
+                // taps_packed format: [tap15][tap14]...[tap1][tap0]
+                assign selected_data[ch_sel*DATA_WIDTH +: DATA_WIDTH] = 
+                    delay_taps_packed[ch_sel][tap_idx*DATA_WIDTH +: DATA_WIDTH];
+            end
+            
+            // Adder tree for this configuration
+            wire signed [SUM_WIDTH-1:0] beam_sum;
+            wire beam_valid;
+            
+            adder_60_to_1_v3 #(
+                .DATA_WIDTH(DATA_WIDTH),
+                .SUM_WIDTH(SUM_WIDTH)
+            ) u_adder (
+                .clk(clk),
+                .rst(rst),
+                .en(mics_data_valid),
+                .din(selected_data),
+                .sum(beam_sum),
+                .valid(beam_valid)
+            );
+            
+            assign beamformed_sum[cfg*SUM_WIDTH +: SUM_WIDTH] = beam_sum;
+            assign beamformed_valid[cfg] = beam_valid;
+        end
+    endgenerate
 
 endmodule
+
+
+

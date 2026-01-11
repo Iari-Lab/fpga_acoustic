@@ -43,8 +43,8 @@ module sesenta (
   localparam integer NUM_CONFIGS = 60;
   localparam integer NUM_CHANNELS = 60;
   localparam integer CHANNELS_PER_EDGE = 30;
-  localparam integer CIC_DATA_WIDTH = 12;
-  localparam integer SUM_WIDTH = 18;
+  localparam integer CIC_DATA_WIDTH = 16;
+  localparam integer SUM_WIDTH = 21;
   localparam integer MICS_DATA_WIDTH = NUM_CHANNELS * CIC_DATA_WIDTH;
   localparam integer BEAMFORMED_WIDTH = NUM_CONFIGS * SUM_WIDTH;
 
@@ -58,6 +58,7 @@ module sesenta (
   wire [CHANNELS_PER_EDGE*CIC_DATA_WIDTH-1:0] mics_data_pos;
   wire [CHANNELS_PER_EDGE*CIC_DATA_WIDTH-1:0] mics_data_neg;
   wire [MICS_DATA_WIDTH-1:0] mics_data;
+  wire [59:0] cic_overflow;
 
   // PDM clock outputs
   assign M0_CLK = pdm_clk;
@@ -86,71 +87,55 @@ module sesenta (
 
   // Sync outputs
   assign SYNC_OUT = pdm_clk;
-  assign SYNC_IN  = mics_data_valid_pos;
+  assign SYNC_IN  = mics_data_valid;
 
   // Beamformed output
   wire [BEAMFORMED_WIDTH-1:0] beamformed_sum;
   wire [NUM_CONFIGS-1:0] beamformed_valid;
-
-  // CIC Decimator Instance 1: Positive clock edge
-  cic_decimator_multi #(
-      .SYS_FREQ_HZ(INPUT_FREQ),
-      .PDM_FREQ_HZ(PDM_FREQ),
-      .CHANNELS(CHANNELS_PER_EDGE),
+  // First CIC decimator (index 0 - M18)
+  cic_decimator #(
       .DATA_WIDTH(CIC_DATA_WIDTH),
-      .CIC_DATA_WIDTH(CIC_DATA_WIDTH),
-      .STAGES(3),
-      .SAMPLE_RATE(50),
-      .PDM_READING_TIME(28),
-      .PDM_RATIO(49)
-  ) cic_pos (
+      .CIC_STAGES(4),
+      .CIC_DECIMATION(50)
+  ) cic_stage (
       .clk(clk),
-      .resetn(rst),
-      .pdm_data(M_DATA),
+      .rst(~rst),
       .pdm_clk(pdm_clk),
-      .pcm_data(mics_data_pos),
-      .pcm_valid(mics_data_valid_pos),
-      .channel()
+      .pdm_data(M_DATA[0]),
+      .pcm_valid(mics_data_valid),
+      .pcm_data(mics_data[0*16+:16]),
+      .overflow(cic_overflow[0]),
+      .sample_count()
   );
 
-  // CIC Decimator Instance 2: Negative clock edge
-  cic_decimator_multi #(
-      .SYS_FREQ_HZ(INPUT_FREQ),
-      .PDM_FREQ_HZ(PDM_FREQ),
-      .CHANNELS(CHANNELS_PER_EDGE),
-      .DATA_WIDTH(CIC_DATA_WIDTH),
-      .CIC_DATA_WIDTH(CIC_DATA_WIDTH),
-      .STAGES(3),
-      .SAMPLE_RATE(50),
-      .PDM_READING_TIME(28),
-      .PDM_RATIO(49)
-  ) cic_neg (
-      .clk(clk_inv),
-      .resetn(rst),
-      .pdm_data(M_DATA),
-      .pdm_clk(),
-      .pcm_data(mics_data_neg),
-      .pcm_valid(mics_data_valid_neg),
-      .channel()
-  );
-
-  // Combine positive and negative edge data
-  genvar i;
+  genvar j;
+  // Generate 18 CIC decimators from 9 M_DATA lines
+  // Odd j  (1,3,5,...17): use ~clk, maps to M_DATA[j/2]
+  // Even j (0,2,4,...16): use clk,  maps to M_DATA[j/2]
   generate
-      for (i = 0; i < CHANNELS_PER_EDGE; i = i + 1) begin : pack_mics
-          assign mics_data[(2*i)*CIC_DATA_WIDTH +: CIC_DATA_WIDTH] = 
-                 mics_data_pos[i*CIC_DATA_WIDTH +: CIC_DATA_WIDTH];
-          assign mics_data[(2*i+1)*CIC_DATA_WIDTH +: CIC_DATA_WIDTH] = 
-                 mics_data_neg[i*CIC_DATA_WIDTH +: CIC_DATA_WIDTH];
-      end
+    for (j = 1; j < NUM_CHANNELS; j = j + 1) begin : pdms_gen
+      cic_decimator #(
+          .DATA_WIDTH(CIC_DATA_WIDTH),
+          .CIC_STAGES(4),
+          .CIC_DECIMATION(50)
+      ) cic_stage (
+          .clk         (j[0] ? clk_inv : clk),    // Odd: ~clk, Even: clk
+          .rst         (~rst),
+          .pdm_clk     (pdm_clk),
+          .pdm_data    (M_DATA[j/2]),          // Integer division: 0,1→0, 2,3→1, etc.
+          .pcm_valid   (),
+          .pcm_data    (mics_data[j*CIC_DATA_WIDTH +: CIC_DATA_WIDTH]),
+          .overflow    (cic_overflow[j]),
+          .sample_count()
+      );
+    end
   endgenerate
+
+
 
   wire mics_data_valid = mics_data_valid_pos;
 
-  // ============================================================
-  // OPTIMIZED Beamforming module (Version 3 - packed arrays)
-  // ============================================================
-  beamforming_optimized_v3 #(
+  beamforming #(
       .NUM_CONFIGS(NUM_CONFIGS),
       .NUM_CHANNELS(NUM_CHANNELS),
       .DATA_WIDTH(CIC_DATA_WIDTH),
