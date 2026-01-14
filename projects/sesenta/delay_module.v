@@ -9,7 +9,7 @@ module delay_module #(
 );
 
   // Get delays from config module
-  wire [119:0] selected_delays;
+  wire [239:0] selected_delays;
   
   delay_config #(
     .DELAY_SELECT(DELAY_SELECT)

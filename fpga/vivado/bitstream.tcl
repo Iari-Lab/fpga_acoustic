@@ -16,6 +16,11 @@ if {$enable_compress} {
 
   open_run [get_runs impl_1]
 
+  set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
+  set_property BITSTREAM.GENERAL.XADCENHANCEDLINEARITY On [current_design]
+
+  write_bitstream -force -file $bit_filename
+
 report_utilization
 report_timing
 report_power
@@ -39,11 +44,6 @@ puts $fp "DSP=$util_dsp"
 puts $fp "BRAM=$util_bram"
 puts $fp "WNS=$time_wns"
 close $fp
-
-  set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
-  set_property BITSTREAM.GENERAL.XADCENHANCEDLINEARITY On [current_design]
-
-  write_bitstream -force -file $bit_filename
 
   close_project
 } else {

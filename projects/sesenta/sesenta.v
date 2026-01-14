@@ -48,8 +48,8 @@ module sesenta (
   localparam integer INPUT_FREQ = 120_000_000;
   localparam integer PDM_FREQ = 2_400_000;
   localparam integer LED_FREQ = 12000000;
-  localparam integer NUM_CONFIGS = 30;
-  localparam integer NUM_CHANNELS = 30;
+  localparam integer NUM_CONFIGS = 60;
+  localparam integer NUM_CHANNELS = 60;
   localparam integer CIC_DATA_WIDTH = 16;
   // SUM_WIDTH matches adder_tree_recursive: DATA_WIDTH + $clog2(NUM_CHANNELS) + 1
   localparam integer SUM_WIDTH = 20;  // 22 bits
@@ -128,83 +128,37 @@ module sesenta (
   // First CIC decimator (index 0 - M18)
   cic_decimator #(
       .DATA_WIDTH(CIC_DATA_WIDTH),
-      .CIC_STAGES(4),
-      .CIC_DECIMATION(50)
+      .CIC_STAGES(3),
+      .CIC_DECIMATION(25)
   ) cic_stage (
       .clk(clk),
       .rst(~rst),
       .pdm_clk(pdm_clk),
       .pdm_data(M_DATA[0]),
       .pcm_valid(mics_data_valid),
-      .pcm_data(mics_data[0*16+:16]),
-      .overflow(cic_overflow[0]),
-      .sample_count()
+      .pcm_data(mics_data[0*16+:16])
   );
 
-//   genvar j;
-//   // Generate 18 CIC decimators from 9 M_DATA lines
-//   // Even j (0,2,4,...16): use clk,  maps to M_DATA[j/2]
-//   generate
-//     for (j = 1; j < NUM_CHANNELS; j = j + 1) begin : pdms_gen
-//       cic_decimator #(
-//           .DATA_WIDTH(CIC_DATA_WIDTH),
-//           .CIC_STAGES(4),
-//           .CIC_DECIMATION(50)
-//       ) cic_stage (
-//           .clk         (clk),    // Odd: ~clk, Even: clk
-//           .rst         (~rst),
-//           .pdm_clk     (pdm_clk),
-//           .pdm_data    (M_DATA[j/2]),          // Integer division: 0,1→0, 2,3→1, etc.
-//           .pcm_valid   (),
-//           .pcm_data    (mics_data[j*CIC_DATA_WIDTH +: CIC_DATA_WIDTH]),
-//           .overflow    (cic_overflow[j]),
-//           .sample_count()
-//       );
-//     end
-//   endgenerate
   genvar j;
   // Generate 18 CIC decimators from 9 M_DATA lines
   // Odd j  (1,3,5,...17): use ~clk, maps to M_DATA[j/2]
+  // Even j (0,2,4,...16): use clk,  maps to M_DATA[j/2]
   generate
     for (j = 1; j < NUM_CHANNELS; j = j + 1) begin : pdms_gen
       cic_decimator #(
           .DATA_WIDTH(CIC_DATA_WIDTH),
-          .CIC_STAGES(4),
-          .CIC_DECIMATION(50)
+          .CIC_STAGES(3),
+          .CIC_DECIMATION(25)
       ) cic_stage (
-          .clk         (clk),    // Odd: ~clk, Even: clk
+          .clk         (j[0] ? ~clk : clk),    // Odd: ~clk, Even: clk
           .rst         (~rst),
           .pdm_clk     (pdm_clk),
-          .pdm_data    (M_DATA[j]),          // Integer division: 0,1→0, 2,3→1, etc.
+          .pdm_data    (M_DATA[j/2]),          // Integer division: 0,1→0, 2,3→1, etc.
           .pcm_valid   (),
-          .pcm_data    (mics_data[j*CIC_DATA_WIDTH +: CIC_DATA_WIDTH]),
-          .overflow    (cic_overflow[j]),
-          .sample_count()
+          .pcm_data    (mics_data[j*CIC_DATA_WIDTH +: CIC_DATA_WIDTH])
       );
     end
   endgenerate
-//   genvar j;
-//   // Generate 18 CIC decimators from 9 M_DATA lines
-//   // Odd j  (1,3,5,...17): use ~clk, maps to M_DATA[j/2]
-//   // Even j (0,2,4,...16): use clk,  maps to M_DATA[j/2]
-//   generate
-//     for (j = 1; j < NUM_CHANNELS; j = j + 1) begin : pdms_gen
-//       cic_decimator #(
-//           .DATA_WIDTH(CIC_DATA_WIDTH),
-//           .CIC_STAGES(4),
-//           .CIC_DECIMATION(50)
-//       ) cic_stage (
-//           .clk         (j[0] ? ~clk : clk),    // Odd: ~clk, Even: clk
-//           .rst         (~rst),
-//           .pdm_clk     (pdm_clk),
-//           .pdm_data    (M_DATA[j/2]),          // Integer division: 0,1→0, 2,3→1, etc.
-//           .pcm_valid   (),
-//           .pcm_data    (mics_data[j*CIC_DATA_WIDTH +: CIC_DATA_WIDTH]),
-//           .overflow    (cic_overflow[j]),
-//           .sample_count()
-//       );
-//     end
-//   endgenerate
 
 
   // New beamforming module with packed array interface

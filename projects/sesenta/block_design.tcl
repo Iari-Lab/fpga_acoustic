@@ -19,7 +19,7 @@ connect_port_pin reset proc_sys_reset_adc_clk/peripheral_aresetn
 connect_pins led_sel [get_slice_pin [ctl_pin led_select] 6 0 led_sel_pin]
 
 set mic_width 20
-set micsn 30
+set micsn 60
 for {set i 0} {$i < $micsn} {incr i} {
   add_bram mic$i
 }
