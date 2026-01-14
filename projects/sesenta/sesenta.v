@@ -50,9 +50,9 @@ module sesenta (
   localparam integer LED_FREQ = 12000000;
   localparam integer NUM_CONFIGS = 60;
   localparam integer NUM_CHANNELS = 60;
-  localparam integer CIC_DATA_WIDTH = 16;
+  localparam integer CIC_DATA_WIDTH = 12;
   // SUM_WIDTH matches adder_tree_recursive: DATA_WIDTH + $clog2(NUM_CHANNELS) + 1
-  localparam integer SUM_WIDTH = 20;  // 22 bits
+  localparam integer SUM_WIDTH = 16;  // 22 bits
 //   localparam integer SUM_WIDTH = CIC_DATA_WIDTH + $clog2(NUM_C1HANNELS) + 1;  // 22 bits
   localparam integer DATA_WIDTH = NUM_CONFIGS * SUM_WIDTH;  // 18 configs * 32 bits = 576
   localparam integer MICS_DATA_WIDTH = NUM_CHANNELS * CIC_DATA_WIDTH;  // 18 mics * 16 bits = 288
@@ -106,24 +106,14 @@ module sesenta (
   );
 
   assign SYNC_OUT = pdm_clk;
-  assign SYNC_IN  = pcm_valid;
+  assign SYNC_IN  = mics_data_valid;
 
-  wire [59:0] cic_overflow;
 
   // Packed beamformed output from new beamforming module
   wire [BEAMFORMED_WIDTH-1:0] beamformed_sum;
   wire [NUM_CONFIGS-1:0] beamformed_valid;
 
   // Sign-extend each 22-bit beamformed sum to 32 bits and pack into reg_mics_data
-  integer k;
-  always @(posedge clk) begin
-    for (k = 0; k < NUM_CONFIGS; k = k + 1) begin
-      reg_mics_data[k*SUM_WIDTH +: SUM_WIDTH] <= beamformed_sum[k*SUM_WIDTH +: SUM_WIDTH];
-    end
-    pcm_valid <= mics_data_valid;
-  end
-
-  assign beam_data = reg_mics_data;
 
   // First CIC decimator (index 0 - M18)
   cic_decimator #(
@@ -136,7 +126,7 @@ module sesenta (
       .pdm_clk(pdm_clk),
       .pdm_data(M_DATA[0]),
       .pcm_valid(mics_data_valid),
-      .pcm_data(mics_data[0*16+:16])
+      .pcm_data(mics_data[0*12+:12])
   );
 
   genvar j;
@@ -161,11 +151,11 @@ module sesenta (
   endgenerate
 
 
-  // New beamforming module with packed array interface
-  beamforming #(
+  beamf #(
       .NUM_CONFIGS(NUM_CONFIGS),
       .NUM_CHANNELS(NUM_CHANNELS),
-      .DATA_WIDTH(CIC_DATA_WIDTH)
+      .DATA_WIDTH(CIC_DATA_WIDTH),
+      .SUM_WIDTH(SUM_WIDTH)
   ) u_beamforming_module (
       .clk(clk),
       .rst(~rst),
@@ -174,10 +164,26 @@ module sesenta (
       .beamformed_sum(beamformed_sum),
       .beamformed_valid(beamformed_valid)
   );
+  // New beamforming module with packed array interface
+  // beamforming #(
+  //     .NUM_CONFIGS(NUM_CONFIGS),
+  //     .NUM_CHANNELS(NUM_CHANNELS),
+  //     .DATA_WIDTH(CIC_DATA_WIDTH),
+  //     .SUM_WIDTH(SUM_WIDTH)
+  // ) u_beamforming_module (
+  //     .clk(clk),
+  //     .rst(~rst),
+  //     .mics_data(mics_data),
+  //     .mics_data_valid(mics_data_valid),
+  //     .beamformed_sum(beamformed_sum),
+  //     .beamformed_valid(beamformed_valid)
+  // );
+
+
 
   system system_i (
       .led_sel(led_sel),
-      .mics(beam_data),
+      .mics(beamformed_sum),
       .beam_valid(beamformed_valid[0]),
       .DDR_addr(DDR_addr),
       .DDR_ba(DDR_ba),

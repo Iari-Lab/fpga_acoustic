@@ -58,30 +58,14 @@ for {set i 0} {$i < $micsn} {incr i} {
   set from  [expr ($i + 1) * $mic_width - 1]
   set to    [expr $i * $mic_width]
 
-  cell xilinx.com:ip:c_accum:12.0 c_accum_$i {
-      INPUT_WIDTH 20
-      OUTPUT_WIDTH 32
-      INPUT_TYPE Signed
-      Input_Type.VALUE_SRC USER
-      LATENCY_CONFIGURATION Automatic
-      CE true
-      BYPASS false
-      SCLR true
-  } {
-      clk $mics_clk
-      B [get_slice_pin mics $from $to] 
-      CE beam_valid
-      SCLR start/Dout
-  }
-  
   connect_cell blk_mem_gen_mic$i {
     addrb addr_counter_0/addr
     clkb $mics_clk
-    dinb c_accum_$i/Q
+    dinb [get_slice_pin mics $from $to]
     enb [get_constant_pin 1 1]
     rstb [get_constant_pin 0 1]
     web addr_counter_0/write_en
-  }
+  } 
 }
 
 set obj [get_filesets sources_1]
