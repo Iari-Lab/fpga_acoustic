@@ -80,18 +80,19 @@ module beamfo #(
     //       .sum(beam_sum),
     //       .valid(beam_valid)
     //   );
-      adder60 #(
+      adder_serial #(
           .DATA_WIDTH(DATA_WIDTH),
           .NUM_CHANNELS(NUM_CHANNELS),
           .SUM_WIDTH(SUM_WIDTH)
       ) u_adder (
           .clk(clk),
           .rst(rst),
-          .en(mics_data_valid),
+          .start(mics_data_valid),
           .din(selected_data),
           .sum(beam_sum),
           .valid(beam_valid)
       );
+
 
       assign beamformed_sum[cfg*SUM_WIDTH+:SUM_WIDTH] = beam_sum;
       assign beamformed_valid[cfg] = beam_valid;
