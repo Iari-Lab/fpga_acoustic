@@ -18,7 +18,7 @@ connect_port_pin reset proc_sys_reset_adc_clk/peripheral_aresetn
 # connect_pins mic_sel [get_slice_pin [ctl_pin mic_select] 6 0 mic_sel_pin]
 connect_pins led_sel [get_slice_pin [ctl_pin led_select] 6 0 led_sel_pin]
 
-set mic_width 20
+set mic_width 16
 set micsn 60
 for {set i 0} {$i < $micsn} {incr i} {
   add_bram mic$i
@@ -68,5 +68,6 @@ for {set i 0} {$i < $micsn} {incr i} {
   } 
 }
 
+import_files -norecurse $sdk_path/projects/sesenta/delay_tap_lut.mem
 set obj [get_filesets sources_1]
 set_property -name "top" -value "sesenta" -objects $obj

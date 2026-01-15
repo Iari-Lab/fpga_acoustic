@@ -126,7 +126,7 @@ module sesenta (
       .pdm_clk(pdm_clk),
       .pdm_data(M_DATA[0]),
       .pcm_valid(mics_data_valid),
-      .pcm_data(mics_data[0*12+:12])
+      .pcm_data(mics_data[0*CIC_DATA_WIDTH+:CIC_DATA_WIDTH])
   );
 
   genvar j;
@@ -151,7 +151,7 @@ module sesenta (
   endgenerate
 
 
-  beamf #(
+  beamfo #(
       .NUM_CONFIGS(NUM_CONFIGS),
       .NUM_CHANNELS(NUM_CHANNELS),
       .DATA_WIDTH(CIC_DATA_WIDTH),

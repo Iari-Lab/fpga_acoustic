@@ -67,11 +67,8 @@
                        {1'b1, {(INTERNAL_WIDTH-1){1'b1}}};
     
     assign cic_strobe_in = pdm_strobe; 
-    // ==========================================================================
+
     // DECIMATION COUNTER
-    // ==========================================================================
-    
-    
     always @(posedge clk) begin
         if (rst) begin
             decimation_counter <= {COUNTER_WIDTH{1'b0}};
