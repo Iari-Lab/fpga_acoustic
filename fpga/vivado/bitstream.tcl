@@ -4,12 +4,19 @@ set nCPU [lindex $argv 2]
 set enable_compress 1
 # set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE AggressiveExplore [get_runs impl_1]
 # set_property STEPS.ROUTE_DESIGN.ARGS.DIRECTIVE AggressiveExplore [get_runs impl_1]
-# set_property STEPS.SYNTH_DESIGN.ARGS.DIRECTIVE PerformanceOptimized [get_runs synth_1]
+    # set_property STEPS.ROUTE_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]
 open_project $xpr_filename
 if {$enable_compress} {
   if {[get_property PROGRESS [get_runs impl_1]] != "100%"} {
+    set_property STEPS.SYNTH_DESIGN.ARGS.RETIMING true [get_runs synth_1]
+    set_property STEPS.SYNTH_DESIGN.ARGS.DIRECTIVE PerformanceOptimized [get_runs synth_1]
     set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]
-    set_property STEPS.ROUTE_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]
+    set_property STEPS.ROUTE_DESIGN.ARGS.DIRECTIVE AggressiveExplore [get_runs impl_1]
+    set_property STEPS.OPT_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]
+    set_property STEPS.PHYS_OPT_DESIGN.IS_ENABLED true [get_runs impl_1]
+    set_property STEPS.PHYS_OPT_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]
+    set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.IS_ENABLED true [get_runs impl_1]
+    set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]
     launch_runs impl_1 -to_step write_bitstream -jobs $nCPU
     wait_on_run impl_1
   }

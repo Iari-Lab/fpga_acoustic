@@ -46,7 +46,9 @@ proc add_bram {memory_name {intercon_idx 0}} {
   set_property range  [get_memory_range $memory_name]  $memory_segment
 
   # A register slice on the master side is helpful since the net delays to the BRAMs can be quite long
-  set_property -dict [list CONFIG.M${idx}_HAS_REGSLICE 1] [get_bd_cells /axi_mem_intercon_$intercon_idx]
+  # set_property -dict [list CONFIG.M${idx}_HAS_REGSLICE 1] [get_bd_cells /axi_mem_intercon_$intercon_idx]
+  set_property -dict [list CONFIG.M${idx}_HAS_REGSLICE 4] [get_bd_cells /axi_mem_intercon_$intercon_idx]
+  set_property -dict [list CONFIG.S${idx}_HAS_REGSLICE 4] [get_bd_cells /axi_mem_intercon_$intercon_idx]
 
   return $bram_name
 }
