@@ -39,7 +39,7 @@ module sesenta (
     output M0_CLK,
     output M1_CLK,
     output M2_CLK,
-    input [29:0] M_DATA,  // 18 microphone inputs (M18-M35)
+    input [7:0] M_DATA,  // 18 microphone inputs (M18-M35)
     output LEDS,
     output SYNC_IN,
     output SYNC_OUT
@@ -48,17 +48,17 @@ module sesenta (
   localparam integer INPUT_FREQ = 120_000_000;
   localparam integer PDM_FREQ = 2_400_000;
   localparam integer LED_FREQ = 12000000;
-  localparam integer NUM_CONFIGS = 60;
-  localparam integer NUM_CHANNELS = 60;
-  localparam integer CIC_DATA_WIDTH = 12;
+  localparam integer NUM_CONFIGS = 8;
+  localparam integer NUM_CHANNELS = 8;
+  localparam integer CIC_DATA_WIDTH = 16;
   // SUM_WIDTH matches adder_tree_recursive: DATA_WIDTH + $clog2(NUM_CHANNELS) + 1
-  localparam integer SUM_WIDTH = 17;  // 22 bits
+  localparam integer SUM_WIDTH = 22;  // 22 bits
 //   localparam integer SUM_WIDTH = CIC_DATA_WIDTH + $clog2(NUM_C1HANNELS) + 1;  // 22 bits
   localparam integer DATA_WIDTH = NUM_CONFIGS * SUM_WIDTH;  // 18 configs * 32 bits = 576
   localparam integer MICS_DATA_WIDTH = NUM_CHANNELS * CIC_DATA_WIDTH;  // 18 mics * 16 bits = 288
   localparam integer BEAMFORMED_WIDTH = NUM_CONFIGS * SUM_WIDTH;  // 18 * 22 = 396
 
-  wire clk, clk_leds, rst, pdm_clk;
+  wire clk, clk_leds, rst, pdm_clk, color_sel;
 
   wire clk_rising_mics;
   wire mics_data_valid;
@@ -92,7 +92,8 @@ module sesenta (
       .led_sel(led_sel),
       .reset(~rst),
       .ws_data(LEDS),
-      .led_count(led_count)
+      .led_count(led_count),
+      .color(color_sel)
   );
 
   // Clock generator instance
@@ -140,7 +141,8 @@ module sesenta (
           .CIC_STAGES(3),
           .CIC_DECIMATION(25)
       ) cic_stage (
-          .clk         (j[0] ? ~clk : clk),    // Odd: ~clk, Even: clk
+          .clk         (~clk),    // Odd: ~clk, Even: clk
+        //.clk         (j[0] ? ~clk : clk),    // Odd: ~clk, Even: clk
           .rst         (~rst),
           .pdm_clk     (pdm_clk),
           .pdm_data    (M_DATA[j/2]),          // Integer division: 0,1→0, 2,3→1, etc.
@@ -183,6 +185,7 @@ module sesenta (
 
   system system_i (
       .led_sel(led_sel),
+      .led_color(color_sel),
       .mics(beamformed_sum),
       .beam_valid(beamformed_valid[0]),
       .DDR_addr(DDR_addr),

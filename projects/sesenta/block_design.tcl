@@ -16,16 +16,18 @@ connect_port_pin reset proc_sys_reset_adc_clk/peripheral_aresetn
 
 # source $sdk_path/projects/sesenta/amd.tcl
 # connect_pins mic_sel [get_slice_pin [ctl_pin mic_select] 6 0 mic_sel_pin]
-connect_pins led_sel [get_slice_pin [ctl_pin led_select] 6 0 led_sel_pin]
+connect_pins led_color [get_slice_pin [ctl_pin led_select] 0 0 led_color_pin]
 
-set mic_width 17
-set micsn 60
+connect_pins led_sel [get_slice_pin [ctl_pin led_select] 8 1 led_sel_pin]
+
+set mic_width 22
+set micsn 8
 for {set i 0} {$i < $micsn} {incr i} {
   add_bram mic$i
 }
 
 cell iari:user:addr_counter:1.0 addr_counter_0 {
-    ADDR_WIDTH 11
+    ADDR_WIDTH 12
   } {
     clk $mics_clk
     enable beam_valid
@@ -33,26 +35,22 @@ cell iari:user:addr_counter:1.0 addr_counter_0 {
     done [sts_pin done_capture]
   }
 
-# cell xilinx.com:ip:system_ila:1.1 sila_3 {
-#     C_PROBE0_WIDTH 1
-#     C_PROBE1_WIDTH 32
-#     C_PROBE2_WIDTH 1
-#     C_PROBE3_WIDTH 1
-#     C_DATA_DEPTH 16384
-#     C_NUM_OF_PROBES 4
-#     C_EN_STRG_QUAL 1 
-#     C_ADV_TRIGGER false
-#     ALL_PROBE_SAME_MU_CNT 2
-#     C_MON_TYPE NATIVE 
-#     C_PROBE_WIDTH_PROPAGATION MANUAL 
-# } {
-#     clk $mics_clk
-#     probe0 [get_slice_pin [ctl_pin start_capture] 0 0 start_dbg]
-#     probe1 addr_counter_0/addr_debug
-#     probe2 addr_counter_0/done
-#     probe3 mics_data_valid
+cell xilinx.com:ip:system_ila:1.1 sila_3 {
+    C_PROBE0_WIDTH 1
+    C_PROBE1_WIDTH 7
+    C_DATA_DEPTH 16384
+    C_NUM_OF_PROBES 2
+    C_EN_STRG_QUAL 1 
+    C_ADV_TRIGGER false
+    ALL_PROBE_SAME_MU_CNT 2
+    C_MON_TYPE NATIVE 
+    C_PROBE_WIDTH_PROPAGATION MANUAL 
+} {
+    clk $mics_clk
+    probe0 led_color_pin/Dout
+    probe1 led_sel_pin/Dout
 
-# }
+}
 # for {set i 0} {$i < $micsn} {incr i} {
 #   set from  [expr ($i + 1) * $mic_width - 1]
 #   set to    [expr $i * $mic_width]
@@ -84,12 +82,13 @@ cell iari:user:addr_counter:1.0 addr_counter_0 {
 # }
 
 
+    # addrb addr_counter_0/addr
 for {set i 0} {$i < $micsn} {incr i} {
   set from  [expr ($i + 1) * $mic_width - 1]
   set to    [expr $i * $mic_width]
 
   connect_cell blk_mem_gen_mic$i {
-    addrb addr_counter_0/addr
+    addrb [get_slice_pin addr_counter_0/addr 11 0]
     clkb $mics_clk
     dinb [get_slice_pin mics $from $to]
     enb [get_constant_pin 1 1]

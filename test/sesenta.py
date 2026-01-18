@@ -41,7 +41,7 @@ class Sesenta(object):
 
 
     @command()
-    def set_led_sel(self, sel):
+    def set_led_sel(self, sel, color):
         pass
 
     @command()
