@@ -42,7 +42,7 @@ module beamfo #(
     for (cfg = 0; cfg < NUM_CONFIGS; cfg = cfg + 1) begin : gen_beam
 
       // Wire to hold selected delayed samples for this configuration
-      wire [NUM_CHANNELS*DATA_WIDTH-1:0] selected_data;
+      wire signed [NUM_CHANNELS*DATA_WIDTH-1:0] selected_data;
 
       // Get delay taps for each channel using the LUT module
       for (ch_sel = 0; ch_sel < NUM_CHANNELS; ch_sel = ch_sel + 1) begin : gen_sel
@@ -56,6 +56,7 @@ module beamfo #(
             .delay_tap  (tap_idx)
         );
         // delay_tap_lut #(.CONFIG(cfg), .CHANNEL(ch_sel)) delay_lut (.delay_tap(tap_idx));
+
 
 
         // Select from packed delay taps based on LUT output

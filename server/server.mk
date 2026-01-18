@@ -63,8 +63,8 @@ ARM_GXX := $(shell which arm-linux-gnueabihf-g++-$(GCC_VERSION) 2>/dev/null || w
 # OpenCV source download
 $(OPENCV_SRC_DIR)/.downloaded:
 	@echo "Downloading OpenCV $(OPENCV_VERSION) source..."
-	@mkdir -p $(TMP)
-	@cd $(TMP) && \
+	@mkdir -p $(OPENCV_BASE_DIR)
+	@cd $(OPENCV_BASE_DIR) && \
 		wget -q --no-check-certificate https://github.com/opencv/opencv/archive/$(OPENCV_VERSION).tar.gz -O opencv-$(OPENCV_VERSION).tar.gz && \
 		tar -xzf opencv-$(OPENCV_VERSION).tar.gz
 	@touch $@

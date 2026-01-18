@@ -1,10 +1,20 @@
 set xpr_filename [lindex $argv 0]
 set bit_filename [lindex $argv 1]
 set nCPU [lindex $argv 2]
+set fpga_path [file dirname [info script]]
+
 set enable_compress 1
 # set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE AggressiveExplore [get_runs impl_1]
 # set_property STEPS.ROUTE_DESIGN.ARGS.DIRECTIVE AggressiveExplore [get_runs impl_1]
     # set_property STEPS.ROUTE_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]
+    # set_property STEPS.PLACE_DESIGN.TCL.PRE $sdk_path/fpga/vivado/place_pre.tcl [get_runs impl_1]
+# set temp_tcl [file join [file dirname [info script]] "place_pre.tcl"]
+# set fp [open $temp_tcl w]
+# puts $fp "set_param place.skipUtilizationCheck 1"
+# close $fp
+# set_property STEPS.PLACE_DESIGN.TCL.PRE $temp_tcl [get_runs impl_1]
+
+    # set_param place.skipUtilizationCheck 1
 open_project $xpr_filename
 if {$enable_compress} {
   if {[get_property PROGRESS [get_runs impl_1]] != "100%"} {

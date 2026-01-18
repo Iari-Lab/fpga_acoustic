@@ -27,6 +27,8 @@
     wire cic_strobe_out;
     
     // CIC integrator comb 
+
+    // (* use_dsp = "yes" *)
     reg signed [INTERNAL_WIDTH-1:0] integrator [0:CIC_STAGES-1];
     reg signed [INTERNAL_WIDTH-1:0] comb_delay [0:CIC_STAGES-1];
     reg signed [INTERNAL_WIDTH-1:0] comb_output [0:CIC_STAGES-1];
