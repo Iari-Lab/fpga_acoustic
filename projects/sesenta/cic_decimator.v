@@ -1,10 +1,9 @@
 /*
- * Optimized 3-Stage CIC Decimator - 3.072 MHz PDM to 192 kHz PCM
- * 3-stage CIC filter with 16x decimation
- * Optimized for Zynq-7 FPGA resources (DSP48E1, LUTs, FFs)
+ * CIC Decimator - 3.072 MHz PDM to 192 kHz PCM
+ * 4-stage CIC filter with 16x decimation
  */
 
- module cic_decimator #(
+module cic_decimator #(
     parameter DATA_WIDTH = 18,
     parameter CIC_STAGES = 4,
     parameter CIC_DECIMATION = 16
@@ -14,12 +13,33 @@
     input  wire                     pdm_clk,
     input  wire                     pdm_data,
     output reg                      pcm_valid,
-    output reg  [DATA_WIDTH-1:0]    pcm_data
+    output reg  [DATA_WIDTH-1:0]    pcm_data,
+    output reg                      overflow,
+    output reg  [15:0]              sample_count
 );
-    // Calculate bit growth for 3 stages
-    localparam CIC_BIT_GROWTH = CIC_STAGES * $clog2(CIC_DECIMATION);  // 3 * 4 = 12 bits
-    localparam INTERNAL_WIDTH = DATA_WIDTH + CIC_BIT_GROWTH;  // 18 + 12 = 30 bits
-    localparam COUNTER_WIDTH  = $clog2(CIC_DECIMATION);
+
+    function integer clog2;
+        input integer value;
+        integer v;
+        begin
+            v = value - 1;
+            clog2 = 0;
+            while (v > 0) begin
+                v = v >> 1;
+                clog2 = clog2 + 1;
+            end
+        end
+    endfunction
+    
+    localparam CIC_BIT_GROWTH = CIC_STAGES * clog2(CIC_DECIMATION);
+    localparam INTERNAL_WIDTH = DATA_WIDTH + CIC_BIT_GROWTH;
+    localparam COUNTER_WIDTH = clog2(CIC_DECIMATION);
+
+    // PDM syn
+    reg pdm_clk_sync1, pdm_clk_sync2;
+    reg pdm_data_sync1, pdm_data_sync2;
+    reg pdm_clk_prev;
+    wire pdm_strobe;
     
     // CIC filter 
     reg [COUNTER_WIDTH-1:0] decimation_counter;
@@ -27,8 +47,6 @@
     wire cic_strobe_out;
     
     // CIC integrator comb 
-
-    // (* use_dsp = "yes" *)
     reg signed [INTERNAL_WIDTH-1:0] integrator [0:CIC_STAGES-1];
     reg signed [INTERNAL_WIDTH-1:0] comb_delay [0:CIC_STAGES-1];
     reg signed [INTERNAL_WIDTH-1:0] comb_output [0:CIC_STAGES-1];
@@ -36,45 +54,37 @@
     
     integer i;
     
-    // PDM synchronizers
-    reg [1:0] pdm_clk_sync;
-    reg [1:0] pdm_data_sync;
-
-    // (* ASYNC_REG = "TRUE" *) reg [1:0] pdm_clk_sync;
-    // (* ASYNC_REG = "TRUE" *) reg [1:0] pdm_data_sync;
-    reg pdm_clk_prev;
-    
     always @(posedge clk) begin
         if (rst) begin
-            pdm_clk_sync  <= 2'b0;
-            pdm_data_sync <= 2'b0;
-            pdm_clk_prev  <= 1'b0;
+            pdm_clk_sync1 <= 1'b0;
+            pdm_clk_sync2 <= 1'b0;
+            pdm_data_sync1 <= 1'b0;
+            pdm_data_sync2 <= 1'b0;
+            pdm_clk_prev <= 1'b0;
         end else begin
-            pdm_clk_sync  <= {pdm_clk_sync[0], pdm_clk};
-            pdm_data_sync <= {pdm_data_sync[0], pdm_data};
-            pdm_clk_prev  <= pdm_clk_sync[1];
+            pdm_clk_sync1 <= pdm_clk;
+            pdm_clk_sync2 <= pdm_clk_sync1;
+            pdm_data_sync1 <= pdm_data;
+            pdm_data_sync2 <= pdm_data_sync1;
+            pdm_clk_prev <= pdm_clk_sync2;
         end
     end
     
-    wire pdm_clk_synced  = pdm_clk_sync[1];
-    wire pdm_data_synced = pdm_data_sync[1];
-    wire pdm_strobe      = pdm_clk_synced & ~pdm_clk_prev;
-    
-    assign pdm_strobe = pdm_clk_synced & ~pdm_clk_prev;
+    assign pdm_strobe = pdm_clk_sync2 & ~pdm_clk_prev;
     
     // Convert PDM to signed: '1' -> +1, '0' -> -1
     wire signed [INTERNAL_WIDTH-1:0] pdm_signed;
-    assign pdm_signed = pdm_data_synced ? 
+    assign pdm_signed = pdm_data_sync2 ? 
                        {{(INTERNAL_WIDTH-1){1'b0}}, 1'b1} :
                        {1'b1, {(INTERNAL_WIDTH-1){1'b1}}};
     
-    assign cic_strobe_in = pdm_strobe; 
-
-    // DECIMATION COUNTER
+    assign cic_strobe_in = pdm_strobe;
+    
+    // Decimation counter
     always @(posedge clk) begin
         if (rst) begin
             decimation_counter <= {COUNTER_WIDTH{1'b0}};
-        end else if (pdm_strobe) begin
+        end else if (cic_strobe_in) begin
             if (decimation_counter == CIC_DECIMATION - 1) begin
                 decimation_counter <= {COUNTER_WIDTH{1'b0}};
             end else begin
@@ -83,11 +93,9 @@
         end
     end
     
-    assign cic_strobe_out = pdm_strobe && (decimation_counter == CIC_DECIMATION - 1);
-  // Integrator registers with DSP48E1 inference
-  
-
-     // CIC Integrator section
+    assign cic_strobe_out = cic_strobe_in && (decimation_counter == CIC_DECIMATION - 1);
+    
+    // CIC Integrator section
     always @(posedge clk) begin
         if (rst) begin
             for (i = 0; i < CIC_STAGES; i = i + 1) begin
@@ -120,16 +128,42 @@
         end
     end
     
-     always @(posedge clk) begin
+    // Output scaling and saturation
+    reg signed [INTERNAL_WIDTH-1:0] cic_final_output;
+    reg overflow_flag;
+    
+    always @(posedge clk) begin
         if (rst) begin
             pcm_valid <= 1'b0;
             pcm_data <= {DATA_WIDTH{1'b0}};
+            overflow <= 1'b0;
+            overflow_flag <= 1'b0;
+            sample_count <= 16'h0000;
         end else begin
             pcm_valid <= cic_strobe_out;
+            
             if (cic_strobe_out) begin
-                pcm_data <= comb_output[CIC_STAGES-1][DATA_WIDTH-1:0];
+                cic_final_output = comb_output[CIC_STAGES-1];
+                
+                if (cic_final_output > $signed({{1'b0}, {(DATA_WIDTH-1){1'b1}}})) begin
+                    pcm_data <= {{1'b0}, {(DATA_WIDTH-1){1'b1}}};
+                    overflow_flag <= 1'b1;
+                end else if (cic_final_output < $signed({{1'b1}, {(DATA_WIDTH-1){1'b0}}})) begin
+                    pcm_data <= {{1'b1}, {(DATA_WIDTH-1){1'b0}}};
+                    overflow_flag <= 1'b1;
+                end else begin
+                    pcm_data <= cic_final_output[DATA_WIDTH-1:0];
+                    overflow_flag <= 1'b0;
+                end
+                
+                sample_count <= sample_count + 1;
+            end
+            
+            if (overflow_flag) begin
+                overflow <= 1'b1;
             end
         end
     end
-    
+
 endmodule
+

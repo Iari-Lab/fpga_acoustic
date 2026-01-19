@@ -145,7 +145,7 @@ module sesenta (
         //.clk         (j[0] ? ~clk : clk),    // Odd: ~clk, Even: clk
           .rst         (~rst),
           .pdm_clk     (pdm_clk),
-          .pdm_data    (M_DATA[j/2]),          // Integer division: 0,1→0, 2,3→1, etc.
+          .pdm_data    (M_DATA[j]),          // Integer division: 0,1→0, 2,3→1, etc.
           .pcm_valid   (),
           .pcm_data    (mics_data[j*CIC_DATA_WIDTH +: CIC_DATA_WIDTH])
       );

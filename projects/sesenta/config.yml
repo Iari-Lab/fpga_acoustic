@@ -4,6 +4,7 @@ cores:
 - fpga/cores/axi_ctl_register_v1_0
 - fpga/cores/axis_variable_v1_0
 - fpga/cores/axis_tlast_v1_0
+- fpga/cores/signe_v1_0
 - fpga/cores/axi_sts_register_v1_0
 - fpga/cores/addr_counter_v1_0
 memory:

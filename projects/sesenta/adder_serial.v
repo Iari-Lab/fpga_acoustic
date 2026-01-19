@@ -28,7 +28,7 @@ module adder_serial #(
     assign current_ext = {{(SUM_WIDTH-DATA_WIDTH){current_val[DATA_WIDTH-1]}}, current_val};
     
     // Accumulator - synthesis will use DSP48
-    (* use_dsp = "yes" *)
+    // (* use_dsp = "yes" *)
     reg signed [SUM_WIDTH-1:0] acc;
 
     always @(posedge clk) begin

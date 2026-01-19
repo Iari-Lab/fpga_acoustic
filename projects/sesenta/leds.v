@@ -19,7 +19,7 @@ module leds (
     if (&count) begin
       if (led_num == led_sel) begin
         case (led_num)
-          8'd58, 8'd55, 8'd11, 8'd19, 8'd59, 8'd7, 8'd3:
+          8'd58, 8'd55, 8'd11, 8'd19, 8'd59, 8'd7, 8'd3, 8'd15:
           led_rgb_data <= (color) ? 24'h0f_00_00 : 24'h00_0f_00;
           default: led_rgb_data <= 24'h00_0f_00;
         endcase
@@ -28,7 +28,11 @@ module leds (
         led_num <= 0;
       end else begin
         led_num <= led_num + 1;
-        led_rgb_data <= 24'h00_00_0f;
+        case (led_num)
+          8'd58, 8'd55, 8'd11, 8'd19, 8'd59, 8'd7, 8'd3, 8'd15: led_rgb_data <= 24'h00_0f_00;
+          default: led_rgb_data <= 24'h00_00_0f;
+        endcase
+        led_num <= led_num + 1;
       end
     end
   end

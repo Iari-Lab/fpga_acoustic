@@ -68,19 +68,19 @@ module beamfo #(
       // Adder tree for this configuration
       wire signed [SUM_WIDTH-1:0] beam_sum;
       wire beam_valid;
-    //   adder_tree_recursive #(
-    //       .NUM_CHANNELS(NUM_CHANNELS),
-    //       .DATA_WIDTH(DATA_WIDTH),
-    //       .SUM_WIDTH(SUM_WIDTH),
-    //       .FANIN(4)
-    //   ) u_adder_tree (
-    //       .clk(clk),
-    //       .rst(rst),
-    //       .en(mics_data_valid),
-    //       .data_in(selected_data),
-    //       .sum(beam_sum),
-    //       .valid(beam_valid)
-    //   );
+      // adder_tree_recursive #(
+      //     .NUM_CHANNELS(NUM_CHANNELS),
+      //     .DATA_WIDTH(DATA_WIDTH),
+      //     .SUM_WIDTH(SUM_WIDTH),
+      //     .FANIN(4)
+      // ) u_adder_tree (
+      //     .clk(clk),
+      //     .rst(rst),
+      //     .en(mics_data_valid),
+      //     .data_in(selected_data),
+      //     .sum(beam_sum),
+      //     .valid(beam_valid)
+      // );
       adder_serial #(
           .DATA_WIDTH(DATA_WIDTH),
           .NUM_CHANNELS(NUM_CHANNELS),
