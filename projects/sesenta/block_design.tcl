@@ -20,7 +20,7 @@ connect_pins led_color [get_slice_pin [ctl_pin led_select] 0 0 led_color_pin]
 
 connect_pins led_sel [get_slice_pin [ctl_pin led_select] 8 1 led_sel_pin]
 
-set mic_width 22
+set mic_width 16
 set micsn 8
 for {set i 0} {$i < $micsn} {incr i} {
   add_bram mic$i

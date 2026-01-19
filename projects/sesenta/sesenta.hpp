@@ -172,6 +172,13 @@ void initialize_kalman_filter() {
     while (!(sts.read_reg(reg::done_capture) & 0x1))
       ;
   }
+  int64_t recover_64bit(int32_t upper, uint32_t lower) {
+        int64_t result = static_cast<int64_t>(upper) << 32;
+        result |= lower;
+        
+        return result;
+    }
+
 
   auto get_mics_bram(uint32_t dir) {
     const int num_mics = 8;
@@ -212,7 +219,7 @@ void initialize_kalman_filter() {
         double sample = (double)beamformed_sum[sample_idx];
         power += (sample * sample);
       }
-      total_power += power;
+      // total_power += (power / mic_size*1.0);
       beam_powers[dir] = power / mic_size;
       if (beam_powers[dir] > max_power) {
         max_power = beam_powers[dir];
@@ -220,7 +227,7 @@ void initialize_kalman_filter() {
       }
     }
 
-    bool sound_active = detectSoundActivity(total_power);
+    bool sound_active = detectSoundActivity(max_power);
     if (sound_active) {
       ctx.print<DEBUG>("Sound detected (Power: %e), maintaining position\n",
                        max_power);
@@ -281,7 +288,10 @@ private:
   uint32_t last_active_led_ = 0;
   // static constexpr std::array<uint8_t, 8> M_DATA_TO_MIC = {59, 3, 7, 11,
   //                                                          15, 19, 55, 58};
-  static constexpr std::array<uint8_t, 8> M_DATA_TO_MIC = {59, 58, 55, 19,15,11,7,3};
+  static constexpr std::array<uint8_t, 8> M_DATA_TO_MIC = {55, 58, 19,15,11,7,3, 59 };
+  // almost perfect
+  // static constexpr std::array<uint8_t, 8> M_DATA_TO_MIC = {58, 55, 19,15,11,7,3, 59 };
+
   void beamf_thread();
 };
 

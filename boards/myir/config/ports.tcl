@@ -6,7 +6,7 @@
 
 # Parameters
 set NUM_CHANNELS 8
-set BITS_PER_CHANNEL 22
+set BITS_PER_CHANNEL 16
 set NUM_CONFIGS 8
 
 # Calculate width (NUM_CONFIGS * NUM_CHANNELS * BITS_PER_CHANNEL - 1)
