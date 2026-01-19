@@ -6,7 +6,7 @@
 
 # Parameters
 set NUM_CHANNELS 60
-set BITS_PER_CHANNEL 17
+set BITS_PER_CHANNEL 16
 set NUM_CONFIGS 60
 
 # Calculate width (NUM_CONFIGS * NUM_CHANNELS * BITS_PER_CHANNEL - 1)
@@ -22,7 +22,8 @@ create_bd_port -dir I -from $port_width -to 0 mics
 # create_bd_port -dir I mics_data_valid
 create_bd_port -dir I beam_valid
 create_bd_port -dir O reset
-create_bd_port -dir O -from 7 -to 0 led_sel
+create_bd_port -dir O -from 6 -to 0 led_sel
+create_bd_port -dir O led_color
 create_bd_port -dir O FCLK_CLK0
 create_bd_port -dir O start
 # create_bd_port -dir O FCLK_CLK1

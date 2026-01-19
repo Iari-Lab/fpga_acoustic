@@ -52,7 +52,7 @@ module sesenta (
   localparam integer NUM_CHANNELS = 60;
   localparam integer CIC_DATA_WIDTH = 12;
   // SUM_WIDTH matches adder_tree_recursive: DATA_WIDTH + $clog2(NUM_CHANNELS) + 1
-  localparam integer SUM_WIDTH = 17;  // 22 bits
+  localparam integer SUM_WIDTH = 16;  // 22 bits
 //   localparam integer SUM_WIDTH = CIC_DATA_WIDTH + $clog2(NUM_C1HANNELS) + 1;  // 22 bits
   localparam integer DATA_WIDTH = NUM_CONFIGS * SUM_WIDTH;  // 18 configs * 32 bits = 576
   localparam integer MICS_DATA_WIDTH = NUM_CHANNELS * CIC_DATA_WIDTH;  // 18 mics * 16 bits = 288

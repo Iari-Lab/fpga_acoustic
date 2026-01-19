@@ -20,12 +20,10 @@
 using namespace cv;
 
 constexpr uint32_t mic_size = mem::mic0_range / sizeof(uint32_t);
-
-// Sound Activity Detection parameters
-constexpr double POWER_THRESHOLD =
-    1e6; // Adjust based on your microphone sensitivity
-constexpr double MIN_VALID_POWER = 1e4; // Minimum power for valid measurement
-constexpr int SAD_HISTORY_SIZE = 5;     // Frames for activity decision
+// Sound Activity Detection parameters for 8K brams 3 stages, 25 dec
+constexpr double POWER_THRESHOLD = 7.0e2;
+constexpr double MIN_VALID_POWER = 2.0e4; // Minimum power for valid measurement
+constexpr int SAD_HISTORY_SIZE = 35;      // Frames for activity decision
 constexpr double VELOCITY_THRESHOLD = 0.1; // Maximum reasonable velocity (m/s)
 
 class Sesenta {
@@ -163,8 +161,11 @@ public:
       avg_power += p;
     }
     avg_power /= power_history.size();
+    // print avg power
+    // ctx.print<DEBUG>("Avg Power: %f, Current Power: %f\n", avg_power, power);
+    ctx.print<DEBUG>("Avg Power: %e\n", avg_power, power);
 
-    // Decision logic
+    // // Decision logic
     bool current_detection =
         (avg_power > POWER_THRESHOLD) && (power > MIN_VALID_POWER);
 
@@ -178,7 +179,6 @@ public:
         sound_detected = false;
       }
     }
-
     return sound_detected;
   }
 
@@ -579,8 +579,8 @@ public:
       ctx.print<DEBUG>("Sound detected (Power: %e), maintaining position\n",
                        max_power);
       ctx.print<INFO>("Maximum sound energy detected from direction: %d (M%d) "
-                    "(Power: %e)\n",
-                    max_direction, M_DATA_TO_MIC[max_direction], max_power);
+                      "(Power: %e)\n",
+                      max_direction, M_DATA_TO_MIC[max_direction], max_power);
       set_led_sel(M_DATA_TO_MIC[max_direction]);
 
     } else {
@@ -588,7 +588,7 @@ public:
       ctx.print<DEBUG>("No sound detected (Power: %e), maintaining position\n",
                        max_power);
     }
-   
+
     //  // Kalman filter: predict then correct
     //   cv::Mat prediction = kf.predict();
 
@@ -715,9 +715,11 @@ private:
   bool sound_active_ = false;
   uint32_t last_active_led_ = 0;
 
-  static constexpr std::array<uint8_t, 30> M_DATA_TO_MIC = {
-      59, 57, 55, 53, 51, 49, 47, 45, 43, 41, 39, 37, 35, 33, 31,
-      29, 27, 25, 23, 21, 19, 17, 15, 13, 11, 9,  7,  5,  3,  1};
+  static constexpr std::array<uint8_t, 60> M_DATA_TO_MIC = {
+      59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45,
+      44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30,
+      29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15,
+      14, 13, 12, 11, 10, 9,  8,  7,  6,  5,  4,  3,  2,  1};
 
   void beamf_thread();
 };
