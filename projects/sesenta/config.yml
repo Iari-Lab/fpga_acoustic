@@ -15,44 +15,39 @@ memory:
   range: 4K
   offset: '0x50000000'
 - name: mic0
-  range: 16K
+  range: 8K
   offset: '0x40040000'
 - name: mic1
-  range: 16K
-  offset: '0x40044000'
+  range: 8K
+  offset: '0x40042000'
 - name: mic2
-  range: 16K
-  offset: '0x40048000'
+  range: 8K
+  offset: '0x40044000'
 - name: mic3
-  range: 16K
-  offset: '0x4004C000'
+  range: 8K
+  offset: '0x40046000'
 - name: mic4
-  range: 16K
-  offset: '0x40050000'
+  range: 8K
+  offset: '0x40048000'
 - name: mic5
-  range: 16K
-  offset: '0x40054000'
+  range: 8K
+  offset: '0x4004A000'
 - name: mic6
-  range: 16K
-  offset: '0x40058000'
+  range: 8K
+  offset: '0x4004C000'
 - name: mic7
-  range: 16K
-  offset: '0x4005C000'
+  range: 8K
+  offset: '0x4004E000'
 
 control_registers:
 - led_select
 - start_capture
-
 status_registers:
 - done_capture
-
 parameters:
   fclk0: 100000000
-  
 xdc:
 - boards/myir/config/ports.xdc
-
 drivers:
 - server/drivers/common.hpp
 - ./sesenta.hpp
-

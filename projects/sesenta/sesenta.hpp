@@ -10,7 +10,6 @@
 #include <context.hpp>
 #include <iostream>
 
-
 #include "config_geom.hpp"
 #include "opencv2/core/cvdef.h"
 #include <deque>
@@ -18,17 +17,19 @@
 #include <opencv2/video/tracking.hpp>
 #include <stdio.h>
 
-
 constexpr uint32_t mic_size = mem::mic0_range / sizeof(uint32_t);
-// Sound Activity Detection parameters
-constexpr double POWER_THRESHOLD =
-    1.2e9; 
-constexpr double MIN_VALID_POWER = 2.09e9; // Minimum power for valid measurement
-constexpr int SAD_HISTORY_SIZE = 35;     // Frames for activity decision
+// Sound Activity Detection parameters for 16K brams 4 stages, 50 dec
+// constexpr double POWER_THRESHOLD = 1.2e9;
+// constexpr double MIN_VALID_POWER = 2.09e9;                          // Minimum power for valid measurement
+
+// Sound Activity Detection parameters for 8K brams 3 stages, 25 dec
+constexpr double POWER_THRESHOLD = 7.0e2;
+constexpr double MIN_VALID_POWER = 2.0e4;                          // Minimum power for valid measurement
+constexpr int SAD_HISTORY_SIZE = 35; // Frames for activity decision
 constexpr double VELOCITY_THRESHOLD = 0.1; // Maximum reasonable velocity (m/s)
 class Sesenta {
 public:
-//=== TUNING PARAMETERS - Adjust these for your environment ===
+  //=== TUNING PARAMETERS - Adjust these for your environment ===
 
   // Silence detection: Set based on measured noise floor
   // Measure power when no sound is present, then set ~3-5x above that
@@ -51,7 +52,7 @@ public:
         mic1_br(ctx.mm.get<mem::mic1>()), mic2_br(ctx.mm.get<mem::mic2>()),
         mic3_br(ctx.mm.get<mem::mic3>()), mic4_br(ctx.mm.get<mem::mic4>()),
         mic5_br(ctx.mm.get<mem::mic5>()), mic6_br(ctx.mm.get<mem::mic6>()),
-        mic7_br(ctx.mm.get<mem::mic7>()) , kf(2, 1, 0, CV_32F) {
+        mic7_br(ctx.mm.get<mem::mic7>()), kf(2, 1, 0, CV_32F) {
     ctx.print<INFO>("BEAm------------------------------------------>\n");
 
     initialize_kalman_filter();
@@ -61,7 +62,7 @@ public:
     beamforming_started = false;
     beamforming_thread.join();
   }
-void initialize_kalman_filter() {
+  void initialize_kalman_filter() {
     // State: [position, velocity]
     // Transition: position(t+1) = position(t) + velocity(t)
     //             velocity(t+1) = velocity(t)
@@ -90,7 +91,7 @@ void initialize_kalman_filter() {
     sound_detected = false;
     consecutive_invalid_frames = 0;
   }
-// Sound Activity Detection based on power thresholding
+  // Sound Activity Detection based on power thresholding
   bool detectSoundActivity(double power) {
     // Add to history
     power_history.push_back(power);
@@ -124,8 +125,6 @@ void initialize_kalman_filter() {
     }
     return sound_detected;
   }
-
-
 
   uint32_t i_rst_clk_mics = 0;
   uint32_t i_rst_leds = 1;
@@ -172,13 +171,15 @@ void initialize_kalman_filter() {
     while (!(sts.read_reg(reg::done_capture) & 0x1))
       ;
   }
-  int64_t recover_64bit(int32_t upper, uint32_t lower) {
-        int64_t result = static_cast<int64_t>(upper) << 32;
-        result |= lower;
-        
-        return result;
-    }
 
+  int32_t get_lower(uint32_t value) {
+    int32_t result = static_cast<int32_t>(value) & 0xff00;
+    return result;
+  }
+  int32_t get16_upper(uint32_t value) {
+    int32_t result = static_cast<int32_t>(value) & 0x00ff;
+    return result;
+  }
 
   auto get_mics_bram(uint32_t dir) {
     const int num_mics = 8;
@@ -201,7 +202,7 @@ void initialize_kalman_filter() {
     }
     ctx.print<DEBUG>("Direction MIC %d: LED = %d   power: %f\n", dir,
                      M_DATA_TO_MIC[dir], power);
-    set_led_sel(M_DATA_TO_MIC[dir],1);
+    set_led_sel(M_DATA_TO_MIC[dir], 1);
   }
 
   void bf() {
@@ -232,19 +233,19 @@ void initialize_kalman_filter() {
       ctx.print<DEBUG>("Sound detected (Power: %e), maintaining position\n",
                        max_power);
       ctx.print<INFO>("Maximum sound energy detected from direction: %d (M%d) "
-                    "(Power: %e)\n",
-                    max_direction, M_DATA_TO_MIC[max_direction], max_power);
-      set_led_sel(M_DATA_TO_MIC[max_direction],1);
+                      "(Power: %e)\n",
+                      max_direction, M_DATA_TO_MIC[max_direction], max_power);
+      set_led_sel(M_DATA_TO_MIC[max_direction], 1);
 
     } else {
       // No sound detected - stop predicting and maintain last position
       ctx.print<DEBUG>("No sound detected (Power: %e), maintaining position\n",
                        max_power);
     }
-      // detectSoundActivity(max_power);
+    // detectSoundActivity(max_power);
     // ctx.print<INFO>(
-    //     "Maximum sound energy detected from direction: %d (M%d) (Power: %e)\n",
-    //     max_direction, M_DATA_TO_MIC[max_direction], max_power);
+    //     "Maximum sound energy detected from direction: %d (M%d) (Power:
+    //     %e)\n", max_direction, M_DATA_TO_MIC[max_direction], max_power);
     // set_led_sel(M_DATA_TO_MIC[max_direction],1);
   }
   void set_led_sel(uint32_t sel, uint32_t color) {
@@ -288,9 +289,11 @@ private:
   uint32_t last_active_led_ = 0;
   // static constexpr std::array<uint8_t, 8> M_DATA_TO_MIC = {59, 3, 7, 11,
   //                                                          15, 19, 55, 58};
-  static constexpr std::array<uint8_t, 8> M_DATA_TO_MIC = {55, 58, 19,15,11,7,3, 59 };
+  static constexpr std::array<uint8_t, 8> M_DATA_TO_MIC = {55, 58, 19, 15,
+                                                           11, 7,  3,  59};
   // almost perfect
-  // static constexpr std::array<uint8_t, 8> M_DATA_TO_MIC = {58, 55, 19,15,11,7,3, 59 };
+  // static constexpr std::array<uint8_t, 8> M_DATA_TO_MIC = {58, 55,
+  // 19,15,11,7,3, 59 };
 
   void beamf_thread();
 };

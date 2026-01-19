@@ -27,7 +27,7 @@ for {set i 0} {$i < $micsn} {incr i} {
 }
 
 cell iari:user:addr_counter:1.0 addr_counter_0 {
-  ADDR_WIDTH 12
+  ADDR_WIDTH 11
 } {
   clk $mics_clk
   enable beam_valid
