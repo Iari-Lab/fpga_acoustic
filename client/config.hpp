@@ -17,7 +17,7 @@ namespace koheron {
             constexpr bool use_stderr = true;
 
             /// Send messages to syslog
-            constexpr bool syslog =false;
+            constexpr bool syslog =true;
         }
 
         /// Maximum length of the Unix socket file path

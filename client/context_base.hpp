@@ -3,7 +3,7 @@
 #ifndef __CONTEXT_BASE_HPP__
 #define __CONTEXT_BASE_HPP__
 
-// #include <syslog.hpp>
+#include <syslog.hpp>
 
 namespace koheron {
 } // namespace koheron

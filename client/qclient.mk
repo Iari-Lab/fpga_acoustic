@@ -16,7 +16,8 @@ MAKE_PY := $(PYTHON) make.py
 
 TMP_PROJECT_PATH := .
 GCC_VERSION := 9
-CCXX := /usr/bin/arm-linux-gnueabihf-g++-$(GCC_VERSION) -flto
+CCXX := /usr/bin/arm-linux-gnueabihf-g++-$(GCC_VERSION) 
+# CCXX := /usr/bin/arm-linux-gnueabihf-g++-$(GCC_VERSION) -flto
 
 # CCXXFLAGS := -Wall -Werror -Wextra
 # CCXXFLAGS += -Wpedantic -Wfloat-equal -Wunused-macros -Wcast-qual -Wuseless-cast
