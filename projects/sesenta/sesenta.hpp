@@ -13,6 +13,10 @@
 #include <deque>
 #include <iostream>
 #include <stdio.h>
+#include <atomic>  
+#include <thread> 
+
+
 
 constexpr uint32_t mic_size = mem::mic0_range / sizeof(uint32_t);
 // Sound Activity Detection parameters for 8K brams 3 stages, 25 dec

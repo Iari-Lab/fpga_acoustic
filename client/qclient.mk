@@ -26,7 +26,7 @@ CCXX := /usr/bin/arm-linux-gnueabihf-g++-$(GCC_VERSION)
 # CCXXFLAGS += -Wuninitialized -Wshadow -Wzero-as-null-pointer-constant -Wmissing-declarations
 # CCXXFLAGS += -Wconversion -Wsign-conversion
 CCXXFLAGS += -MMD -MP -O3 $(GCC_FLAGS)
-CCXXFLAGS += -mcpu=cortex-a9 -mfpu=vfpv3-d16 -mvectorize-with-neon-quad -mfloat-abi=hard
+CCXXFLAGS += -mcpu=cortex-a9 -mfpu=vfpv3-d16 -mfloat-abi=hard
 CCXXFLAGS += -std=c++17 -pthread -lstdc++ -lstdc++fs -static-libstdc++
 
 

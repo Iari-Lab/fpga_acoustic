@@ -16,6 +16,7 @@ extern "C" {
 }
 
 #include <context.hpp>
+#include "sesenta.hpp"
 
 class Common
 {
@@ -24,6 +25,7 @@ class Common
     : ctx(ctx_)
     , ctl(ctx.mm.get<mem::control>())
     , sts(ctx.mm.get<mem::status>())
+    , sesenta(ctx.get<Sesenta>())
     {}
 
     uint64_t get_dna() {
@@ -40,6 +42,7 @@ class Common
 
     void init() {
         //ip_on_leds();
+        // sesenta.start_bf();
     };
 
     std::string get_instrument_config() {
@@ -90,6 +93,7 @@ class Common
     Context& ctx;
     Memory<mem::control>& ctl;
     Memory<mem::status>& sts;
+    Sesenta& sesenta;
 };
 
 #endif // __DRIVERS_COMMON_HPP__
