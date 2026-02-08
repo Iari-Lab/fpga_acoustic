@@ -48,7 +48,7 @@ class Context : public ContextBase
     ZynqFclk fclk;
     FpgaManager fpga;
     private:
-        static constexpr bool load_bitstream = false;
+        static constexpr bool load_bitstream = true;
 };
 
 #endif // __CONTEXT_HPP__

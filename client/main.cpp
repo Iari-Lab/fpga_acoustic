@@ -3,7 +3,6 @@
 #include <math.h>
 #include <algorithm>
 
-#define KOHERON_SERVER_PORT 36000
 
 int main(int argc, char *argv[])
 {   
@@ -13,14 +12,8 @@ int main(int argc, char *argv[])
     bool enableLED = atoi(argv[1]) != 0;
 
     Sesenta sesenta(ctx);
-    if (enableLED>0) {
-        sesenta.set_led_on();
-    }   
-    else {
-        sesenta.set_led_off();
-    }
+    sesenta.start_bf();
 
-    printf(" \n\n");
 
     return 0;
 }

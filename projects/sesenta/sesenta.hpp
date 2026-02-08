@@ -5,7 +5,6 @@
 #define __DRIVERS_SESENTA_IMPROVED_HPP__
 
 #include "config_geom.hpp"
-#include "opencv2/core/cvdef.h"
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -13,11 +12,7 @@
 #include <context.hpp>
 #include <deque>
 #include <iostream>
-#include <opencv2/core.hpp>
-#include <opencv2/video/tracking.hpp>
 #include <stdio.h>
-
-using namespace cv;
 
 constexpr uint32_t mic_size = mem::mic0_range / sizeof(uint32_t);
 // Sound Activity Detection parameters for 8K brams 3 stages, 25 dec
@@ -28,8 +23,6 @@ constexpr double VELOCITY_THRESHOLD = 0.1; // Maximum reasonable velocity (m/s)
 
 class Sesenta {
 public:
-  //=== TUNING PARAMETERS - Adjust these for your environment ===
-
   // Silence detection: Set based on measured noise floor
   // Measure power when no sound is present, then set ~3-5x above that
   static constexpr float SILENCE_THRESHOLD = 1e8f;
@@ -77,10 +70,10 @@ public:
         mic53_br(ctx.mm.get<mem::mic53>()), mic54_br(ctx.mm.get<mem::mic54>()),
         mic55_br(ctx.mm.get<mem::mic55>()), mic56_br(ctx.mm.get<mem::mic56>()),
         mic57_br(ctx.mm.get<mem::mic57>()), mic58_br(ctx.mm.get<mem::mic58>()),
-        mic59_br(ctx.mm.get<mem::mic59>()), kf(2, 1, 0, CV_32F) {
+        mic59_br(ctx.mm.get<mem::mic59>()) {
 
     ctx.print<INFO>("BEAM Improved with Silence Detection -->");
-    initialize_kalman_filter();
+    // initialize_kalman_filter();
     initializeSoundDetection();
   }
 
@@ -91,63 +84,12 @@ public:
     }
   }
 
-  void initialize_kalman_filter() {
-    // State: [position, velocity]
-    // Transition: position(t+1) = position(t) + velocity(t)
-    //             velocity(t+1) = velocity(t)
-    kf.transitionMatrix = (cv::Mat_<float>(2, 2) << 1, 1, 0, 1);
-
-    // Measurement: we only observe position (direction)
-    kf.measurementMatrix = (cv::Mat_<float>(1, 2) << 1, 0);
-
-    // Process noise - how much state can change unexpectedly
-    // Lower = smoother tracking, Higher = more responsive
-    cv::setIdentity(kf.processNoiseCov, cv::Scalar::all(0.5f));
-
-    // Measurement noise - how noisy are direction readings
-    // Higher = more smoothing, trust predictions more
-    cv::setIdentity(kf.measurementNoiseCov, cv::Scalar::all(15.0f));
-
-    // Initial error covariance
-    cv::setIdentity(kf.errorCovPost, cv::Scalar::all(1.0f));
-
-    // Initial state: direction 15 (center), velocity 0
-    kf.statePost.at<float>(0) = 15.0f;
-    kf.statePost.at<float>(1) = 0.0f;
-  }
-
-  // Reset Kalman filter to initial state (call when sound resumes after
-  // silence)
-  void reset_kalman_filter(int32_t initial_direction) {
-    cv::setIdentity(kf.errorCovPost, cv::Scalar::all(1.0f));
-    kf.statePost.at<float>(0) = static_cast<float>(initial_direction);
-    kf.statePost.at<float>(1) = 0.0f;
-  }
   void initializeSoundDetection() {
     power_history.clear();
     sound_detected = false;
     consecutive_invalid_frames = 0;
   }
 
-  // Convert direction index to 2D position
-  // cv::Mat directionToPosition(int32_t direction, double power) {
-  //   cv::Mat position = cv::Mat::zeros(2, 1, CV_32F);
-
-  //   if (direction >= 0 && direction < 60) {
-  //     // Map direction to microphone position
-  //     float x = mic_positions[direction].x;
-  //     float y = mic_positions[direction].y;
-
-  //     // Adjust confidence based on power
-  //     float confidence = std::min(1.0f, (float)(power / POWER_THRESHOLD));
-
-  //     position.at<float>(0) = x * confidence;
-  //     position.at<float>(1) = y * confidence;
-  //   }
-
-  //   return position;
-  // }
-  // Sound Activity Detection based on power thresholding
   bool detectSoundActivity(double power) {
     // Add to history
     power_history.push_back(power);
@@ -402,153 +344,6 @@ public:
     return data_ret;
   }
 
-  // void beamf(uint32_t dir) {
-  //   record();
-  //   auto beamformed_sum = get_mic_ith(dir);
-  //   double power = 0.0;
-  //   for (uint32_t sample_idx = 0; sample_idx < mic_size; sample_idx++) {
-  //     double sample = static_cast<double>(beamformed_sum[sample_idx]);
-  //     power += (sample * sample);
-  //   }
-  //   ctx.print<DEBUG>("Direction MIC %d: LED = %d   power: %f\n", dir,
-  //                    M_DATA_TO_MIC[dir], power);
-  //   set_led_sel(M_DATA_TO_MIC[dir]);
-  // }
-
-  // /// Main beamforming function with silence detection and Kalman filtering
-  // void bf_kalman() {
-  //   const int32_t num_directions = 30;
-  //   record();
-
-  //   // Step 1: Compute beam powers for all directions
-  //   int32_t max_direction = 0;
-  //   double max_power = 0.0;
-
-  //   for (int32_t dir = 0; dir < num_directions; dir++) {
-  //     auto beamformed_sum = get_mic_ith(dir);
-  //     double power = 0.0;
-  //     for (uint32_t sample_idx = 0; sample_idx < mic_size; sample_idx++) {
-  //       double sample = static_cast<double>(beamformed_sum[sample_idx]);
-  //       power += (sample * sample);
-  //     }
-  //     double normalized_power = power / mic_size;
-
-  //     if (normalized_power > max_power) {
-  //       max_power = normalized_power;
-  //       max_direction = dir;
-  //     }
-  //   }
-
-  //   // Step 2: Silence detection with hysteresis
-  //   float threshold = sound_active_ ? SILENCE_THRESHOLD * POWER_HYSTERESIS
-  //                                   : SILENCE_THRESHOLD;
-
-  //   if (max_power < threshold) {
-  //     silence_frame_count_++;
-
-  //     if (silence_frame_count_ >= SILENCE_FRAMES_REQUIRED) {
-  //       // Confirmed silence - stop predicting
-  //       sound_active_ = false;
-  //       silence_frame_count_ = SILENCE_FRAMES_REQUIRED; // Cap counter
-
-  //       ctx.print<DEBUG>("Silence detected (power: %.2e < %.2e)\n",
-  //       max_power,
-  //                        threshold);
-
-  //       // Turn off LED during silence
-  //       // turn_off_leds();
-  //       return;
-  //     }
-
-  //     // Still accumulating silence frames - don't update
-  //     ctx.print<DEBUG>("Silence accumulating: %d/%d frames\n",
-  //                      silence_frame_count_, SILENCE_FRAMES_REQUIRED);
-  //     return;
-  //   } else {
-  //     // Sound detected
-  //     if (!sound_active_) {
-  //       // Transitioning from silence to sound - reset Kalman
-  //       reset_kalman_filter(max_direction);
-  //       ctx.print<INFO>("Sound resumed at direction %d\n", max_direction);
-  //     }
-  //     silence_frame_count_ = 0;
-  //     sound_active_ = true;
-  //   }
-
-  //   // Step 3: Kalman filter prediction
-  //   cv::Mat prediction = kf.predict();
-  //   float predicted_position = prediction.at<float>(0);
-  //   float predicted_velocity = prediction.at<float>(1);
-
-  //   // Step 4: Validate measurement - reject spurious jumps
-  //   float direction_diff = std::abs(max_direction - predicted_position);
-  //   // Handle wrap-around (direction 0 and 29 are adjacent)
-  //   direction_diff = std::min(direction_diff, 30.0f - direction_diff);
-
-  //   bool measurement_valid = true;
-
-  //   // If velocity is low but direction jumped significantly, it's likely
-  //   noise if (std::abs(predicted_velocity) < 2.0f && direction_diff > 10.0f)
-  //   {
-  //     measurement_valid = false;
-  //     ctx.print<DEBUG>("Spurious jump rejected: diff=%.1f, vel=%.2f\n",
-  //                      direction_diff, predicted_velocity);
-  //   }
-
-  //   // Step 5: Kalman correction (or use prediction only)
-  //   cv::Mat corrected;
-
-  //   if (measurement_valid) {
-  //     // Adaptive measurement noise based on power level
-  //     float power_ratio = static_cast<float>(max_power / SILENCE_THRESHOLD);
-  //     float adaptive_noise = 15.0f / std::max(1.0f, power_ratio);
-  //     cv::setIdentity(kf.measurementNoiseCov,
-  //     cv::Scalar::all(adaptive_noise));
-
-  //     cv::Mat measurement =
-  //         (cv::Mat_<float>(1, 1) << static_cast<float>(max_direction));
-  //     corrected = kf.correct(measurement);
-  //   } else {
-  //     // Use prediction only - reject bad measurement
-  //     corrected = prediction;
-  //   }
-
-  //   // Step 6: Extract filtered state
-  //   float filtered_position = corrected.at<float>(0);
-  //   float filtered_velocity = corrected.at<float>(1);
-
-  //   int32_t filtered_direction =
-  //       static_cast<int>(std::round(filtered_position));
-  //   filtered_direction = std::max(0, std::min(29, filtered_direction));
-
-  //   // Step 7: Final validation before LED activation
-  //   bool activate_led = true;
-
-  //   // Velocity sanity check
-  //   if (std::abs(filtered_velocity) > MAX_VELOCITY) {
-  //     activate_led = false;
-  //     ctx.print<DEBUG>("Velocity too high: %.2f\n", filtered_velocity);
-  //   }
-
-  //   // Power must be significantly above threshold
-  //   if (max_power < SILENCE_THRESHOLD * ACTIVATION_FACTOR) {
-  //     activate_led = false;
-  //     ctx.print<DEBUG>("Power below activation: %.2e\n", max_power);
-  //   }
-
-  //   // Step 8: Control LED
-  //   if (activate_led) {
-  //     set_led_sel(M_DATA_TO_MIC[filtered_direction]);
-  //     last_active_led_ = M_DATA_TO_MIC[filtered_direction];
-
-  //     ctx.print<INFO>("Raw: %d, Filtered: %d, Vel: %.2f, Power: %.2e\n",
-  //                     max_direction, filtered_direction, filtered_velocity,
-  //                     max_power);
-  //   } else {
-  //     // turn_off_leds();
-  //   }
-  // }
-
   void bf() {
     const int num_directions = 60;
     std::array<double, num_directions> beam_powers = {0.0};
@@ -589,37 +384,9 @@ public:
                        max_power);
     }
 
-    //  // Kalman filter: predict then correct
-    //   cv::Mat prediction = kf.predict();
-
-    //   // Create measurement matrix with detected direction
-    //   cv::Mat measurement = (cv::Mat_<float>(1, 1) << (float)max_direction);
-
-    //   // Correct with measurement
-    //   cv::Mat corrected = kf.correct(measurement);
-
-    //   // Get filtered direction (round to nearest integer)
-    //   int filtered_direction = (int)std::round(corrected.at<float>(0));
-
-    //   // Clamp to valid range
-    //   filtered_direction = std::max(0, std::min(29, filtered_direction));
-
-    //   ctx.print<INFO>("Raw: %d, Filtered: %d (Power: %e)\n",
-    //                   max_direction, filtered_direction, max_power);
-
-    //   // Use filtered direction for LED
-    //   set_led_sel(M_DATA_TO_MIC[filtered_direction]);
   }
   void set_led_sel(uint32_t sel) { ctl.write_reg(reg::led_select, sel); }
 
-  // void turn_off_leds() {
-  //   // Option 1: Set to invalid/off value
-  //   ctl.write_reg(reg::led_select, 0xFF);  // Or whatever value turns off
-  //   LEDs
-
-  //   // Option 2: If you have a separate LED enable register
-  //   // ctl.clear_bit<reg::led_enable, 0>();
-  // }
 
   uint32_t get_mic_size() { return mic_size; }
   void start_beamforming();
@@ -703,7 +470,6 @@ private:
 
   std::atomic<bool> beamforming_started{false};
   std::thread beamforming_thread;
-  cv::KalmanFilter kf;
   // Sound activity detection
   bool sound_detected;
   int32_t last_valid_direction;
@@ -715,15 +481,14 @@ private:
   bool sound_active_ = false;
   uint32_t last_active_led_ = 0;
 
-
-static constexpr std::array<uint8_t, 60> M_DATA_TO_MIC = {
-    55, 56, 57, 58, 53, 54, 52, 51, 50, 49,  // M0-M9
-    48, 47, 46, 45, 44, 43, 42, 41, 40, 39,  // M10-M19
-    38, 37, 36, 35, 34, 33, 32, 31, 30, 29,  // M20-M29
-    28, 27, 26, 25, 24, 23, 22, 21, 20, 19,  // M30-M39
-    18, 17, 16, 15, 14, 13, 12, 11, 10,  9,  // M40-M49
-     8,  7,  6,  5,  4,  3,  2,  1,  0, 59,  // M50-M59
-};
+  static constexpr std::array<uint8_t, 60> M_DATA_TO_MIC = {
+      55, 56, 57, 58, 53, 54, 52, 51, 50, 49, // M0-M9
+      48, 47, 46, 45, 44, 43, 42, 41, 40, 39, // M10-M19
+      38, 37, 36, 35, 34, 33, 32, 31, 30, 29, // M20-M29
+      28, 27, 26, 25, 24, 23, 22, 21, 20, 19, // M30-M39
+      18, 17, 16, 15, 14, 13, 12, 11, 10, 9,  // M40-M49
+      8,  7,  6,  5,  4,  3,  2,  1,  0,  59, // M50-M59
+  };
 
   void beamf_thread();
 };

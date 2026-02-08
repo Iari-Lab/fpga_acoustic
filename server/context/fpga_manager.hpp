@@ -20,7 +20,7 @@ class FpgaManager {
 
      int load_bitstream(const char* name) {
         const auto bitfile_str = live_instrument_dirname + name + ".bit.bin";
-        ctx.log<ERROR>("loading %s...\n", bitfile_str.c_str());
+        ctx.log<DEBUG>("loading %s...\n", bitfile_str.c_str());
         const char* argv[] = {"fpgautil", "-b", bitfile_str.c_str(), nullptr};
 
         pid_t pid = fork();
